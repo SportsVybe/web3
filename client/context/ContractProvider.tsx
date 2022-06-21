@@ -12,7 +12,7 @@ const ethereum = typeof window !== "undefined" && (window as any).ethereum;
 const defaultState = {
   isContractLoading: false,
   setIsContractLoading: {},
-  contractMessage: {},
+  contractMessage: { statusColor: "", message: "" } as any,
   setContractMessage: {} as any,
   createTeam: async () => {},
   createChallenge: async (

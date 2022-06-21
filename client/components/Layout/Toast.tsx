@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useContract } from "../context/ContractProvider";
+import { useContract } from "../../context/ContractProvider";
 
 type Props = {
   children: React.ReactNode;
   type: "success" | "error" | "warning" | "info";
   duration?: number;
-  open: boolean;
+  open?: boolean;
 };
 
 export const Toast = ({

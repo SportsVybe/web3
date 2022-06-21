@@ -1,7 +1,7 @@
 //https://biagio.dev/posts/tailwindcss-react-modal
 
 type Props = {
-  open: boolean;
+  open: string;
   onClose: MouseEventHandler;
   children: JSX.Element;
 };
