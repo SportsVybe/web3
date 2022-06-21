@@ -25,6 +25,7 @@ error Duplicate_Vote(uint256, address);
 error Invalid_Team(uint256);
 error ChallengeAlreadyAccepted(uint256);
 error ChallengeClosed(uint256);
+error FailedChallengeCreation_ReflexiveTeam(uint256);
 
 error NotFoundMembershipRequest(uint256, address);
 error FailedEventCreation_InsufficientBalance(uint256, uint256);
@@ -193,7 +194,8 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         uint256 team_id,
         uint256 challenged_team_id,
         uint256 amount
-    ) public payable newSportsmanship teamOwner(team_id) returns (uint256) {
+    ) public payable newSportsmanship teamOwner(team_id) notTeamOwner(challenged_team_id)
+ returns (uint256) {
         uint256 _interval = 5;
         uint256 challenge_id = new_challenge_id;
 
@@ -574,6 +576,13 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     modifier newSportsmanship() {
         if (sportsmanship[msg.sender] == 0) {
             sportsmanship[msg.sender] = 100;
+        }
+        _;
+    }
+
+    modifier notTeamOwner(uint team_id){
+        if(team_owner[team_id] == msg.sender){
+            revert FailedChallengeCreation_ReflexiveTeam(team_id);
         }
         _;
     }
