@@ -1,10 +1,32 @@
 import { ethers } from "ethers";
 import { createContext, useContext, useState } from "react";
-import { contractABI, contractAddress, tokenContractABI, tokenContractAddress } from "../configs/configs";
+import {
+  contractABI,
+  contractAddress,
+  tokenContractABI,
+  tokenContractAddress,
+} from "../configs/configs";
 
 const ethereum = typeof window !== "undefined" && (window as any).ethereum;
 
-const defaultState = {};
+const defaultState = {
+  isContractLoading: false,
+  setIsContractLoading: {},
+  contractMessage: {},
+  setContractMessage: {} as any,
+  createTeam: async () => {},
+  createChallenge: async (
+    userTeamId: string,
+    challengeTeamId: string,
+    challengeAmount: string
+  ) => {},
+  approveAmount: async (challengeAmount: string) => {},
+  acceptChallenge: async (
+    challengeId: string,
+    challengeTeam2Id: string,
+    challengeAmount: string
+  ) => {},
+};
 
 const ContractContext = createContext(defaultState);
 
@@ -25,7 +47,7 @@ const ContractProvider = ({ children }: { children: any }) => {
     return new ethers.Contract(tokenContractAddress, tokenContractABI, signer);
   };
 
-  const approveAmount = async (challengeAmount: string) => {
+  const approveAmount = async (challengeAmount: string): Promise<any> => {
     setIsContractLoading(true);
     try {
       const contract = await getTokenContract();
@@ -34,16 +56,22 @@ const ContractProvider = ({ children }: { children: any }) => {
 
       contract.approve(contractAddress, challengeAmountWei);
 
-      setContractMessage({ statusColor: "green", message: `${challengeAmountWei}SVT Approved for spending` });
+      setContractMessage({
+        statusColor: "green",
+        message: `${challengeAmountWei}SVT Approved for spending`,
+      });
+      setIsContractLoading(false);
+      return true;
     } catch (error) {
       setIsContractLoading(false);
-      if (error instanceof Error) setContractMessage({ statusColor: "red", message: error.message });
+      if (error instanceof Error)
+        setContractMessage({ statusColor: "red", message: error.message });
       console.log(error);
       return false;
     }
   };
 
-  const createTeam = async () => {
+  const createTeam = async (): Promise<any> => {
     setIsContractLoading(true);
     try {
       const contract = await getContract();
@@ -53,19 +81,27 @@ const ContractProvider = ({ children }: { children: any }) => {
         .then((tx) => tx.wait()) // wait for transaction to be mined
         .then((tx) => {
           setIsContractLoading(false);
-          setContractMessage({ statusColor: "green", message: "Successfully created team on chain!" });
+          setContractMessage({
+            statusColor: "green",
+            message: "Successfully created team on chain!",
+          });
           return tx.events[0].args[0].toString(); // return teamId as string
         });
       return teamId;
     } catch (error) {
       setIsContractLoading(false);
-      if (error instanceof Error) setContractMessage({ statusColor: "red", message: error.message });
+      if (error instanceof Error)
+        setContractMessage({ statusColor: "red", message: error.message });
       console.log(error);
       return false;
     }
   };
 
-  const createChallenge = async (userTeamId: string, challengeTeamId: string, challengeAmount: string) => {
+  const createChallenge = async (
+    userTeamId: string,
+    challengeTeamId: string,
+    challengeAmount: string
+  ) => {
     setIsContractLoading(true);
 
     try {
@@ -81,7 +117,10 @@ const ContractProvider = ({ children }: { children: any }) => {
         .then((tx) => tx.wait()) // wait for transaction to be mined
         .then((tx) => {
           setIsContractLoading(false);
-          setContractMessage({ statusColor: "green", message: "Successfully created challenge on chain!" });
+          setContractMessage({
+            statusColor: "green",
+            message: "Successfully created challenge on chain!",
+          });
           return tx.events[1].args.challenge_id.toString(); // return challengeId as string
         })
         .catch((error) => {
@@ -93,13 +132,18 @@ const ContractProvider = ({ children }: { children: any }) => {
       return challengeId;
     } catch (error) {
       setIsContractLoading(false);
-      if (error instanceof Error) setContractMessage({ statusColor: "red", message: error.message });
+      if (error instanceof Error)
+        setContractMessage({ statusColor: "red", message: error.message });
       console.error(error);
       return false;
     }
   };
 
-  const acceptChallenge = async (challengeId: string, challengeTeam2Id: string, challengeAmount: string) => {
+  const acceptChallenge = async (
+    challengeId: string,
+    challengeTeam2Id: string,
+    challengeAmount: string
+  ) => {
     setIsContractLoading(true);
 
     try {
@@ -117,7 +161,10 @@ const ContractProvider = ({ children }: { children: any }) => {
         .then((tx) => {
           console.log(tx);
           setIsContractLoading(false);
-          setContractMessage({ statusColor: "green", message: "Successfully created challenge on chain!" });
+          setContractMessage({
+            statusColor: "green",
+            message: "Successfully created challenge on chain!",
+          });
           return tx.events[1].args.challenge_id.toString(); // return challengeId as string
         })
         .catch((error) => {
@@ -129,7 +176,8 @@ const ContractProvider = ({ children }: { children: any }) => {
       return challengeAccepted;
     } catch (error) {
       setIsContractLoading(false);
-      if (error instanceof Error) setContractMessage({ statusColor: "red", message: error.message });
+      if (error instanceof Error)
+        setContractMessage({ statusColor: "red", message: error.message });
       console.error(error);
       return false;
     }

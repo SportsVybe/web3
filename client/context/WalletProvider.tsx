@@ -4,11 +4,11 @@ import { useMoralis } from "react-moralis";
 
 const defaultState = {
   wallet: "",
-  user: {} || null,
+  user: {} as any,
   isAuthenticated: false,
   isAuthenticating: false,
   signOutWallet: () => {},
-  connectWallet: () => {},
+  connectWallet: (routeToProfile = true) => {},
 };
 
 const WalletContext = createContext(defaultState);
@@ -16,19 +16,24 @@ const WalletContext = createContext(defaultState);
 const WalletProvider = (props: any) => {
   const { children } = props;
   const router = useRouter();
-  const { authenticate, isAuthenticated, user, logout, isAuthenticating } = useMoralis();
+  const { authenticate, isAuthenticated, user, logout, isAuthenticating } =
+    useMoralis();
   const [wallet, setWallet] = useState("");
 
   const connectWallet = async (routeToProfile = true) => {
     try {
       if (!isAuthenticated) {
-        const account = await authenticate({ chainId: 80001, signingMessage: "Welcome to SportsVybe, please sign in to continue" });
+        const account = await authenticate({
+          chainId: 80001,
+          signingMessage: "Welcome to SportsVybe, please sign in to continue",
+        });
         if (account) {
           setWallet(account.get("ethAddress"));
           routeToProfile && router.push("/profile");
           !routeToProfile && router.reload();
         }
-        if (wallet) console.log("connected", account, account?.get("ethAddress"));
+        if (wallet)
+          console.log("connected", account, account?.get("ethAddress"));
       }
     } catch (error) {
       console.error(error);
