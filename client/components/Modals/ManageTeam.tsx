@@ -8,7 +8,7 @@ import { Toast } from "../Layout/Toast";
 
 type Props = {
   user: any;
-  team: any;
+  team?: any;
   toggleModal: Dispatch<SetStateAction<boolean>>;
   modalView: boolean;
   createNewTeam?: boolean;
