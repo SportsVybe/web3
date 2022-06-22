@@ -62,7 +62,7 @@ export default function Navbar() {
           )}
 
           <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600">
-            <Link href="/about" className="px-2">
+            <Link href="/aboutus" className="px-2">
               About
             </Link>
           </div>
