@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useMoralisQuery, useNewMoralisObject } from "react-moralis";
 import { useContract } from "../../context/ContractProvider";
 import Modal from "../Layout/Modal";
@@ -11,7 +11,7 @@ type Props = {
   team: any;
   user: any;
   challenge: any | boolean;
-  toggleModal: (params: boolean) => {};
+  toggleModal: Dispatch<SetStateAction<boolean>>;
   modalView: boolean;
   createNewChallenge: boolean;
   challengeObject: any | null;
@@ -144,7 +144,7 @@ export const ManageChallenge = ({
   }, [user]);
 
   return (
-    <Modal open={modalView} onClose={() => toggleModal(false)}>
+    <Modal open={modalView} onClose={async () => toggleModal(false)}>
       <div className="flex flex-col border-2 border-green-100 p-4 items-center">
         <div>
           {" "}

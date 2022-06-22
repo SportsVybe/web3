@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useMoralisFile, useNewMoralisObject } from "react-moralis";
 import { sports } from "../../configs/constants";
 import { useContract } from "../../context/ContractProvider";
@@ -9,7 +9,7 @@ import { Toast } from "../Layout/Toast";
 type Props = {
   user: any;
   team: any;
-  toggleModal: (params?: boolean) => {};
+  toggleModal: Dispatch<SetStateAction<boolean>>;
   modalView: boolean;
   createNewTeam?: boolean;
   teamObject?: any;
@@ -114,7 +114,7 @@ export const ManageTeam = ({
   };
 
   return (
-    <Modal open={modalView} onClose={() => toggleModal(false)}>
+    <Modal open={modalView} onClose={async () => toggleModal(false)}>
       <div className="flex flex-col border-2 border-green-100 p-4 items-center">
         <div> {createNewTeam ? "Create Team" : "Manage Team"}</div>
 
