@@ -80,7 +80,7 @@ export const TeamCard = ({ team, teamObject = null }: Props) => {
           </button>
         )}
         <a
-          href={`/team/${teamObject.id}`}
+          href={`/teams/${teamObject.id}`}
           className="px-2 py-1 my-2 text-white bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100  hover:ease-in-out"
         >
           View Team

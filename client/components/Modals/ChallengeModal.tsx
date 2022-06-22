@@ -6,15 +6,15 @@ import Modal from "../Layout/Modal";
 import { Toast } from "../Layout/Toast";
 
 type Props = {
-  userTeamId: string;
+  userTeamId?: string;
   challengeTeamId: string;
   team: any;
   user: any;
-  challenge: any | boolean;
+  challenge?: any | boolean;
   toggleModal: Dispatch<SetStateAction<boolean>>;
   modalView: boolean;
   createNewChallenge: boolean;
-  challengeObject: any | null;
+  challengeObject?: any | null;
 };
 
 export const ManageChallenge = ({
@@ -217,22 +217,23 @@ export const ManageChallenge = ({
                   />
                 </span>
                 <span className="h-[120px] my-1 flex justify-start items-center flex-wrap">
-                  {team.teamSportsPreferences
-                    .sort()
-                    .map((sport: string, i: number) => {
-                      const isChecked = challengeSports.includes(sport);
-                      return (
-                        <button
-                          key={i}
-                          className={`m-2 px-2 py-1 rounded text-sm  ${
-                            isChecked ? "bg-green-100" : "bg-gray-300"
-                          }`}
-                          onClick={() => handleSports(sport, isChecked)}
-                        >
-                          {sport}
-                        </button>
-                      );
-                    })}
+                  {team.teamSportsPreferences &&
+                    team.teamSportsPreferences
+                      .sort()
+                      .map((sport: string, i: number) => {
+                        const isChecked = challengeSports.includes(sport);
+                        return (
+                          <button
+                            key={i}
+                            className={`m-2 px-2 py-1 rounded text-sm  ${
+                              isChecked ? "bg-green-100" : "bg-gray-300"
+                            }`}
+                            onClick={() => handleSports(sport, isChecked)}
+                          >
+                            {sport}
+                          </button>
+                        );
+                      })}
                 </span>
               </div>
             </div>
