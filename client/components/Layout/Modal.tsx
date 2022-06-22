@@ -1,13 +1,13 @@
 //https://biagio.dev/posts/tailwindcss-react-modal
 
 type Props = {
-  open: string;
-  onClose: MouseEventHandler;
+  open: boolean;
+  onClose: (params: string | any) => {};
   children: JSX.Element;
 };
 
 // components/Modal.js
-import { MouseEventHandler, useEffect } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 export default function Modal({ open, onClose, children }: Props) {
   function escHandler({ key }: any) {

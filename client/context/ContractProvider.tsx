@@ -14,7 +14,9 @@ const defaultState = {
   setIsContractLoading: {},
   contractMessage: { statusColor: "", message: "" } as any,
   setContractMessage: {} as any,
-  createTeam: async () => {},
+  createTeam: async () => {
+    return false;
+  },
   createChallenge: async (
     userTeamId: string,
     challengeTeamId: string,
