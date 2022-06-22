@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useMoralisQuery, useNewMoralisObject } from "react-moralis";
-import Profile from "./Profile";
+import Profile from "./ProfileView";
 
 type Props = {
   user?: any;
