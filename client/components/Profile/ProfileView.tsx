@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useWallet } from "../../context/WalletProvider";
 import { Photo } from "../Layout/Photo";
 import { EditProfile } from "../Modals/EditProfile";
-import { ManageEvent } from "../Modals/ManageEvent";
 import { ManageTeam } from "../Modals/ManageTeam";
 import { TeamCard } from "../Teams/TeamCard";
 
@@ -26,7 +25,6 @@ export default function Profile({
   const { user, isAuthenticated, connectWallet, isAuthenticating } =
     useWallet();
   const [editProfileModal, toggleEditProfileModal] = useState(false);
-  const [manageEventModal, toggleManageEventModal] = useState(false);
   const [manageTeamModal, toggleManageTeamModal] = useState(false);
 
   return (
@@ -147,18 +145,6 @@ export default function Profile({
               <h1>No Teams</h1>
             )}
           </div>
-
-          <div className="flex flex-row w-full justify-center py-3 items-center">
-            <h1>Event(s) </h1>
-            {isAuthenticated && isCurrentUser && (
-              <button
-                className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
-                onClick={() => toggleManageEventModal(!manageEventModal)}
-              >
-                Create Event
-              </button>
-            )}
-          </div>
         </div>
       </div>
 
@@ -167,13 +153,6 @@ export default function Profile({
         toggleModal={toggleEditProfileModal}
         modalView={editProfileModal}
         userObject={userObject}
-      />
-
-      <ManageEvent
-        user={userData}
-        toggleModal={toggleManageEventModal}
-        modalView={manageEventModal}
-        createNewEvent={true}
       />
 
       <ManageTeam

@@ -5,7 +5,6 @@ import { useContract } from "../../context/ContractProvider";
 import Modal from "../Layout/Modal";
 
 type Props = {
-  user: any;
   toggleModal: Dispatch<SetStateAction<boolean>>;
   modalView: boolean;
   createNewEvent?: boolean;
@@ -18,7 +17,6 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 export const ManageEvent = ({
-  user,
   event = false,
   toggleModal,
   modalView,
