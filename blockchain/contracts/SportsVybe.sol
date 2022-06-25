@@ -165,6 +165,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         }
 
         //TODO: Ensure that team cannot accept challenge with a team that has a player on both teams.
+        //TODO: Ensure that team cannot accept challenge with more or less players than in challengePool
 
         //Receive SVT token of the challenge
         sportsVybeToken.transfer(address(this), amount);
@@ -194,8 +195,14 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         uint256 team_id,
         uint256 challenged_team_id,
         uint256 amount
-    ) public payable newSportsmanship teamOwner(team_id) notTeamOwner(challenged_team_id)
- returns (uint256) {
+    )
+        public
+        payable
+        newSportsmanship
+        teamOwner(team_id)
+        notTeamOwner(challenged_team_id)
+        returns (uint256)
+    {
         uint256 _interval = 5;
         uint256 challenge_id = new_challenge_id;
 
@@ -429,27 +436,28 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
                 challengePools[challenge_id].team2
             ];
 
-            
-            if(!challengePools[challenge_id].isCompleted || !challengePools[challenge_id].isClosed){
-            // sportsVybeToken.transferFrom(
-            //     address(this),
-            //     team_1_owner,
-            //     challengePools[challenge_id].amount / 2
-            // );
-            // sportsVybeToken.transferFrom(
-            //     address(this),
-            //     team_2_owner,
-            //     challengePools[challenge_id].amount / 2
-            // );
+            if (
+                !challengePools[challenge_id].isCompleted ||
+                !challengePools[challenge_id].isClosed
+            ) {
+                // sportsVybeToken.transferFrom(
+                //     address(this),
+                //     team_1_owner,
+                //     challengePools[challenge_id].amount / 2
+                // );
+                // sportsVybeToken.transferFrom(
+                //     address(this),
+                //     team_2_owner,
+                //     challengePools[challenge_id].amount / 2
+                // );
 
                 payable(team_1_owner).transfer(
-                    challengePools[challenge_id].amount/2
+                    challengePools[challenge_id].amount / 2
                 );
                 payable(team_2_owner).transfer(
-                    challengePools[challenge_id].amount/2
+                    challengePools[challenge_id].amount / 2
                 );
             }
-            
         } else if (
             challengePools[challenge_id].team1_count >
             challengePools[challenge_id].team2_count
@@ -466,13 +474,18 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
             handleSportsmanship(challenge_id, "win", winner);
             handleSportsmanship(challenge_id, "lose", loser);
             address winner_team_owner = team_owner[winner];
-            if(!challengePools[challenge_id].isCompleted || !challengePools[challenge_id].isClosed){
-            // sportsVybeToken.transferFrom(
-            //     address(this),
-            //     winner_team_owner,
-            //     challengePools[challenge_id].amount
-            // );
-                payable(winner_team_owner).transfer(challengePools[challenge_id].amount);
+            if (
+                !challengePools[challenge_id].isCompleted ||
+                !challengePools[challenge_id].isClosed
+            ) {
+                // sportsVybeToken.transferFrom(
+                //     address(this),
+                //     winner_team_owner,
+                //     challengePools[challenge_id].amount
+                // );
+                payable(winner_team_owner).transfer(
+                    challengePools[challenge_id].amount
+                );
                 challengePools[challenge_id].isCompleted = true;
             }
         }
@@ -580,8 +593,8 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         _;
     }
 
-    modifier notTeamOwner(uint team_id){
-        if(team_owner[team_id] == msg.sender){
+    modifier notTeamOwner(uint256 team_id) {
+        if (team_owner[team_id] == msg.sender) {
             revert FailedChallengeCreation_ReflexiveTeam(team_id);
         }
         _;
