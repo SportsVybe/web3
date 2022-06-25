@@ -29,7 +29,7 @@ export const ProfileController = ({
 
   const [userData, setUserData] = useState<any>({});
   const [teams, setTeams] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [userObject, setUserObject] = useState({});
   const createNewUser = useNewMoralisObject("users");
 

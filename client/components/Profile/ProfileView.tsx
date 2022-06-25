@@ -18,7 +18,7 @@ export default function Profile({
   userData,
   teams,
   isCurrentUser = false,
-  isLoading = false,
+  isLoading,
   wallet,
   userObject,
 }: Props) {

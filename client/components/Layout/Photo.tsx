@@ -6,7 +6,7 @@ type Props = {
   alt: string;
   size: "sm" | "md" | "lg";
   type: "profile" | "event" | "team";
-  isLoading?: boolean;
+  isLoading: boolean;
   h?: number;
   w?: number;
 };
@@ -30,7 +30,7 @@ export const Photo = ({
 
   return (
     <div className={styleSize}>
-      {!isLoading && src !== undefined ? (
+      {!isLoading && src !== undefined && src !== "" ? (
         <Image src={src} alt={alt} layout="fill" objectFit="cover" priority />
       ) : (
         <Image
