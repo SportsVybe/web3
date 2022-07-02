@@ -32,6 +32,8 @@ error FailedEventCreation_InsufficientBalance(uint256, uint256);
 error sendTeamMembershipRequest_Unauthorized(uint256, address);
 error ChallengePoolCreation_Unauthorized(uint256);
 
+error  DuplicateTeamMember(address);
+
 contract SportsVybe is Ownable, KeeperCompatibleInterface {
     IERC20 public sportsVybeToken;
 
@@ -135,8 +137,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     function delineChallenge(uint256 challenge_id, uint256 team_id)
         external
         teamOwner(team_id)
-        returns (bool)
-    {
+        returns (bool){
         challengePools[challenge_id].isAccepted = false;
         closeChallenge(challenge_id);
         return true;
@@ -164,7 +165,19 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
             revert InsufficientAmount(challenge_id, challenge_amount);
         }
 
-        //TODO: Ensure that team cannot accept challenge with a team that has a player on both teams.
+        //Ensure that team cannot accept challenge with a team that has a player on both teams.
+        uint256 team_1_id = challengePools[challenge_id].team1;
+        address[] memory team_1_members = teamMembers[team_1_id];
+        address[] memory team_2_members = teamMembers[team_id];
+
+        for(uint i = 0; i < team_1_members.length; i++){
+            for(uint j = 0; j < team_2_members.length; j++){
+              if(team_1_members[i] == team_2_members[j]){
+                  revert DuplicateTeamMember(team_1_members[i]);
+              }
+           }
+        }
+
         //TODO: Ensure that team cannot accept challenge with more or less players than in challengePool
 
         //Receive SVT token of the challenge
