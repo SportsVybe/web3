@@ -165,6 +165,9 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
             revert InsufficientAmount(challenge_id, challenge_amount);
         }
 
+        //TODO: Ensure that team cannot accept challenge with more or less players than in challengePool
+
+
         //Ensure that team cannot accept challenge with a team that has a player on both teams.
         uint256 team_1_id = challengePools[challenge_id].team1;
         address[] memory team_1_members = teamMembers[team_1_id];
@@ -177,8 +180,6 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
               }
            }
         }
-
-        //TODO: Ensure that team cannot accept challenge with more or less players than in challengePool
 
         //Receive SVT token of the challenge
         sportsVybeToken.transfer(address(this), amount);
