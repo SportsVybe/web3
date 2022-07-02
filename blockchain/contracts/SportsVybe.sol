@@ -193,6 +193,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
            }
         }
 
+
         //Receive SVT token of the challenge
         sportsVybeToken.transfer(address(this), amount);
 
