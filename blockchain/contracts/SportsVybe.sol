@@ -33,6 +33,9 @@ error sendTeamMembershipRequest_Unauthorized(uint256, address);
 error ChallengePoolCreation_Unauthorized(uint256);
 
 error  DuplicateTeamMember(address);
+error  ChallengePoolTeamUnderflow(uint);
+error  ChallengePoolTeamOverflow(uint);
+
 
 contract SportsVybe is Ownable, KeeperCompatibleInterface {
     IERC20 public sportsVybeToken;
@@ -165,14 +168,23 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
             revert InsufficientAmount(challenge_id, challenge_amount);
         }
 
-        //TODO: Ensure that team cannot accept challenge with more or less players than in challengePool
-
-
-        //Ensure that team cannot accept challenge with a team that has a player on both teams.
         uint256 team_1_id = challengePools[challenge_id].team1;
+
         address[] memory team_1_members = teamMembers[team_1_id];
         address[] memory team_2_members = teamMembers[team_id];
 
+        //Ensure that team cannot accept challenge with more or less players than in challengePool
+        uint team_1_count = team_1_members.length;
+        uint team_2_count = team_2_members.length;
+        if(team_1_count > team_2_count){
+            revert ChallengePoolTeamUnderflow(team_1_count - team_2_count);
+        }
+
+        if(team_1_count < team_2_count){
+            revert ChallengePoolTeamOverflow(team_2_count - team_1_count);
+        }
+
+        //Ensure that team cannot accept challenge with a team that has a player on both teams.
         for(uint i = 0; i < team_1_members.length; i++){
             for(uint j = 0; j < team_2_members.length; j++){
               if(team_1_members[i] == team_2_members[j]){
