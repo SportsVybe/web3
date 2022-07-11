@@ -291,7 +291,7 @@ export interface SportsVybeInterface extends utils.Interface {
     "NewTeamMate(uint256,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "TeamCreated(uint256)": EventFragment;
-    "Tie(uint256,uint256)": EventFragment;
+    "Tie(uint256,uint256,uint256)": EventFragment;
     "VoteSubmit(address,uint256,uint256)": EventFragment;
     "Win(uint256,uint256)": EventFragment;
   };
@@ -409,9 +409,13 @@ export type TeamCreatedEventFilter = TypedEventFilter<TeamCreatedEvent>;
 
 export interface TieEventObject {
   challenge_id: BigNumber;
-  team_id: BigNumber;
+  team1_id: BigNumber;
+  team2_id: BigNumber;
 }
-export type TieEvent = TypedEvent<[BigNumber, BigNumber], TieEventObject>;
+export type TieEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber],
+  TieEventObject
+>;
 
 export type TieEventFilter = TypedEventFilter<TieEvent>;
 
@@ -964,8 +968,12 @@ export interface SportsVybe extends BaseContract {
     "TeamCreated(uint256)"(team_id?: null): TeamCreatedEventFilter;
     TeamCreated(team_id?: null): TeamCreatedEventFilter;
 
-    "Tie(uint256,uint256)"(challenge_id?: null, team_id?: null): TieEventFilter;
-    Tie(challenge_id?: null, team_id?: null): TieEventFilter;
+    "Tie(uint256,uint256,uint256)"(
+      challenge_id?: null,
+      team1_id?: null,
+      team2_id?: null
+    ): TieEventFilter;
+    Tie(challenge_id?: null, team1_id?: null, team2_id?: null): TieEventFilter;
 
     "VoteSubmit(address,uint256,uint256)"(
       user?: null,

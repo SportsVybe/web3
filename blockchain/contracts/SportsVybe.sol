@@ -32,10 +32,9 @@ error FailedEventCreation_InsufficientBalance(uint256, uint256);
 error sendTeamMembershipRequest_Unauthorized(uint256, address);
 error ChallengePoolCreation_Unauthorized(uint256);
 
-error  DuplicateTeamMember(address);
-error  ChallengePoolTeamUnderflow(uint);
-error  ChallengePoolTeamOverflow(uint);
-
+error DuplicateTeamMember(address);
+error ChallengePoolTeamUnderflow(uint256);
+error ChallengePoolTeamOverflow(uint256);
 
 contract SportsVybe is Ownable, KeeperCompatibleInterface {
     IERC20 public sportsVybeToken;
@@ -74,7 +73,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     event NewTeamMate(uint256 team_id, address user);
     event MembershipRequestSent(uint256 team_id);
     event VoteSubmit(address user, uint256 challenge_id, uint256 team_id);
-    event Tie(uint256 challenge_id, uint256 team_id);
+    event Tie(uint256 challenge_id, uint256 team1_id, uint256 team2_id);
     event Win(uint256 challenge_id, uint256 team_id);
     event Lose(uint256 challenge_id, uint256 team_id);
     event DidNotShowUp(uint256 challenge_id, uint256 team_id);
@@ -140,7 +139,8 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     function delineChallenge(uint256 challenge_id, uint256 team_id)
         external
         teamOwner(team_id)
-        returns (bool){
+        returns (bool)
+    {
         challengePools[challenge_id].isAccepted = false;
         closeChallenge(challenge_id);
         return true;
@@ -174,25 +174,24 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         address[] memory team_2_members = teamMembers[team_id];
 
         //Ensure that team cannot accept challenge with more or less players than in challengePool
-        uint team_1_count = team_1_members.length;
-        uint team_2_count = team_2_members.length;
-        if(team_1_count > team_2_count){
+        uint256 team_1_count = team_1_members.length;
+        uint256 team_2_count = team_2_members.length;
+        if (team_1_count > team_2_count) {
             revert ChallengePoolTeamUnderflow(team_1_count - team_2_count);
         }
 
-        if(team_1_count < team_2_count){
+        if (team_1_count < team_2_count) {
             revert ChallengePoolTeamOverflow(team_2_count - team_1_count);
         }
 
         //Ensure that team cannot accept challenge with a team that has a player on both teams.
-        for(uint i = 0; i < team_1_members.length; i++){
-            for(uint j = 0; j < team_2_members.length; j++){
-              if(team_1_members[i] == team_2_members[j]){
-                  revert DuplicateTeamMember(team_1_members[i]);
-              }
-           }
+        for (uint256 i = 0; i < team_1_members.length; i++) {
+            for (uint256 j = 0; j < team_2_members.length; j++) {
+                if (team_1_members[i] == team_2_members[j]) {
+                    revert DuplicateTeamMember(team_1_members[i]);
+                }
+            }
         }
-
 
         //Receive SVT token of the challenge
         sportsVybeToken.transfer(address(this), amount);
@@ -352,11 +351,9 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     }
 
     /*
-      @description: return team's sportmanship based on 
-                    the members of the team, hence;
-                    teams_sportsmanship = total players sportmanship / total number of players 
-      @params: id -The team's ID
-      @returns: uint
+    @description: return team's sportmanship based on the members of the team, hence; teams_sportsmanship = total players sportmanship / total number of players 
+    @params: id -The team's ID
+    @returns: uint
     */
     function getTeamSportsmanship(uint256 _team_id)
         external
@@ -463,6 +460,12 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
                 challengePools[challenge_id].team2
             ];
 
+            emit Tie(
+                challenge_id,
+                challengePools[challenge_id].team1,
+                challengePools[challenge_id].team2
+            );
+
             if (
                 !challengePools[challenge_id].isCompleted ||
                 !challengePools[challenge_id].isClosed
@@ -500,6 +503,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         if (winner != 0) {
             handleSportsmanship(challenge_id, "win", winner);
             handleSportsmanship(challenge_id, "lose", loser);
+            emit Lose(challenge_id, loser);
             address winner_team_owner = team_owner[winner];
             if (
                 !challengePools[challenge_id].isCompleted ||
@@ -514,13 +518,12 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
                     challengePools[challenge_id].amount
                 );
                 challengePools[challenge_id].isCompleted = true;
+                emit Win(challenge_id, winner);
             }
         }
-
         challengePools[challenge_id].isClosed = true;
         emit ChallengePoolClosed(challenge_id);
-
-        return winner;
+        return challenge_id;
     }
 
     function handleSportsmanship(
@@ -529,21 +532,18 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         uint256 team_id
     ) private {
         /* Cases for sportmanship changes
-      1. Did not show up for a challege (team_sportsmanship -= 5)
-      2. Tie Votes (team_sportsmanship -= 1)
-      3. Won a challenge (team_sportsmanship += 0.50)
-      4. Lost a challenge (team_sportsmanship += 0.25)
-      */
+            1. Did not show up for a challege (team_sportsmanship -= 5)
+            2. Tie Votes (team_sportsmanship -= 1)
+            3. Won a challenge (team_sportsmanship += 0.50)
+            4. Lost a challenge (team_sportsmanship += 0.25)
+        */
 
         if (compareStrings(reason, "tie")) {
             team_sportsmanship[team_id] -= 3;
-            emit Tie(challenge_id, team_id);
         } else if (compareStrings(reason, "win")) {
             team_sportsmanship[team_id] += 2;
-            emit Win(challenge_id, team_id);
         } else if (compareStrings(reason, "lose")) {
             team_sportsmanship[team_id] += 1;
-            emit Lose(challenge_id, team_id);
         } else if (compareStrings(reason, "not_present")) {
             team_sportsmanship[team_id] -= 5;
             emit DidNotShowUp(challenge_id, team_id);
