@@ -48,6 +48,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     }
 
     struct ChallengePool {
+        uint256 action_id;
         uint256 team1;
         uint256 team2;
         uint256 amount;
@@ -61,18 +62,34 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     }
 
     //emit this event when ever a team joins a challenge
-    event TeamCreated(uint256 team_id);
-    event EventCreated(uint256 challenge_id, uint256 team1, uint256 team2);
+    event TeamCreated(uint256 action_id, uint256 team_id);
+    event EventCreated(
+        uint256 challenge_id,
+        uint256 team1,
+        uint256 team2,
+        uint256 action_id
+    );
     event ChallengePoolCreated(
+        uint256 action_id,
         uint256 challenge_id,
         uint256 amount,
         uint256 team_id,
         uint256 challenged_team_id
     );
     event ChallengePoolClosed(uint256 challenge_id);
-    event NewTeamMate(uint256 team_id, address user);
-    event MembershipRequestSent(uint256 team_id);
-    event VoteSubmit(address user, uint256 challenge_id, uint256 team_id);
+    event NewTeamMate(uint256 action_id, uint256 team_id, address user);
+    event MembershipRequestSent(
+        uint256 action_id,
+        uint256 team_id,
+        address requested,
+        address requester
+    );
+    event VoteSubmit(
+        uint256 action_id,
+        address user,
+        uint256 challenge_id,
+        uint256 team_id
+    );
     event Tie(uint256 challenge_id, uint256 team1_id, uint256 team2_id);
     event Win(uint256 challenge_id, uint256 team_id);
     event Lose(uint256 challenge_id, uint256 team_id);
@@ -101,7 +118,11 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         sportsVybeToken = IERC20(_sportsVybeToken);
     }
 
-    function createTeam() external newSportsmanship returns (uint256) {
+    function createTeam(uint256 action_id)
+        external
+        newSportsmanship
+        returns (uint256)
+    {
         uint256 _team_id = team_id_counter + 1;
 
         team_owner[_team_id] = payable(msg.sender);
@@ -112,7 +133,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
 
         teamMembers[_team_id].push(msg.sender);
 
-        emit TeamCreated(_team_id);
+        emit TeamCreated(action_id, _team_id);
 
         //increment the team id
         team_id_counter++;
@@ -136,7 +157,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         emit ChallengePoolClosed(challenge_id);
     }
 
-    function delineChallenge(uint256 challenge_id, uint256 team_id)
+    function declineChallenge(uint256 challenge_id, uint256 team_id)
         external
         teamOwner(team_id)
         returns (bool)
@@ -147,6 +168,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     }
 
     function acceptChallenge(
+        uint256 action_id,
         uint256 challenge_id,
         uint256 team_id,
         uint256 amount
@@ -211,18 +233,20 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         emit EventCreated(
             challenge_id,
             challengePools[challenge_id].team1,
-            challengePools[challenge_id].team2
+            challengePools[challenge_id].team2,
+            action_id
         );
 
         return true;
     }
 
     function createChallengePool(
+        uint256 action_id,
         uint256 team_id,
         uint256 challenged_team_id,
         uint256 amount
     )
-        public
+        external
         payable
         newSportsmanship
         teamOwner(team_id)
@@ -249,6 +273,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
 
         // create challenge pool
         challengePools[challenge_id] = ChallengePool(
+            action_id,
             team_id,
             challenged_team_id,
             amount,
@@ -274,6 +299,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         new_challenge_id += 1;
 
         emit ChallengePoolCreated(
+            action_id,
             challenge_id,
             amount,
             team_id,
@@ -290,20 +316,19 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         return sportsVybeToken.allowance(msg.sender, address(this));
     }
 
-    function sendTeamMembershipRequest(uint256 team_id, address user)
-        external
-        newSportsmanship
-        teamOwner(team_id)
-        returns (bool)
-    {
+    function sendTeamMembershipRequest(
+        uint256 action_id,
+        uint256 team_id,
+        address user
+    ) external newSportsmanship teamOwner(team_id) returns (bool) {
         // TODO: revert sending an invite to self
 
         team_membership_request[team_id].push(TeamMate(user));
-        emit MembershipRequestSent(team_id);
+        emit MembershipRequestSent(action_id, team_id, user, msg.sender);
         return true;
     }
 
-    function acceptMembershipTeamRequest(uint256 team_id)
+    function acceptMembershipTeamRequest(uint256 action_id, uint256 team_id)
         public
         newSportsmanship
         returns (bool)
@@ -326,7 +351,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         teamCount[team_id] = teamCount[team_id] + 1;
         team_sportsmanship[team_id] = team_sportsmanship[team_id] + 100;
 
-        emit NewTeamMate(team_id, msg.sender);
+        emit NewTeamMate(action_id, team_id, msg.sender);
         return true;
     }
 
@@ -391,7 +416,11 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         return isDup;
     }
 
-    function increaseVoteFor(uint256 challenge_id, uint256 team_id) public {
+    function increaseVoteFor(
+        uint256 action_id,
+        uint256 challenge_id,
+        uint256 team_id
+    ) public {
         // complete: Close vote when challenge is closed
         if (challengePools[challenge_id].isClosed) {
             revert ChallengeClosed(challenge_id);
@@ -419,7 +448,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         // add votes to ChallengeVote[]
         votes[msg.sender].push(ChallengeVote(challenge_id));
 
-        emit VoteSubmit(msg.sender, challenge_id, team_id);
+        emit VoteSubmit(action_id, msg.sender, challenge_id, team_id);
 
         // if
         if (

@@ -30,25 +30,25 @@ import type {
 
 export interface SportsVybeInterface extends utils.Interface {
   functions: {
-    "acceptChallenge(uint256,uint256,uint256)": FunctionFragment;
-    "acceptMembershipTeamRequest(uint256)": FunctionFragment;
+    "acceptChallenge(uint256,uint256,uint256,uint256)": FunctionFragment;
+    "acceptMembershipTeamRequest(uint256,uint256)": FunctionFragment;
     "challengePools(uint256)": FunctionFragment;
     "checkUpkeep(bytes)": FunctionFragment;
-    "createChallengePool(uint256,uint256,uint256)": FunctionFragment;
-    "createTeam()": FunctionFragment;
-    "delineChallenge(uint256,uint256)": FunctionFragment;
+    "createChallengePool(uint256,uint256,uint256,uint256)": FunctionFragment;
+    "createTeam(uint256)": FunctionFragment;
+    "declineChallenge(uint256,uint256)": FunctionFragment;
     "getChallengePoolTeamMembers(uint256)": FunctionFragment;
     "getSVTAllowance()": FunctionFragment;
     "getSVTBalance()": FunctionFragment;
     "getTeamCount(uint256)": FunctionFragment;
     "getTeamMates(uint256)": FunctionFragment;
     "getTeamSportsmanship(uint256)": FunctionFragment;
-    "increaseVoteFor(uint256,uint256)": FunctionFragment;
+    "increaseVoteFor(uint256,uint256,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "pending_challenge_pool_ids(uint256)": FunctionFragment;
     "performUpkeep(bytes)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "sendTeamMembershipRequest(uint256,address)": FunctionFragment;
+    "sendTeamMembershipRequest(uint256,uint256,address)": FunctionFragment;
     "sportsVybeToken()": FunctionFragment;
     "sportsmanship(address)": FunctionFragment;
     "team_membership_request(uint256,uint256)": FunctionFragment;
@@ -65,7 +65,7 @@ export interface SportsVybeInterface extends utils.Interface {
       | "checkUpkeep"
       | "createChallengePool"
       | "createTeam"
-      | "delineChallenge"
+      | "declineChallenge"
       | "getChallengePoolTeamMembers"
       | "getSVTAllowance"
       | "getSVTBalance"
@@ -91,12 +91,13 @@ export interface SportsVybeInterface extends utils.Interface {
     values: [
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "acceptMembershipTeamRequest",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "challengePools",
@@ -111,15 +112,16 @@ export interface SportsVybeInterface extends utils.Interface {
     values: [
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "createTeam",
-    values?: undefined
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "delineChallenge",
+    functionFragment: "declineChallenge",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -148,7 +150,11 @@ export interface SportsVybeInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "increaseVoteFor",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -165,7 +171,11 @@ export interface SportsVybeInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "sendTeamMembershipRequest",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "sportsVybeToken",
@@ -214,7 +224,7 @@ export interface SportsVybeInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "createTeam", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "delineChallenge",
+    functionFragment: "declineChallenge",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -283,16 +293,16 @@ export interface SportsVybeInterface extends utils.Interface {
 
   events: {
     "ChallengePoolClosed(uint256)": EventFragment;
-    "ChallengePoolCreated(uint256,uint256,uint256,uint256)": EventFragment;
+    "ChallengePoolCreated(uint256,uint256,uint256,uint256,uint256)": EventFragment;
     "DidNotShowUp(uint256,uint256)": EventFragment;
-    "EventCreated(uint256,uint256,uint256)": EventFragment;
+    "EventCreated(uint256,uint256,uint256,uint256)": EventFragment;
     "Lose(uint256,uint256)": EventFragment;
-    "MembershipRequestSent(uint256)": EventFragment;
-    "NewTeamMate(uint256,address)": EventFragment;
+    "MembershipRequestSent(uint256,uint256,address,address)": EventFragment;
+    "NewTeamMate(uint256,uint256,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
-    "TeamCreated(uint256)": EventFragment;
+    "TeamCreated(uint256,uint256)": EventFragment;
     "Tie(uint256,uint256,uint256)": EventFragment;
-    "VoteSubmit(address,uint256,uint256)": EventFragment;
+    "VoteSubmit(uint256,address,uint256,uint256)": EventFragment;
     "Win(uint256,uint256)": EventFragment;
   };
 
@@ -322,13 +332,14 @@ export type ChallengePoolClosedEventFilter =
   TypedEventFilter<ChallengePoolClosedEvent>;
 
 export interface ChallengePoolCreatedEventObject {
+  action_id: BigNumber;
   challenge_id: BigNumber;
   amount: BigNumber;
   team_id: BigNumber;
   challenged_team_id: BigNumber;
 }
 export type ChallengePoolCreatedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber],
+  [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
   ChallengePoolCreatedEventObject
 >;
 
@@ -350,9 +361,10 @@ export interface EventCreatedEventObject {
   challenge_id: BigNumber;
   team1: BigNumber;
   team2: BigNumber;
+  action_id: BigNumber;
 }
 export type EventCreatedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber],
+  [BigNumber, BigNumber, BigNumber, BigNumber],
   EventCreatedEventObject
 >;
 
@@ -367,10 +379,13 @@ export type LoseEvent = TypedEvent<[BigNumber, BigNumber], LoseEventObject>;
 export type LoseEventFilter = TypedEventFilter<LoseEvent>;
 
 export interface MembershipRequestSentEventObject {
+  action_id: BigNumber;
   team_id: BigNumber;
+  requested: string;
+  requester: string;
 }
 export type MembershipRequestSentEvent = TypedEvent<
-  [BigNumber],
+  [BigNumber, BigNumber, string, string],
   MembershipRequestSentEventObject
 >;
 
@@ -378,11 +393,12 @@ export type MembershipRequestSentEventFilter =
   TypedEventFilter<MembershipRequestSentEvent>;
 
 export interface NewTeamMateEventObject {
+  action_id: BigNumber;
   team_id: BigNumber;
   user: string;
 }
 export type NewTeamMateEvent = TypedEvent<
-  [BigNumber, string],
+  [BigNumber, BigNumber, string],
   NewTeamMateEventObject
 >;
 
@@ -401,9 +417,13 @@ export type OwnershipTransferredEventFilter =
   TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface TeamCreatedEventObject {
+  action_id: BigNumber;
   team_id: BigNumber;
 }
-export type TeamCreatedEvent = TypedEvent<[BigNumber], TeamCreatedEventObject>;
+export type TeamCreatedEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  TeamCreatedEventObject
+>;
 
 export type TeamCreatedEventFilter = TypedEventFilter<TeamCreatedEvent>;
 
@@ -420,12 +440,13 @@ export type TieEvent = TypedEvent<
 export type TieEventFilter = TypedEventFilter<TieEvent>;
 
 export interface VoteSubmitEventObject {
+  action_id: BigNumber;
   user: string;
   challenge_id: BigNumber;
   team_id: BigNumber;
 }
 export type VoteSubmitEvent = TypedEvent<
-  [string, BigNumber, BigNumber],
+  [BigNumber, string, BigNumber, BigNumber],
   VoteSubmitEventObject
 >;
 
@@ -467,6 +488,7 @@ export interface SportsVybe extends BaseContract {
 
   functions: {
     acceptChallenge(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       amount: PromiseOrValue<BigNumberish>,
@@ -474,6 +496,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<ContractTransaction>;
 
     acceptMembershipTeamRequest(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -486,6 +509,7 @@ export interface SportsVybe extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
+        BigNumber,
         boolean,
         boolean,
         boolean,
@@ -494,6 +518,7 @@ export interface SportsVybe extends BaseContract {
         BigNumber,
         BigNumber
       ] & {
+        action_id: BigNumber;
         team1: BigNumber;
         team2: BigNumber;
         amount: BigNumber;
@@ -515,6 +540,7 @@ export interface SportsVybe extends BaseContract {
     >;
 
     createChallengePool(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       challenged_team_id: PromiseOrValue<BigNumberish>,
       amount: PromiseOrValue<BigNumberish>,
@@ -522,10 +548,11 @@ export interface SportsVybe extends BaseContract {
     ): Promise<ContractTransaction>;
 
     createTeam(
+      action_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    delineChallenge(
+    declineChallenge(
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -556,6 +583,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<[BigNumber]>;
 
     increaseVoteFor(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -578,6 +606,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<ContractTransaction>;
 
     sendTeamMembershipRequest(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       user: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -614,6 +643,7 @@ export interface SportsVybe extends BaseContract {
   };
 
   acceptChallenge(
+    action_id: PromiseOrValue<BigNumberish>,
     challenge_id: PromiseOrValue<BigNumberish>,
     team_id: PromiseOrValue<BigNumberish>,
     amount: PromiseOrValue<BigNumberish>,
@@ -621,6 +651,7 @@ export interface SportsVybe extends BaseContract {
   ): Promise<ContractTransaction>;
 
   acceptMembershipTeamRequest(
+    action_id: PromiseOrValue<BigNumberish>,
     team_id: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -633,6 +664,7 @@ export interface SportsVybe extends BaseContract {
       BigNumber,
       BigNumber,
       BigNumber,
+      BigNumber,
       boolean,
       boolean,
       boolean,
@@ -641,6 +673,7 @@ export interface SportsVybe extends BaseContract {
       BigNumber,
       BigNumber
     ] & {
+      action_id: BigNumber;
       team1: BigNumber;
       team2: BigNumber;
       amount: BigNumber;
@@ -662,6 +695,7 @@ export interface SportsVybe extends BaseContract {
   >;
 
   createChallengePool(
+    action_id: PromiseOrValue<BigNumberish>,
     team_id: PromiseOrValue<BigNumberish>,
     challenged_team_id: PromiseOrValue<BigNumberish>,
     amount: PromiseOrValue<BigNumberish>,
@@ -669,10 +703,11 @@ export interface SportsVybe extends BaseContract {
   ): Promise<ContractTransaction>;
 
   createTeam(
+    action_id: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  delineChallenge(
+  declineChallenge(
     challenge_id: PromiseOrValue<BigNumberish>,
     team_id: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -703,6 +738,7 @@ export interface SportsVybe extends BaseContract {
   ): Promise<BigNumber>;
 
   increaseVoteFor(
+    action_id: PromiseOrValue<BigNumberish>,
     challenge_id: PromiseOrValue<BigNumberish>,
     team_id: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -725,6 +761,7 @@ export interface SportsVybe extends BaseContract {
   ): Promise<ContractTransaction>;
 
   sendTeamMembershipRequest(
+    action_id: PromiseOrValue<BigNumberish>,
     team_id: PromiseOrValue<BigNumberish>,
     user: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -761,6 +798,7 @@ export interface SportsVybe extends BaseContract {
 
   callStatic: {
     acceptChallenge(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       amount: PromiseOrValue<BigNumberish>,
@@ -768,6 +806,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<boolean>;
 
     acceptMembershipTeamRequest(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -780,6 +819,7 @@ export interface SportsVybe extends BaseContract {
         BigNumber,
         BigNumber,
         BigNumber,
+        BigNumber,
         boolean,
         boolean,
         boolean,
@@ -788,6 +828,7 @@ export interface SportsVybe extends BaseContract {
         BigNumber,
         BigNumber
       ] & {
+        action_id: BigNumber;
         team1: BigNumber;
         team2: BigNumber;
         amount: BigNumber;
@@ -809,15 +850,19 @@ export interface SportsVybe extends BaseContract {
     >;
 
     createChallengePool(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       challenged_team_id: PromiseOrValue<BigNumberish>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    createTeam(overrides?: CallOverrides): Promise<BigNumber>;
+    createTeam(
+      action_id: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    delineChallenge(
+    declineChallenge(
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -848,6 +893,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<BigNumber>;
 
     increaseVoteFor(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -868,6 +914,7 @@ export interface SportsVybe extends BaseContract {
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     sendTeamMembershipRequest(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       user: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -909,13 +956,15 @@ export interface SportsVybe extends BaseContract {
     ): ChallengePoolClosedEventFilter;
     ChallengePoolClosed(challenge_id?: null): ChallengePoolClosedEventFilter;
 
-    "ChallengePoolCreated(uint256,uint256,uint256,uint256)"(
+    "ChallengePoolCreated(uint256,uint256,uint256,uint256,uint256)"(
+      action_id?: null,
       challenge_id?: null,
       amount?: null,
       team_id?: null,
       challenged_team_id?: null
     ): ChallengePoolCreatedEventFilter;
     ChallengePoolCreated(
+      action_id?: null,
       challenge_id?: null,
       amount?: null,
       team_id?: null,
@@ -928,15 +977,17 @@ export interface SportsVybe extends BaseContract {
     ): DidNotShowUpEventFilter;
     DidNotShowUp(challenge_id?: null, team_id?: null): DidNotShowUpEventFilter;
 
-    "EventCreated(uint256,uint256,uint256)"(
+    "EventCreated(uint256,uint256,uint256,uint256)"(
       challenge_id?: null,
       team1?: null,
-      team2?: null
+      team2?: null,
+      action_id?: null
     ): EventCreatedEventFilter;
     EventCreated(
       challenge_id?: null,
       team1?: null,
-      team2?: null
+      team2?: null,
+      action_id?: null
     ): EventCreatedEventFilter;
 
     "Lose(uint256,uint256)"(
@@ -945,16 +996,29 @@ export interface SportsVybe extends BaseContract {
     ): LoseEventFilter;
     Lose(challenge_id?: null, team_id?: null): LoseEventFilter;
 
-    "MembershipRequestSent(uint256)"(
-      team_id?: null
+    "MembershipRequestSent(uint256,uint256,address,address)"(
+      action_id?: null,
+      team_id?: null,
+      requested?: null,
+      requester?: null
     ): MembershipRequestSentEventFilter;
-    MembershipRequestSent(team_id?: null): MembershipRequestSentEventFilter;
+    MembershipRequestSent(
+      action_id?: null,
+      team_id?: null,
+      requested?: null,
+      requester?: null
+    ): MembershipRequestSentEventFilter;
 
-    "NewTeamMate(uint256,address)"(
+    "NewTeamMate(uint256,uint256,address)"(
+      action_id?: null,
       team_id?: null,
       user?: null
     ): NewTeamMateEventFilter;
-    NewTeamMate(team_id?: null, user?: null): NewTeamMateEventFilter;
+    NewTeamMate(
+      action_id?: null,
+      team_id?: null,
+      user?: null
+    ): NewTeamMateEventFilter;
 
     "OwnershipTransferred(address,address)"(
       previousOwner?: PromiseOrValue<string> | null,
@@ -965,8 +1029,11 @@ export interface SportsVybe extends BaseContract {
       newOwner?: PromiseOrValue<string> | null
     ): OwnershipTransferredEventFilter;
 
-    "TeamCreated(uint256)"(team_id?: null): TeamCreatedEventFilter;
-    TeamCreated(team_id?: null): TeamCreatedEventFilter;
+    "TeamCreated(uint256,uint256)"(
+      action_id?: null,
+      team_id?: null
+    ): TeamCreatedEventFilter;
+    TeamCreated(action_id?: null, team_id?: null): TeamCreatedEventFilter;
 
     "Tie(uint256,uint256,uint256)"(
       challenge_id?: null,
@@ -975,12 +1042,14 @@ export interface SportsVybe extends BaseContract {
     ): TieEventFilter;
     Tie(challenge_id?: null, team1_id?: null, team2_id?: null): TieEventFilter;
 
-    "VoteSubmit(address,uint256,uint256)"(
+    "VoteSubmit(uint256,address,uint256,uint256)"(
+      action_id?: null,
       user?: null,
       challenge_id?: null,
       team_id?: null
     ): VoteSubmitEventFilter;
     VoteSubmit(
+      action_id?: null,
       user?: null,
       challenge_id?: null,
       team_id?: null
@@ -992,6 +1061,7 @@ export interface SportsVybe extends BaseContract {
 
   estimateGas: {
     acceptChallenge(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       amount: PromiseOrValue<BigNumberish>,
@@ -999,6 +1069,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<BigNumber>;
 
     acceptMembershipTeamRequest(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -1014,6 +1085,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<BigNumber>;
 
     createChallengePool(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       challenged_team_id: PromiseOrValue<BigNumberish>,
       amount: PromiseOrValue<BigNumberish>,
@@ -1021,10 +1093,11 @@ export interface SportsVybe extends BaseContract {
     ): Promise<BigNumber>;
 
     createTeam(
+      action_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    delineChallenge(
+    declineChallenge(
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1055,6 +1128,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<BigNumber>;
 
     increaseVoteFor(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1077,6 +1151,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<BigNumber>;
 
     sendTeamMembershipRequest(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       user: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1114,6 +1189,7 @@ export interface SportsVybe extends BaseContract {
 
   populateTransaction: {
     acceptChallenge(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       amount: PromiseOrValue<BigNumberish>,
@@ -1121,6 +1197,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     acceptMembershipTeamRequest(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
@@ -1136,6 +1213,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     createChallengePool(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       challenged_team_id: PromiseOrValue<BigNumberish>,
       amount: PromiseOrValue<BigNumberish>,
@@ -1143,10 +1221,11 @@ export interface SportsVybe extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     createTeam(
+      action_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    delineChallenge(
+    declineChallenge(
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1177,6 +1256,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     increaseVoteFor(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1199,6 +1279,7 @@ export interface SportsVybe extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     sendTeamMembershipRequest(
+      action_id: PromiseOrValue<BigNumberish>,
       team_id: PromiseOrValue<BigNumberish>,
       user: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
