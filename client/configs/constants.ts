@@ -28,3 +28,13 @@ export const sports = [
   "Soccer",
   "Tennis",
 ];
+
+export const contractActions = {
+  createTeam: "8pqCcbykXWKW7FyL0ekBOJCs",
+  declineChallenge: "0tcW8cprsTMITU9XzqBc6ELC",
+  acceptChallenge: "qB81fzCHGrqEyJkjtGmKZsY3",
+  createChallenge: "GOSgDsYXiVBMJHVkj18hDcWS",
+  sendTeamMembershipRequest: "ehpzbsiTMHAVvpQ6r8GD4YJJ",
+  acceptTeamMembershipRequest: "Sr8hnZFFo4VcPkiMOqSO9xQt",
+  submitVote: "2zlFECNrF2dEo3GQGBpvNEWj",
+};

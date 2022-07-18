@@ -12,22 +12,28 @@ const ethereum = typeof window !== "undefined" && (window as any).ethereum;
 const defaultState = {
   isContractLoading: false,
   setIsContractLoading: {},
-  contractMessage: { statusColor: "", message: "" } as any,
+  contractMessage: { status: "", message: "" } as any,
   setContractMessage: {} as any,
-  createTeam: async () => {
+  createTeam: async (actionId: string) => {
     return false;
   },
   createChallenge: async (
+    actionId: string,
     userTeamId: string,
     challengeTeamId: string,
     challengeAmount: string
-  ) => {},
+  ) => {
+    return false;
+  },
   approveAmount: async (challengeAmount: string) => {},
   acceptChallenge: async (
+    actionId: string,
     challengeId: string,
     challengeTeam2Id: string,
     challengeAmount: string
-  ) => {},
+  ) => {
+    return false;
+  },
 };
 
 const ContractContext = createContext(defaultState);
@@ -53,95 +59,94 @@ const ContractProvider = ({ children }: { children: any }) => {
     setIsContractLoading(true);
     try {
       const contract = await getTokenContract();
-      console.log(contract);
       const challengeAmountWei = ethers.utils.parseEther(challengeAmount);
 
-      contract.approve(contractAddress, challengeAmountWei);
+      const approve = await contract.approve(
+        contractAddress,
+        challengeAmountWei
+      );
 
+      if (approve) {
+        setContractMessage({
+          status: "success",
+          message: `Approved ${challengeAmount} SVT`,
+        });
+        setIsContractLoading(false);
+      }
+      return true;
+    } catch (error) {
+      setIsContractLoading(false);
+      if (error instanceof Error)
+        setContractMessage({ status: "error", message: error.message });
+      console.error(error);
+      return false;
+    }
+  };
+
+  const createTeam = async (actionId: string): Promise<any> => {
+    setIsContractLoading(true);
+    try {
+      const contract = await getContract();
+      await contract.functions.createTeam(actionId); // create team transaction
       setContractMessage({
-        statusColor: "green",
-        message: `${challengeAmountWei}SVT Approved for spending`,
+        status: "info",
+        message: "Team is being created on chain.",
       });
       setIsContractLoading(false);
       return true;
     } catch (error) {
       setIsContractLoading(false);
-      if (error instanceof Error)
-        setContractMessage({ statusColor: "red", message: error.message });
-      console.log(error);
-      return false;
-    }
-  };
-
-  const createTeam = async (): Promise<any> => {
-    setIsContractLoading(true);
-    try {
-      const contract = await getContract();
-
-      const teamId = contract.functions
-        .createTeam() // create team transaction
-        .then((tx) => tx.wait()) // wait for transaction to be mined
-        .then((tx) => {
-          setIsContractLoading(false);
-          setContractMessage({
-            statusColor: "green",
-            message: "Successfully created team on chain!",
-          });
-          return tx.events[0].args[0].toString(); // return teamId as string
-        });
-      return teamId;
-    } catch (error) {
-      setIsContractLoading(false);
-      if (error instanceof Error)
-        setContractMessage({ statusColor: "red", message: error.message });
-      console.log(error);
+      if (error instanceof Error) {
+        setContractMessage({ status: "error", message: error.message });
+      } else {
+        setContractMessage({ status: "error", message: "Unknown" });
+      }
+      console.error(error);
       return false;
     }
   };
 
   const createChallenge = async (
+    actionId: string,
     userTeamId: string,
     challengeTeamId: string,
     challengeAmount: string
   ) => {
     setIsContractLoading(true);
-
     try {
       const challengeAmountWei = ethers.utils.parseEther(challengeAmount);
 
       // create challenge transaction
       const contract = await getContract();
-
-      const challengeId = contract.functions
-        .createChallengePool(userTeamId, challengeTeamId, challengeAmountWei, {
-          gasLimit: 3500000,
-        })
-        .then((tx) => tx.wait()) // wait for transaction to be mined
-        .then((tx) => {
-          setIsContractLoading(false);
-          setContractMessage({
-            statusColor: "green",
-            message: "Successfully created challenge on chain!",
-          });
-          return tx.events[1].args.challenge_id.toString(); // return challengeId as string
-        })
-        .catch((error) => {
-          setIsContractLoading(false);
-          setContractMessage({ statusColor: "red", message: error.message });
-          console.error(error);
-          return false;
-        });
-      return challengeId;
+      await contract.functions.createChallengePool(
+        actionId,
+        userTeamId,
+        challengeTeamId,
+        challengeAmountWei,
+        {
+          gasLimit: 6000000,
+        }
+      );
+      setContractMessage({
+        status: "info",
+        message: "Challenge is being created on chain.",
+      });
+      setIsContractLoading(false);
+      return true;
     } catch (error) {
       setIsContractLoading(false);
-      if (error instanceof Error)
-        setContractMessage({ statusColor: "red", message: error.message });
+      if (error instanceof Error) {
+        setContractMessage({ status: "error", message: error.message });
+      } else {
+        setContractMessage({ status: "error", message: "Unknown" });
+      }
       console.error(error);
       return false;
     }
   };
 
   const acceptChallenge = async (
+    actionId: string,
     challengeId: string,
     challengeTeam2Id: string,
     challengeAmount: string
@@ -153,33 +158,28 @@ const ContractProvider = ({ children }: { children: any }) => {
 
       // create challenge transaction
       const contract = await getContract();
-
-      const challengeAccepted = contract.functions
-        .acceptChallenge(challengeId, challengeTeam2Id, {
+      await contract.functions.acceptChallenge(
+        actionId,
+        challengeId,
+        challengeTeam2Id,
+        {
           value: challengeAmountWei,
           gasLimit: 3500000,
-        })
-        .then((tx) => tx.wait()) // wait for transaction to be mined
-        .then((tx) => {
-          console.log(tx);
-          setIsContractLoading(false);
-          setContractMessage({
-            statusColor: "green",
-            message: "Successfully created challenge on chain!",
-          });
-          return tx.events[1].args.challenge_id.toString(); // return challengeId as string
-        })
-        .catch((error) => {
-          setIsContractLoading(false);
-          setContractMessage({ statusColor: "red", message: error.message });
-          console.error(error);
-          return false;
-        });
-      return challengeAccepted;
+        }
+      );
+      setContractMessage({
+        status: "info",
+        message: "Challenge is being created on chain.",
+      });
+      setIsContractLoading(false);
+      return true;
     } catch (error) {
       setIsContractLoading(false);
-      if (error instanceof Error)
-        setContractMessage({ statusColor: "red", message: error.message });
+      if (error instanceof Error) {
+        setContractMessage({ status: "error", message: error.message });
+      } else {
+        setContractMessage({ status: "error", message: "Unknown" });
+      }
       console.error(error);
       return false;
     }

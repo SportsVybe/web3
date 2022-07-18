@@ -5,6 +5,7 @@ import { MoralisProvider } from "react-moralis";
 import Layout from "../components/Layout/Layout";
 import { moralis } from "../configs/configs";
 import { ContractProvider } from "../context/ContractProvider";
+import { CustomMoralisProvider } from "../context/CustomMoralisProvider";
 import { WalletProvider } from "../context/WalletProvider";
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -13,13 +14,15 @@ function MyApp({ Component, pageProps }: AppProps) {
       appId={moralis.MORALIS_APP_ID}
       serverUrl={moralis.MORALIS_SERVER_URL}
     >
-      <WalletProvider>
-        <ContractProvider>
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
-        </ContractProvider>
-      </WalletProvider>
+      <CustomMoralisProvider>
+        <WalletProvider>
+          <ContractProvider>
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          </ContractProvider>
+        </WalletProvider>
+      </CustomMoralisProvider>
     </MoralisProvider>
   );
 }
