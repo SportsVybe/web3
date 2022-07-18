@@ -64,43 +64,45 @@ export const ManageTeam = ({
   };
 
   const handleSubmit = async (e: any) => {
-    // create team username
-    const teamUsername = teamName.split(" ").join("-").toLowerCase();
+    if (isFormValid()) {
+      // create team username
+      const teamUsername = teamName.split(" ").join("-").toLowerCase();
 
-    try {
-      if (createNewTeam) {
-        teamFormData.teamUsername = teamUsername;
+      try {
+        if (createNewTeam) {
+          teamFormData.teamUsername = teamUsername;
 
-        // create team on chain
-        const action = await createUserAction(contractActions.createTeam);
-        const actionId = action.id;
-        teamFormData.actionId = action;
-        const createTeamOnChain = await createTeam(actionId);
+          // create team on chain
+          const action = await createUserAction(contractActions.createTeam);
+          const actionId = action.id;
+          teamFormData.actionId = action;
+          const createTeamOnChain = await createTeam(actionId);
 
-        // create new team to database...
-        if (!isContractLoading || createTeamOnChain)
-          await getTeamsDB.save(teamFormData);
-        if (getTeamsDB.error) console.log(getTeamsDB.error.message);
-      }
-
-      // update team in database
-      if (teamObject && !createNewTeam) {
-        if (file) {
-          const fileUpload = await saveFile(teamUsername, file);
-          teamFormData.teamPhoto = fileUpload?._url;
+          // create new team to database...
+          if (!isContractLoading && createTeamOnChain)
+            await getTeamsDB.save(teamFormData);
+          if (getTeamsDB.error) console.log(getTeamsDB.error.message);
         }
-        teamFormData.id = teamObject.id;
-        await teamObject.save(teamFormData);
-      }
 
-      // reload page after saving
-      if (
-        (!getTeamsDB.isSaving && !isContractLoading && !contractMessage) ||
-        !teamObject.isSaving
-      )
-        router.reload();
-    } catch (error) {
-      console.error(error);
+        // update team in database
+        if (teamObject && !createNewTeam) {
+          if (file) {
+            const fileUpload = await saveFile(teamUsername, file);
+            teamFormData.teamPhoto = fileUpload?._url;
+          }
+          teamFormData.id = teamObject.id;
+          await teamObject.save(teamFormData);
+        }
+
+        // reload page after saving
+        if (
+          (!getTeamsDB.isSaving && !isContractLoading && !contractMessage) ||
+          (teamObject && !teamObject.isSaving)
+        )
+          router.reload();
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
@@ -118,6 +120,17 @@ export const ManageTeam = ({
     setFile(e.target.files[0]);
   };
 
+  const isFormValid = () => {
+    if (
+      !teamName ||
+      (!createNewTeam && (!teamDescription || !teamSportsPreferences.length))
+    ) {
+      alert("Please fill out required fields.");
+      return false;
+    }
+    return true;
+  };
+
   return (
     <Modal open={modalView} onClose={async () => toggleModal(false)}>
       <div className="flex flex-col border-2 border-green-100 p-4 items-center">
@@ -132,16 +145,16 @@ export const ManageTeam = ({
             <div className="flex flex-row w-full">
               <div className="w-1/2 p-2">
                 <span className="h-[60px] my-1 flex justify-end items-center">
-                  Team Name:
+                  Team Name*:
                 </span>
                 {!createNewTeam && (
                   <>
                     <span className="h-[60px] my-1 flex justify-end items-center">
-                      Description:
+                      Description*:
                     </span>
 
                     <span className="h-[120px] my-1 flex justify-end items-center">
-                      Sports Preferences:
+                      Sports Preferences*:
                     </span>
 
                     <span className="h-[60px] my-1 flex justify-end items-center">
@@ -208,19 +221,21 @@ export const ManageTeam = ({
                     <label className="mx-3">
                       {isTeamActive ? "Active" : "Inactive"}
                     </label>
-                    <div
-                      className="md:w-14 md:h-7 w-12 h-6 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer"
-                      onClick={() => {
-                        setIsTeamActive(!isTeamActive);
-                      }}
-                    >
+                    {team.teamChainId && (
                       <div
-                        className={
-                          "bg-white md:w-6 md:h-6 h-5 w-5 rounded-full shadow-md transform" +
-                          (isTeamActive ? toggleClass : null)
-                        }
-                      ></div>
-                    </div>
+                        className={`md:w-14 md:h-7 w-12 h-6 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer`}
+                        onClick={() => {
+                          setIsTeamActive(!isTeamActive);
+                        }}
+                      >
+                        <div
+                          className={
+                            "bg-white md:w-6 md:h-6 h-5 w-5 rounded-full shadow-md transform" +
+                            (isTeamActive ? toggleClass : null)
+                          }
+                        ></div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </>
