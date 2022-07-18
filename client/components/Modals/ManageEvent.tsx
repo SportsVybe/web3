@@ -15,6 +15,7 @@ type Props = {
 import DatePicker from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
+import AuthorizeButton from "../Buttons/AuthorizeButton";
 
 export const ManageEvent = ({
   event = false,
@@ -83,11 +84,6 @@ export const ManageEvent = ({
       (sport: string, index: number) => index !== i
     );
     setTeamSportsPreferences(newPreferences);
-  };
-
-  const handleTokenApproval = async () => {
-    //console.log("Allow to spend, "+ eventPrizePool);
-    await approveAmount(eventPrizePool);
   };
 
   return (
@@ -171,12 +167,7 @@ export const ManageEvent = ({
           <span className="text-bold">VYBES</span>
         </div>
 
-        <button
-          className="my-3 px-2 py-1 bg-red-600 text-white rounded-full"
-          onClick={() => handleTokenApproval()}
-        >
-          Allow the SportVybes Protocol to use your VYBES Token
-        </button>
+        <AuthorizeButton amount={Number(eventPrizePool)} />
 
         <button
           className="my-3 px-2 py-1 bg-green-300 rounded-full"

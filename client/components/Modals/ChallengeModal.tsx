@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useMoralisQuery, useNewMoralisObject } from "react-moralis";
 import { useContract } from "../../context/ContractProvider";
+import AuthorizeButton from "../Buttons/AuthorizeButton";
 import Modal from "../Layout/Modal";
 import { Toast } from "../Layout/Toast";
 
@@ -31,7 +32,6 @@ export const ManageChallenge = ({
   const getChallengesDB = useNewMoralisObject("challenges");
   const { createChallenge, isContractLoading, contractMessage } = useContract();
   const router = useRouter();
-
   const [userTeams, setUserTeams] = useState([]);
 
   const [challengeSports, setChallengeSports] = useState(
@@ -204,6 +204,7 @@ export const ManageChallenge = ({
                     className="m-2 px-2 py-1 rounded bg-gray-300"
                     onChange={(e) => setChallengeAmount(e.target.value)}
                     type="number"
+                    min={0}
                   />
                 </span>
                 <span className="h-[60px] my-1 flex justify-start items-center">
@@ -238,6 +239,8 @@ export const ManageChallenge = ({
               </div>
             </div>
 
+            <AuthorizeButton amount={challengeAmount} />
+
             <button
               disabled={isContractLoading}
               className="my-3 px-2 py-1 bg-green-300 rounded-full disabled:bg-slate-300"
@@ -247,7 +250,7 @@ export const ManageChallenge = ({
               {createNewChallenge ? "Create Challenge" : "Update Challenge"}
             </button>
             {contractMessage && !isContractLoading && (
-              <Toast type={contractMessage.statusColor}>
+              <Toast type={contractMessage.status}>
                 {contractMessage.message}
               </Toast>
             )}

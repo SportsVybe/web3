@@ -199,9 +199,7 @@ export const ChallengeCard = ({ challenge, type, isAuthenticated }: Props) => {
         )}
       </div>
       {contractMessage && !isContractLoading && (
-        <Toast type={contractMessage.statusColor}>
-          {contractMessage.message}
-        </Toast>
+        <Toast type={contractMessage.status}>{contractMessage.message}</Toast>
       )}
 
       <ManageEvent

@@ -18,6 +18,21 @@ export const Toast = ({
 
   const { setContractMessage } = useContract();
 
+  const getColor = (type: string) => {
+    switch (type) {
+      case "success":
+        return "bg-green-100 border-green-500 text-green-700";
+      case "error":
+        return "bg-red-100 border-red-500 text-red-700";
+      case "warning":
+        return "bg-orange-100 border-orange-500 text-orange-700";
+      case "info":
+        return "bg-blue-100 border-blue-500 text-blue-700";
+      default:
+        return "bg-red-100 border-red-500 text-red-700";
+    }
+  };
+
   useEffect(() => {
     setTimeout(() => {
       setIsOpen(false);
@@ -27,7 +42,8 @@ export const Toast = ({
 
   return (
     <div
-      className={`fixed top-0 right-0 m-4 p-4 bg-${type}-300 rounded-lg shadow-lg`}
+      className={`fixed top-0 right-0 m-4 p-4 border-l-4 rounded-lg 
+      shadow-lg ${getColor(type)}`}
       style={{
         display: isOpen ? "block" : "none",
       }}
