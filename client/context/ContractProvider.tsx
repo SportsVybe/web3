@@ -124,7 +124,7 @@ const ContractProvider = ({ children }: { children: any }) => {
         challengeTeamId,
         challengeAmountWei,
         {
-          gasLimit: 6000000,
+          gasLimit: 3500000,
         }
       );
       setContractMessage({
@@ -162,14 +162,14 @@ const ContractProvider = ({ children }: { children: any }) => {
         actionId,
         challengeId,
         challengeTeam2Id,
+        challengeAmountWei,
         {
-          value: challengeAmountWei,
           gasLimit: 3500000,
         }
       );
       setContractMessage({
         status: "info",
-        message: "Challenge is being created on chain.",
+        message: "Challenge is being accepted on chain.",
       });
       setIsContractLoading(false);
       return true;

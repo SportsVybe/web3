@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useState } from "react";
-import { useMoralisFile, useNewMoralisObject } from "react-moralis";
+import { useMoralis, useMoralisFile, useNewMoralisObject } from "react-moralis";
 import { contractActions, sports } from "../../configs/constants";
 import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
@@ -24,13 +24,12 @@ export const ManageTeam = ({
   createNewTeam = false,
   teamObject = null,
 }: Props) => {
-  const getTeamsDB = useNewMoralisObject("teams");
-  const { error, isUploading, saveFile } = useMoralisFile();
-  const { createTeam, isContractLoading, contractMessage, approveAmount } =
-    useContract();
-
-  const { createUserAction } = useCustomMoralis();
   const router = useRouter();
+  const { Moralis } = useMoralis();
+  const { saveFile } = useMoralisFile();
+  const getTeamsDB = useNewMoralisObject("teams");
+  const { createUserAction } = useCustomMoralis();
+  const { createTeam, isContractLoading, contractMessage } = useContract();
 
   const [teamName, setTeamName] = useState(team.teamName || "");
   const [teamSportsPreferences, setTeamSportsPreferences] = useState(
@@ -48,8 +47,9 @@ export const ManageTeam = ({
     id: team.id,
     teamName: teamName,
     teamSportsPreferences: teamSportsPreferences,
-    teamAdmin: team.teamAdmin || user.username || "",
+    teamOwner: team.teamOwner || Moralis.User.current() || "",
     teamMembers: team.teamMembers || [user.username] || [],
+    teamAdmin: team.teamAdmin || user.username || "",
     teamDescription: teamDescription,
     isTeamActive: isTeamActive,
     teamWins: team.teamWins || 0,

@@ -47,6 +47,7 @@ export default function ChallengesPage({
                 isAuthenticated={isAuthenticated}
                 type="created"
                 key={i}
+                challengeObject={challenge}
                 challenge={challenge.attributes}
               />
             ))}
@@ -57,6 +58,7 @@ export default function ChallengesPage({
                 isAuthenticated={isAuthenticated}
                 type="against"
                 key={i}
+                challengeObject={challenge}
                 challenge={challenge.attributes}
               />
             ))}

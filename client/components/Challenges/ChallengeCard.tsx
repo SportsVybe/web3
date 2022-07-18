@@ -1,7 +1,9 @@
 import Moralis from "moralis/types";
 import { useEffect, useState } from "react";
 import { useMoralisQuery } from "react-moralis";
+import { contractActions } from "../../configs/constants";
 import { useContract } from "../../context/ContractProvider";
+import { useCustomMoralis } from "../../context/CustomMoralisProvider";
 import { Photo } from "../Layout/Photo";
 import { Toast } from "../Layout/Toast";
 import { ManageEvent } from "../Modals/ManageEvent";
@@ -11,28 +13,46 @@ type Props = {
   challenge: any;
   type: "created" | "against";
   isAuthenticated: boolean;
+  challengeObject?: any | null;
 };
 
-export const ChallengeCard = ({ challenge, type, isAuthenticated }: Props) => {
+export const ChallengeCard = ({
+  challenge,
+  type,
+  isAuthenticated,
+  challengeObject = null,
+}: Props) => {
   const [team1, setTeam1] = useState<Moralis.Object<Moralis.Attributes>>();
   const [team2, setTeam2] = useState<Moralis.Object<Moralis.Attributes>>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [manageEventModal, toggleManageEventModal] = useState(false);
-
+  const { createUserAction } = useCustomMoralis();
   const { acceptChallenge, isContractLoading, contractMessage } = useContract();
+
+  const challengeFormData = {
+    challengerActionId: challenge.challengerActionId || "",
+  };
 
   const handleAccept = async () => {
     try {
-      // create challenge on chain
+      const action = await createUserAction(contractActions.acceptChallenge);
+      const actionId = action.id;
+      challengeFormData.challengerActionId = action;
+
+      // accept challenge on chain
       const acceptChallengeOnChain = await acceptChallenge(
+        actionId,
         challenge.challengeChainId,
         challenge.challengeTeam2,
         challenge.challengeAmount
       );
       console.log("acceptChallengeOnChain", acceptChallengeOnChain);
 
-      // update challengeStatus
+      // update challenge in database
+      if (challengeObject && acceptChallengeOnChain) {
+        await challengeObject.save(challengeFormData);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -57,9 +77,27 @@ export const ChallengeCard = ({ challenge, type, isAuthenticated }: Props) => {
   );
 
   const getChallengeStatus = () => {
-    let status = "Pending";
+    let status = "Minting on chain...";
     if (challenge.isCompleted && challenge.isClosed && challenge.isAccepted) {
       status = "Completed";
+    }
+    if (
+      !challenge.isCompleted &&
+      !challenge.isClosed &&
+      !challenge.isAccepted &&
+      challenge.challengeChainId &&
+      !challenge.challengerActionId
+    ) {
+      status = "Pending challenger approval";
+    }
+    if (
+      !challenge.isCompleted &&
+      !challenge.isClosed &&
+      !challenge.isAccepted &&
+      challenge.challengeChainId &&
+      challenge.challengerActionId
+    ) {
+      status = "Minting challenger approval...";
     }
     if (challenge.isClosed && !challenge.isCompleted) {
       status = "Closed";
@@ -100,6 +138,7 @@ export const ChallengeCard = ({ challenge, type, isAuthenticated }: Props) => {
               />
               <span>
                 {team1 && team1.attributes && team1.attributes.teamName}
+                {challenge && challenge.challengeChainId}
               </span>
               <span>
                 {team1 && team1.attributes && team1.attributes.teamPOS
@@ -168,17 +207,20 @@ export const ChallengeCard = ({ challenge, type, isAuthenticated }: Props) => {
                 Create Event
               </button>
             ) : (
-              <>
-                <button
-                  onClick={handleAccept}
-                  className="px-2 py-1 m-4 bg-green-200 rounded-full hover:bg-green-400 "
-                >
-                  Accept
-                </button>
-                <button className="px-2 py-1 m-4 bg-red-200 rounded-full">
-                  Deny
-                </button>
-              </>
+              challenge.challengeChainId &&
+              !challenge.challengerActionId && (
+                <>
+                  <button
+                    onClick={handleAccept}
+                    className="px-2 py-1 m-4 bg-green-200 rounded-full hover:bg-green-400 "
+                  >
+                    Accept
+                  </button>
+                  <button className="px-2 py-1 m-4 bg-red-200 rounded-full">
+                    Deny
+                  </button>
+                </>
+              )
             )}
 
             <a

@@ -1,7 +1,9 @@
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useMoralisQuery, useNewMoralisObject } from "react-moralis";
+import { contractActions } from "../../configs/constants";
 import { useContract } from "../../context/ContractProvider";
+import { useCustomMoralis } from "../../context/CustomMoralisProvider";
 import AuthorizeButton from "../Buttons/AuthorizeButton";
 import Modal from "../Layout/Modal";
 import { Toast } from "../Layout/Toast";
@@ -30,6 +32,7 @@ export const ManageChallenge = ({
   challengeObject = null,
 }: Props) => {
   const getChallengesDB = useNewMoralisObject("challenges");
+  const { createUserAction } = useCustomMoralis();
   const { createChallenge, isContractLoading, contractMessage } = useContract();
   const router = useRouter();
   const [userTeams, setUserTeams] = useState([]);
@@ -59,6 +62,7 @@ export const ManageChallenge = ({
     challengeTeam1Admin: user.get("username"),
     challengeTeam2Admin: challengeTeam2Admin,
     challengeChainId: challenge.challengeChainId || "",
+    actionId: challenge.actionId || "",
   };
 
   const handleSubmit = async () => {
@@ -66,23 +70,24 @@ export const ManageChallenge = ({
     if (isFormValid()) {
       try {
         if (createNewChallenge) {
+          const action = await createUserAction(
+            contractActions.createChallenge
+          );
+          const actionId = action.id;
+          challengeFormData.actionId = action;
           // create challenge on chain
           const createChallengeOnChain = await createChallenge(
+            actionId,
             challengeTeam1,
             challengeTeam2,
             challengeAmount
           );
+
           console.log("createChallengeOnChain", createChallengeOnChain);
 
-          // update challengeId from chain
-          challengeFormData.challengeChainId = createChallengeOnChain;
-
-          console.log(
-            "challenge form data with challengeChainId",
-            challengeFormData
-          );
           // create new challenge to database...
-          if (!isContractLoading) await getChallengesDB.save(challengeFormData);
+          if (!isContractLoading && createChallengeOnChain)
+            await getChallengesDB.save(challengeFormData);
           if (getChallengesDB.error) console.log(getChallengesDB.error.message);
         }
 
@@ -97,7 +102,7 @@ export const ManageChallenge = ({
           (!getChallengesDB.isSaving &&
             !isContractLoading &&
             !contractMessage) ||
-          !challengeObject.isSaving
+          (challengeObject && !challengeObject.isSaving)
         )
           router.push("/challenges");
       } catch (error) {
@@ -245,7 +250,6 @@ export const ManageChallenge = ({
               disabled={isContractLoading}
               className="my-3 px-2 py-1 bg-green-300 rounded-full disabled:bg-slate-300"
               onClick={() => handleSubmit()}
-              // onClick={() => runContractFunction()}
             >
               {createNewChallenge ? "Create Challenge" : "Update Challenge"}
             </button>
