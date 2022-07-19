@@ -55,3 +55,21 @@ Moralis.Cloud.afterSave("contractChallengeAccepted", async (request) => {
     }
   }
 });
+
+Moralis.Cloud.afterSave("tokenApprovals", async (request) => {
+  const confirmed = request.object.get("confirmed");
+  const owner = request.object.get("owner");
+  const amount = request.object.get("value");
+
+  if (confirmed) {
+    const user = await getObject("_User", "ethAddress", owner);
+    const currentAmount = user.attributes.approvedSTVAmount;
+    if (!user.attributes.hasApprovedSVT) {
+      await user.save("hasApprovedSVT", true);
+    }
+    await user.save(
+      "approvedSTVAmount",
+      Number(currentAmount) + Number(amount)
+    );
+  }
+});

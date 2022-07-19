@@ -143,7 +143,7 @@ export const ChallengeCard = ({
               <span>
                 {team1 && team1.attributes && team1.attributes.teamPOS
                   ? `${team1.attributes.teamPOS}%`
-                  : "100%"}{" "}
+                  : "100%"}
                 POS
               </span>
               <span>
@@ -167,9 +167,9 @@ export const ChallengeCard = ({
               <span>
                 {team2 && team2.attributes && team2.attributes.teamPOS
                   ? `${team2.attributes.teamPOS}%`
-                  : "100%"}{" "}
+                  : "100%"}
                 POS
-              </span>{" "}
+              </span>
               <span>
                 {team2 &&
                   team2.attributes &&
@@ -183,12 +183,10 @@ export const ChallengeCard = ({
       <div className="flex flex-col w-full p-2">
         <span> Status: {getChallengeStatus()}</span>
         <span>
-          {" "}
-          Amount: {challenge.challengeAmount} SVT{" "}
+          Amount: {challenge.challengeAmount} SVT
           <span className=" text-gray-400 italic text-xs">Est. $10(?)</span>
         </span>
         <span>
-          {" "}
           {challenge.challengeMessage && (
             <>Message: {challenge.challengeMessage}</>
           )}
@@ -245,6 +243,9 @@ export const ChallengeCard = ({
       )}
 
       <ManageEvent
+        challenge={challenge}
+        team1={team1}
+        team2={team2}
         toggleModal={toggleManageEventModal}
         modalView={manageEventModal}
         createNewEvent={true}

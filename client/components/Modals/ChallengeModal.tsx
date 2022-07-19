@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useMoralisQuery, useNewMoralisObject } from "react-moralis";
@@ -244,10 +245,15 @@ export const ManageChallenge = ({
               </div>
             </div>
 
-            <AuthorizeButton amount={challengeAmount} />
+            <AuthorizeButton amount={challengeAmount} user={user} />
 
             <button
-              disabled={isContractLoading}
+              disabled={
+                isContractLoading ||
+                Number(
+                  ethers.utils.formatEther(user.attributes.approvedSTVAmount)
+                ) < challengeAmount
+              }
               className="my-3 px-2 py-1 bg-green-300 rounded-full disabled:bg-slate-300"
               onClick={() => handleSubmit()}
             >

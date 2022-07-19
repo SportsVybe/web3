@@ -1,15 +1,18 @@
+import { ethers } from "ethers";
 import { useContract } from "../../context/ContractProvider";
 
 export interface IAuthorizeButtonProps {
   amount: number;
-  user?: any;
+  user: any;
 }
 
 const defaultProps: IAuthorizeButtonProps = {
-  amount: 5,
+  amount: 1,
   user: {
-    hasApprovedSVT: false,
-    approvalAmount: 0,
+    attributes: {
+      hasApprovedSVT: false,
+      approvedSTVAmount: 0,
+    },
   },
 };
 
@@ -20,20 +23,27 @@ export default function AuthorizeButton({
   user,
 }: IAuthorizeButtonProps) {
   const { approveAmount, isContractLoading } = useContract();
-
+  const { attributes } = user;
   const handleTokenApproval = async () => {
     //console.log("Allow to spend, "+ amount);
     await approveAmount(String(amount));
   };
-  return !user.hasApprovedSVT || user.approvalAmount < amount ? (
+  let approvedAmount = 0;
+  if (attributes) {
+    approvedAmount = Number(
+      ethers.utils.formatEther(attributes.approvedSTVAmount)
+    );
+  }
+  return (attributes && !attributes.hasApprovedSVT) ||
+    approvedAmount < amount ? (
     <button
       className="my-3 px-2 py-1 bg-red-600 text-white rounded-full disabled:bg-slate-300"
       onClick={() => handleTokenApproval()}
       disabled={isContractLoading}
     >
-      Allow the SportVybe Protocol to use your SVT Token
+      Increase SVT Approval
     </button>
   ) : (
-    <div>You have approved {user.approvalAmount} SVT</div>
+    <div>You have approved {approvedAmount} SVT</div>
   );
 }
