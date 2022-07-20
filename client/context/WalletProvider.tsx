@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { createContext, useContext, useEffect, useState } from "react";
-import { useMoralis } from "react-moralis";
+import { useChain, useMoralis } from "react-moralis";
 
 const defaultState = {
   wallet: "",
@@ -11,13 +11,24 @@ const defaultState = {
   connectWallet: (routeToProfile = true) => {},
 };
 
+const ethereum = typeof window !== "undefined" && (window as any).ethereum;
+
 const WalletContext = createContext(defaultState);
 
 const WalletProvider = (props: any) => {
   const { children } = props;
+  const {
+    authenticate,
+    isAuthenticated,
+    user,
+    logout,
+    isAuthenticating,
+    isWeb3Enabled,
+    Moralis,
+    enableWeb3,
+  } = useMoralis();
   const router = useRouter();
-  const { authenticate, isAuthenticated, user, logout, isAuthenticating } =
-    useMoralis();
+  const { switchNetwork, chainId, chain } = useChain();
   const [wallet, setWallet] = useState("");
 
   const connectWallet = async (routeToProfile = true) => {
@@ -32,8 +43,6 @@ const WalletProvider = (props: any) => {
           routeToProfile && router.push("/profile");
           !routeToProfile && router.reload();
         }
-        if (wallet)
-          console.log("connected", account, account?.get("ethAddress"));
       }
     } catch (error) {
       console.error(error);
@@ -46,7 +55,6 @@ const WalletProvider = (props: any) => {
         const account = user?.get("ethAddress");
         //set the current account
         setWallet(account);
-        if (wallet) console.log("connected", user, account);
       }
     } catch (error) {
       console.error(error);
@@ -56,7 +64,75 @@ const WalletProvider = (props: any) => {
   const signOutWallet = () => {
     setWallet("");
     logout();
+    return router.push("/");
   };
+
+  const monitorNetwork = async (chainId: any) => {
+    try {
+      if (isWeb3Enabled) {
+        if (chainId != "0x13881") {
+          if (
+            window.confirm(
+              "You're on the wrong network! Click OK to switch to Polygon Mumbai!"
+            )
+          ) {
+            Moralis.enableWeb3().then(() => {
+              switchNetwork("0x13881");
+            });
+            return true;
+          } else {
+            signOutWallet().then(() => {
+              alert(
+                "Please try again! Being on the wrong network can result in loss of funds due to failed transaction!"
+              );
+            });
+            return false;
+          }
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const monitorAccount = async (account: any) => {
+    try {
+      if (isWeb3Enabled) {
+        if (wallet) {
+          console.log(account, wallet);
+          if (account != wallet) {
+            signOutWallet().then(() => {
+              alert(
+                "You changed your account in your wallet app. Please login again with the new account."
+              );
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    const networkEmitter = Moralis.onChainChanged((chain) => {
+      if (isAuthenticated) {
+        monitorNetwork(chain);
+      }
+    });
+
+    const accountEmitter = Moralis.onAccountChanged((account) => {
+      if (isAuthenticated) {
+        monitorAccount(account);
+      }
+    });
+
+    return () => {
+      accountEmitter().removeAllListeners();
+      networkEmitter().removeAllListeners();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, isWeb3Enabled, chain]);
 
   useEffect(() => {
     // if the user isAuthenticated then check if wallet is connected

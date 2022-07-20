@@ -42,7 +42,7 @@ export const ManageChallenge = ({
     challenge.challengeSports || ""
   );
   const [challengeAmount, setChallengeAmount] = useState(
-    challenge.challengeAmount || "0.00"
+    challenge.challengeAmount || "0"
   );
   const [challengeMessage, setChallengeMessage] = useState(
     challenge.challengeMessage || ""
@@ -52,6 +52,15 @@ export const ManageChallenge = ({
   const [challengeTeam2Admin, setChallengeTeam2Admin] = useState(
     team.teamAdmin || ""
   );
+
+  const userApprovedAmount =
+    user &&
+    user.attributes &&
+    user.attributes.approvedSTVAmount &&
+    ethers.utils.formatEther(user.attributes.approvedSTVAmount);
+
+  const userHasApprovedSVT =
+    user && user.attributes && user.attributes.hasApprovedSVT;
 
   const challengeFormData = {
     id: challenge.id || "",
@@ -245,14 +254,17 @@ export const ManageChallenge = ({
               </div>
             </div>
 
-            <AuthorizeButton amount={challengeAmount} user={user} />
+            <AuthorizeButton
+              amount={challengeAmount}
+              userHasApprovedSVT={userHasApprovedSVT}
+              userApprovedAmount={userApprovedAmount}
+            />
 
             <button
               disabled={
                 isContractLoading ||
-                Number(
-                  ethers.utils.formatEther(user.attributes.approvedSTVAmount)
-                ) < challengeAmount
+                Number(userApprovedAmount) < challengeAmount ||
+                !userApprovedAmount
               }
               className="my-3 px-2 py-1 bg-green-300 rounded-full disabled:bg-slate-300"
               onClick={() => handleSubmit()}

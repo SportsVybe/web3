@@ -1,49 +1,41 @@
-import { ethers } from "ethers";
 import { useContract } from "../../context/ContractProvider";
 
 export interface IAuthorizeButtonProps {
   amount: number;
-  user: any;
+  userHasApprovedSVT: boolean;
+  userApprovedAmount: number;
 }
 
 const defaultProps: IAuthorizeButtonProps = {
-  amount: 1,
-  user: {
-    attributes: {
-      hasApprovedSVT: false,
-      approvedSTVAmount: 0,
-    },
-  },
+  amount: 0,
+  userApprovedAmount: 0,
+  userHasApprovedSVT: false,
 };
 
 AuthorizeButton.defaultProps = defaultProps;
 
 export default function AuthorizeButton({
   amount,
-  user,
+  userHasApprovedSVT,
+  userApprovedAmount,
 }: IAuthorizeButtonProps) {
   const { approveAmount, isContractLoading } = useContract();
-  const { attributes } = user;
   const handleTokenApproval = async () => {
     //console.log("Allow to spend, "+ amount);
     await approveAmount(String(amount));
   };
-  let approvedAmount = 0;
-  if (attributes) {
-    approvedAmount = Number(
-      ethers.utils.formatEther(attributes.approvedSTVAmount)
-    );
-  }
-  return (attributes && !attributes.hasApprovedSVT) ||
-    approvedAmount < amount ? (
+
+  return !userHasApprovedSVT ||
+    userApprovedAmount < amount ||
+    !userApprovedAmount ? (
     <button
       className="my-3 px-2 py-1 bg-red-600 text-white rounded-full disabled:bg-slate-300"
       onClick={() => handleTokenApproval()}
-      disabled={isContractLoading}
+      disabled={isContractLoading || amount === 0}
     >
       Increase SVT Approval
     </button>
   ) : (
-    <div>You have approved {approvedAmount} SVT</div>
+    <div>You have approved {userApprovedAmount} SVT</div>
   );
 }
