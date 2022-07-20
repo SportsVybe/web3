@@ -36,6 +36,8 @@ error DuplicateTeamMember(address);
 error ChallengePoolTeamUnderflow(uint256);
 error ChallengePoolTeamOverflow(uint256);
 
+error MissingActionId();
+
 contract SportsVybe is Ownable, KeeperCompatibleInterface {
   IERC20 public sportsVybeToken;
 
@@ -121,6 +123,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
   function createTeam(string memory action_id)
     external
     newSportsmanship
+    hasActionId(action_id)
     returns (uint256)
   {
     uint256 _team_id = team_id_counter + 1;
@@ -140,7 +143,9 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     return _team_id;
   }
 
-  //TODO: Time bond(lock)
+  // TODO: cancel challenge - if cancel after interval, then no POS reduction
+  // TODO: cancel challenge - if cancel before interval, then POS reduction
+  // TODO: cancel challenge --- reduce sportsmanship if within 48 hrs of challenge creation
 
   function closeChallenge(uint256 challenge_id) internal {
     ChallengePool memory _challenge_pool = challengePools[challenge_id];
@@ -157,6 +162,8 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     emit ChallengePoolClosed(challenge_id);
   }
 
+  //TODO: decline challenge no consequence to the team
+
   function declineChallenge(uint256 challenge_id, uint256 team_id)
     external
     teamOwner(team_id)
@@ -172,7 +179,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     uint256 challenge_id,
     uint256 team_id,
     uint256 amount
-  ) external payable teamOwner(team_id) returns (bool) {
+  ) external payable teamOwner(team_id) hasActionId(action_id) returns (bool) {
     //if challenge is already accepted then reject
     if (challengePools[challenge_id].isAccepted) {
       revert ChallengeAlreadyAccepted(challenge_id);
@@ -249,8 +256,10 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     newSportsmanship
     teamOwner(team_id)
     notTeamOwner(challenged_team_id)
+    hasActionId(action_id)
     returns (uint256)
   {
+    // TODO: remove interval and upkeep
     uint256 _interval = 5;
     uint256 challenge_id = new_challenge_id;
 
@@ -258,7 +267,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
       revert InsufficientAmount(0, amount);
     }
 
-    // TODO: Ensure that team cannot compete with it self.
+    // TODO: Ensure that team cannot compete with itself.
     // TODO: Ensure that team cannot compete with a team that has a player on both teams.
 
     //Ensure that team owner has funds to create challenge
@@ -316,7 +325,13 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     string memory action_id,
     uint256 team_id,
     address user
-  ) external newSportsmanship teamOwner(team_id) returns (bool) {
+  )
+    external
+    newSportsmanship
+    teamOwner(team_id)
+    hasActionId(action_id)
+    returns (bool)
+  {
     // TODO: revert sending an invite to self
 
     team_membership_request[team_id].push(TeamMate(user));
@@ -327,6 +342,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
   function acceptMembershipTeamRequest(string memory action_id, uint256 team_id)
     public
     newSportsmanship
+    hasActionId(action_id)
     returns (bool)
   {
     // TODO: revert accepting an invite to self
@@ -407,11 +423,11 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     return isDup;
   }
 
-  function increaseVoteFor(
+  function submitVote(
     string memory action_id,
     uint256 challenge_id,
     uint256 team_id
-  ) public {
+  ) public hasActionId(action_id) {
     // complete: Close vote when challenge is closed
     if (challengePools[challenge_id].isClosed) {
       revert ChallengeClosed(challenge_id);
@@ -550,18 +566,20 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
             4. Lost a challenge (team_sportsmanship += 0.25)
         */
 
+    // TODO: limit sportsmanship to 100
+
     if (compareStrings(reason, "tie")) {
       team_sportsmanship[team_id] -= 3;
     } else if (compareStrings(reason, "win")) {
       team_sportsmanship[team_id] += 2;
     } else if (compareStrings(reason, "lose")) {
       team_sportsmanship[team_id] += 1;
-    } else if (compareStrings(reason, "not_present")) {
+    } else if (compareStrings(reason, "cancel")) {
       team_sportsmanship[team_id] -= 5;
-      emit DidNotShowUp(challenge_id, team_id);
     } else {
       revert NotFound(reason);
     }
+    // TODO: emit reason, challenge_id, team_id, team_sportsmanship[team_id]
   }
 
   function compareStrings(string memory a, string memory b)
@@ -635,6 +653,13 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
   modifier notTeamOwner(uint256 team_id) {
     if (team_owner[team_id] == msg.sender) {
       revert FailedChallengeCreation_ReflexiveTeam(team_id);
+    }
+    _;
+  }
+
+  modifier hasActionId(string action_id) {
+    if (!action_id || action_id == "") {
+      revert MissingActionId();
     }
     _;
   }
