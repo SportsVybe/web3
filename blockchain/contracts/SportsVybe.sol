@@ -29,15 +29,14 @@ error TeamInvalid(uint256);
 
 // ----- Challenge errors -------- //
 error ChallengePoolInsufficientAmount(uint256, uint256);
-error ChallengePoolTeamUnderflow(uint256);
-error ChallengePoolTeamOverflow(uint256);
+error ChallengePoolTeamImbalance(uint256, uint256);
 error ChallengePoolCreationUnauthorized(uint256);
 error ChallengePoolAlreadyAccepted(uint256);
 error ChallengePoolAlreadyClosed(uint256);
 error SenderInsufficientBalance(uint256, uint256);
 
 // ----- Vote errors -------- //
-error VoteUnauthorized(uint256);
+error VoteUnauthorized(uint256, address);
 error VoteDuplicate(uint256, address);
 
 contract SportsVybe is Ownable, KeeperCompatibleInterface {
@@ -349,12 +348,9 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     //Ensure that team cannot accept challenge with more or less players than in challengePool
     uint256 team_1_count = team_1_members.length;
     uint256 team_2_count = team_2_members.length;
-    if (team_1_count > team_2_count) {
-      revert ChallengePoolTeamUnderflow(team_1_count - team_2_count);
-    }
 
-    if (team_1_count < team_2_count) {
-      revert ChallengePoolTeamOverflow(team_2_count - team_1_count);
+    if (team_1_count != team_2_count) {
+      revert ChallengePoolTeamImbalance(team_1_count, team_2_count);
     }
 
     //Ensure that team cannot accept challenge with a team that has a player on both teams.
@@ -472,7 +468,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
 
     // check if voter is on a team
     if (!authorizedToVote(challenge_id)) {
-      revert VoteUnauthorized(challenge_id);
+      revert VoteUnauthorized(challenge_id, msg.sender);
     }
 
     //revert, Already voted!

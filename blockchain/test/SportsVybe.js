@@ -122,13 +122,13 @@ describe("SportsVybe Contract", function () {
 
   async function createChallenge(
     Contract,
-    account,
+    creator,
     actionId,
     creatorTeam,
     challengerTeam,
     amount
   ) {
-    return Contract.connect(account).createChallengePool(
+    return Contract.connect(creator).createChallengePool(
       actionId,
       creatorTeam,
       challengerTeam,
@@ -138,21 +138,57 @@ describe("SportsVybe Contract", function () {
 
   async function acceptChallenge(
     Contract,
-    account,
+    challenger,
     actionId,
-    teamId,
+    challengerTeam,
     amount,
     challengeId
   ) {
-    return Contract.connect(account).acceptChallengePool(
+    return Contract.connect(challenger).acceptChallengePool(
       actionId,
       challengeId,
-      teamId,
+      challengerTeam,
       amount
     );
   }
 
-  describe("Token Deployment", function () {
+  async function createAndAcceptChallenge(
+    Contract,
+    Token,
+    creator,
+    challenger,
+    actionId,
+    creatorTeam,
+    challengerTeam,
+    amount,
+    allowance,
+    challengeId
+  ) {
+    await transferAndApproveAmount(Contract, Token, creator, allowance);
+    await transferAndApproveAmount(Contract, Token, challenger, allowance);
+    await createChallenge(
+      Contract,
+      creator,
+      actionId,
+      creatorTeam,
+      challengerTeam,
+      amount
+    );
+    await acceptChallenge(
+      Contract,
+      challenger,
+      actionId,
+      challengerTeam,
+      amount,
+      challengeId
+    );
+  }
+
+  async function submitVote(Contract, voter, actionId, challengeId, vote) {
+    return Contract.connect(voter).submitVote(actionId, challengeId, vote);
+  }
+
+  describe("\nToken Deployment", function () {
     it("Should assign the total supply of tokens to the owner", async function () {
       const { Token, owner } = await loadFixture(deployFixture);
 
@@ -187,7 +223,7 @@ describe("SportsVybe Contract", function () {
         await expect(newTeam).to.be.revertedWith("Action ID cannot be empty");
       });
 
-      it("Should emit TeamCreated - 0", async function () {
+      it("Should emit TeamCreated", async function () {
         const { Contract } = await loadFixture(deployFixture);
         const actionId = generateActionId();
         const newTeam = await Contract.createTeam(actionId);
@@ -226,7 +262,7 @@ describe("SportsVybe Contract", function () {
         ).to.be.revertedWith("Cannot send an invite to yourself");
       });
 
-      it("Should emit TeamMembershipRequestSent (team0 > 0 > team2)", async function () {
+      it("Should emit TeamMembershipRequestSent", async function () {
         const { Contract, addr3, addr2 } = await loadFixture(deployFixture);
         const { team3, team3_value } = await getTeams();
         const actionId = generateActionId();
@@ -249,7 +285,7 @@ describe("SportsVybe Contract", function () {
         );
       });
 
-      it("Should emit TeamMembershipRequestAccept (team1 > 1 > team4)", async function () {
+      it("Should emit TeamMembershipRequestAccept", async function () {
         const { addr1, addr4, Contract } = await loadFixture(deployFixture);
         const { team1_value } = await getTeams();
         const actionId = generateActionId();
@@ -336,7 +372,32 @@ describe("SportsVybe Contract", function () {
         ).to.be.reverted;
       });
 
-      it("Should emit ChallengePoolCreated (creator = 3 | challenger = 1 > 900)", async function () {
+      it("Should reduce team SVT balance after challenging", async function () {
+        const { addr2, addr1, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team2_value, team1_value } = await getTeams();
+
+        const actionId = generateActionId();
+        const amount = 10;
+        const allowance = 50;
+        await transferAndApproveAmount(Contract, Token, addr1, allowance);
+
+        await createChallenge(
+          Contract,
+          addr1,
+          actionId,
+          team1_value,
+          team2_value,
+          amount
+        );
+
+        expect(await Contract.connect(addr1).getSVTBalance()).to.be.equal(
+          allowance - amount
+        );
+      });
+
+      it("Should emit ChallengePoolCreated", async function () {
         const { addr3, Contract, Token } = await loadFixture(deployFixture);
         const { team3_value, team1_value } = await getTeams();
 
@@ -394,6 +455,46 @@ describe("SportsVybe Contract", function () {
         ).to.be.revertedWith(`TeamUnauthorized(${team1_value})`);
       });
 
+      it("Should revert if challenge is already accepted", async function () {
+        const { owner, addr1, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team0_value, team1_value } = await getTeams();
+
+        const actionId = generateActionId();
+        const amount = 10;
+        const challengeId = 900;
+        await approveAmount(Contract, Token, owner, amount);
+        await transferAndApproveAmount(Contract, Token, addr1, amount);
+        await createChallenge(
+          Contract,
+          owner,
+          actionId,
+          team0_value,
+          team1_value,
+          amount
+        );
+        await acceptChallenge(
+          Contract,
+          addr1,
+          actionId,
+          team1_value,
+          amount,
+          challengeId
+        );
+
+        await expect(
+          acceptChallenge(
+            Contract,
+            addr1,
+            actionId,
+            team1_value,
+            amount,
+            challengeId
+          )
+        ).to.be.revertedWith(`ChallengePoolAlreadyAccepted(${challengeId})`);
+      });
+
       it("Should revert if accepting team is not authorized", async function () {
         const { owner, addr1, addr3, Token, Contract } = await loadFixture(
           deployFixture
@@ -427,7 +528,206 @@ describe("SportsVybe Contract", function () {
         ).to.be.revertedWith(`TeamUnauthorized(${team3_value})`);
       });
 
-      it("Should emit ChallengePoolAccepted (challenger = 1 | creator = 0 | 900)", async function () {
+      it("Should revert if insufficient amount", async function () {
+        const { owner, addr1, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team0_value, team1_value } = await getTeams();
+
+        const actionId = generateActionId();
+        const amount = 10;
+        const challengeId = 900;
+        await approveAmount(Contract, Token, owner, amount);
+        await transferAndApproveAmount(Contract, Token, addr1, amount);
+
+        await createChallenge(
+          Contract,
+          owner,
+          actionId,
+          team0_value,
+          team1_value,
+          amount
+        );
+
+        await expect(
+          acceptChallenge(
+            Contract,
+            addr1,
+            actionId,
+            team1_value,
+            5,
+            challengeId
+          )
+        ).to.be.revertedWith(
+          `ChallengePoolInsufficientAmount(${challengeId}, ${amount})`
+        );
+      });
+
+      it("Should equal the same number of players on both teams", async function () {
+        const { owner, addr1, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team0_value, team1_value } = await getTeams();
+
+        const actionId = generateActionId();
+        const amount = 10;
+        const challengeId = 900;
+        await approveAmount(Contract, Token, owner, amount);
+        await transferAndApproveAmount(Contract, Token, addr1, amount);
+        await createChallenge(
+          Contract,
+          owner,
+          actionId,
+          team0_value,
+          team1_value,
+          amount
+        );
+        await acceptChallenge(
+          Contract,
+          addr1,
+          actionId,
+          team1_value,
+          amount,
+          challengeId
+        );
+
+        expect(
+          await Contract.getChallengePoolTeam1Members(challengeId).length
+        ).to.be.equal(
+          await Contract.getChallengePoolTeam2Members(challengeId).length
+        );
+      });
+
+      it("Should revert if number of players are imbalanced", async function () {
+        const { addr4, addr3, addr1, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team4_value, team1_value } = await getTeams();
+
+        const amount = 10;
+        const challengeId = 900;
+        await transferAndApproveAmount(Contract, Token, addr4, amount);
+        await transferAndApproveAmount(Contract, Token, addr1, amount);
+        await sendRequest(
+          Contract,
+          addr1,
+          generateActionId(),
+          team1_value,
+          addr3.address
+        );
+        await acceptRequest(Contract, addr3, generateActionId(), team1_value);
+        await createChallenge(
+          Contract,
+          addr4,
+          generateActionId(),
+          team4_value,
+          team1_value,
+          amount
+        );
+
+        const team_1_members = await Contract.getChallengePoolTeam1Members(
+          challengeId
+        );
+
+        const team_2_members = await Contract.getTeamMates(team1_value);
+        await expect(
+          acceptChallenge(
+            Contract,
+            addr1,
+            generateActionId(),
+            team1_value,
+            amount,
+            challengeId
+          )
+        ).to.be.revertedWith(
+          `'ChallengePoolTeamImbalance(${team_1_members.length}, ${team_2_members.length})'`
+        );
+      });
+
+      it("Should revert if a player is on both sides", async function () {
+        const { addr4, addr3, addr1, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team4_value, team1_value } = await getTeams();
+
+        const amount = 10;
+        const challengeId = 900;
+        await transferAndApproveAmount(Contract, Token, addr4, amount);
+        await transferAndApproveAmount(Contract, Token, addr1, amount);
+        await sendRequest(
+          Contract,
+          addr4,
+          generateActionId(),
+          team4_value,
+          addr3.address
+        );
+        await acceptRequest(Contract, addr3, generateActionId(), team4_value);
+        await createChallenge(
+          Contract,
+          addr4,
+          generateActionId(),
+          team4_value,
+          team1_value,
+          amount
+        );
+
+        await sendRequest(
+          Contract,
+          addr1,
+          generateActionId(),
+          team1_value,
+          addr3.address
+        );
+        await acceptRequest(Contract, addr3, generateActionId(), team1_value);
+        await expect(
+          acceptChallenge(
+            Contract,
+            addr1,
+            generateActionId(),
+            team1_value,
+            amount,
+            challengeId
+          )
+        ).to.be.revertedWith(`'TeamMemberDuplicate("${addr3.address}")'`);
+      });
+
+      it("Should reduce SVT balance after accepting", async function () {
+        const { addr2, addr1, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team2_value, team1_value } = await getTeams();
+
+        const actionId = generateActionId();
+        const amount = 10;
+        const allowance = 50;
+        const challengeId = 900;
+        await transferAndApproveAmount(Contract, Token, addr1, allowance);
+        await transferAndApproveAmount(Contract, Token, addr2, allowance);
+
+        await createChallenge(
+          Contract,
+          addr2,
+          actionId,
+          team2_value,
+          team1_value,
+          amount
+        );
+
+        acceptChallenge(
+          Contract,
+          addr1,
+          actionId,
+          team1_value,
+          amount,
+          challengeId
+        );
+
+        expect(await Contract.connect(addr2).getSVTBalance()).to.be.equal(
+          allowance - amount
+        );
+      });
+
+      it("Should emit ChallengePoolAccepted", async function () {
         const { owner, addr1, Token, Contract } = await loadFixture(
           deployFixture
         );
@@ -460,6 +760,127 @@ describe("SportsVybe Contract", function () {
         )
           .to.emit(Contract, "ChallengePoolAccepted")
           .withArgs(actionId, 900, team0_value, team1_value);
+      });
+    });
+  });
+
+  describe("\nVote Functions", function () {
+    describe("submitVote", function () {
+      it("Should revert if voter is not on a team", async function () {
+        const { addr4, addr1, addr2, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team4_value, team1_value } = await getTeams();
+        const actionId = generateActionId();
+        const amount = 10;
+        const allowance = 50;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr1,
+          addr4,
+          actionId,
+          team1_value,
+          team4_value,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await expect(
+          submitVote(Contract, addr2, actionId, team4_value)
+        ).to.be.revertedWith(
+          `VoteUnauthorized(${challengeId}, "${addr2.address}")`
+        );
+      });
+
+      it("Should revert if duplicate vote", async function () {
+        const { addr4, addr1, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team4_value, team1_value } = await getTeams();
+        const actionId = generateActionId();
+        const amount = 10;
+        const allowance = 50;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr1,
+          addr4,
+          actionId,
+          team1_value,
+          team4_value,
+          amount,
+          allowance,
+          challengeId
+        );
+        await submitVote(Contract, addr4, actionId, team4_value);
+
+        await expect(
+          submitVote(Contract, addr4, actionId, team4_value)
+        ).to.be.revertedWith(
+          `VoteDuplicate(${challengeId}, "${addr4.address}")`
+        );
+      });
+
+      // it("Should revert if vote for a invalid team", async function () {
+      //   const { addr4, addr1, Token, Contract } = await loadFixture(
+      //     deployFixture
+      //   );
+      //   const { team4_value, team1_value, team2_value } = await getTeams();
+      //   const actionId = generateActionId();
+      //   const amount = 10;
+      //   const allowance = 50;
+      //   const challengeId = 900;
+
+      //   await createAndAcceptChallenge(
+      //     Contract,
+      //     Token,
+      //     addr1,
+      //     addr4,
+      //     actionId,
+      //     team1_value,
+      //     team4_value,
+      //     amount,
+      //     allowance,
+      //     challengeId
+      //   );
+
+      //   await expect(
+      //     submitVote(Contract, addr4, actionId, team2_value)
+      //   ).to.be.revertedWith(`TeamInvalid(${team2_value})`);
+      // });
+
+      it("Should emit VoteSubmit", async function () {
+        const { addr4, addr1, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team4_value, team1_value } = await getTeams();
+        const actionId = generateActionId();
+        const amount = 10;
+        const allowance = 50;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr1,
+          addr4,
+          actionId,
+          team1_value,
+          team4_value,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await expect(submitVote(Contract, addr4, actionId, team4_value))
+          .to.emit(Contract, "VoteSubmit")
+          .withArgs(actionId, addr4.address, challengeId, team4_value);
       });
     });
   });
