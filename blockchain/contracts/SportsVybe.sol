@@ -249,12 +249,14 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     // TODO: remove interval and upkeep
     uint256 _interval = 5;
     uint256 new_challenge_id = 900 + challenge_id_counter.current();
-    // console.log(
-    //   "C - createChallengePool: new_challenge_id: %d, creator_id: %d, challenger_id: %d",
-    //   new_challenge_id,
-    //   team_id,
-    //   challenged_team_id
-    // );
+    if (compareStrings(action_id, "log")) {
+      console.log(
+        "C - createChallengePool: new_challenge_id: %d, creator_id: %d, challenger_id: %d",
+        new_challenge_id,
+        team_id,
+        challenged_team_id
+      );
+    }
     if (amount == 0) {
       revert ChallengePoolInsufficientAmount(0, amount);
     }
@@ -320,12 +322,14 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
       revert ChallengePoolAlreadyAccepted(challenge_id);
     }
 
-    // console.log(
-    //   "C - acceptChallenge_id: %d, creator_id: %d, challenger_id: %d",
-    //   challenge_id,
-    //   challengePools[challenge_id].team1,
-    //   challengePools[challenge_id].team2
-    // );
+    if (compareStrings(action_id, "log")) {
+      console.log(
+        "C - acceptChallenge_id: %d, creator_id: %d, challenger_id: %d",
+        challenge_id,
+        challengePools[challenge_id].team1,
+        challengePools[challenge_id].team2
+      );
+    }
 
     //Ensure that team id has been challenged to participate in the challenge pool
     if (challengePools[challenge_id].team2 != team_id) {
@@ -475,7 +479,10 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     if (isVoteDuplicate(challenge_id)) {
       revert VoteDuplicate(challenge_id, msg.sender);
     }
-
+    if (compareStrings(action_id, "log")) {
+      console.log("team1_count %d", challengePools[challenge_id].team1_count);
+      console.log("team2_count %d", challengePools[challenge_id].team2_count);
+    }
     //increase vote count for team ID
     if (challengePools[challenge_id].team1 == team_id) {
       challengePools[challenge_id].team1_count += 1;
@@ -496,7 +503,8 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
       challengePoolTeamMemberCount(challenge_id)
     ) {
       //=======check if it's due to give out reward========
-      checkForWinner(challenge_id);
+      // checkForWinner(challenge_id);
+      console.log("check for winner");
     }
   }
 

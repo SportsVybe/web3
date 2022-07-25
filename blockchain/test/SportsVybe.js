@@ -90,13 +90,18 @@ describe("SportsVybe Contract", function () {
     );
   }
 
-  async function transferAndApproveAmount(Contract, Token, account, amount) {
-    await Token.transfer(account.address, amount);
-    expect(await Token.balanceOf(account.address)).to.equal(amount);
-    await Token.connect(account).approve(Contract.address, amount);
-    expect(await Token.allowance(account.address, Contract.address)).to.equal(
-      amount
-    );
+  async function transferAndApproveAmount(
+    Contract,
+    Token,
+    account,
+    amount,
+    actionId
+  ) {
+    if (actionId === "log") {
+      console.log(account.address, amount);
+    }
+    await transferAmount(Token, account, amount);
+    await approveAmount(Contract, Token, account, amount);
   }
 
   async function sendRequest(
@@ -128,6 +133,16 @@ describe("SportsVybe Contract", function () {
     challengerTeam,
     amount
   ) {
+    if (actionId === "log") {
+      console.log(
+        "createChallenge",
+        creator.address,
+        actionId,
+        creatorTeam,
+        challengerTeam,
+        amount
+      );
+    }
     return Contract.connect(creator).createChallengePool(
       actionId,
       creatorTeam,
@@ -144,6 +159,16 @@ describe("SportsVybe Contract", function () {
     amount,
     challengeId
   ) {
+    if (actionId === "log") {
+      console.log(
+        "acceptChallenge",
+        challenger.address,
+        actionId,
+        challengerTeam,
+        amount,
+        challengeId
+      );
+    }
     return Contract.connect(challenger).acceptChallengePool(
       actionId,
       challengeId,
@@ -164,8 +189,27 @@ describe("SportsVybe Contract", function () {
     allowance,
     challengeId
   ) {
-    await transferAndApproveAmount(Contract, Token, creator, allowance);
-    await transferAndApproveAmount(Contract, Token, challenger, allowance);
+    if (actionId === "log") {
+      console.log(
+        creator.address,
+        challenger.address,
+        actionId,
+        creatorTeam,
+        challengerTeam,
+        amount,
+        allowance,
+        challengeId
+      );
+    }
+
+    await transferAndApproveAmount(Contract, Token, creator, amount, actionId);
+    await transferAndApproveAmount(
+      Contract,
+      Token,
+      challenger,
+      amount,
+      actionId
+    );
     await createChallenge(
       Contract,
       creator,
@@ -185,6 +229,9 @@ describe("SportsVybe Contract", function () {
   }
 
   async function submitVote(Contract, voter, actionId, challengeId, vote) {
+    if (actionId === "log") {
+      console.log(voter, actionId, challengeId, vote);
+    }
     return Contract.connect(voter).submitVote(actionId, challengeId, vote);
   }
 
@@ -776,6 +823,21 @@ describe("SportsVybe Contract", function () {
         const allowance = 50;
         const challengeId = 900;
 
+        if (actionId === "log") {
+          console.log(
+            // Contract,
+            // Token,
+            addr1.address,
+            addr4.address,
+            actionId,
+            team1_value,
+            team4_value,
+            amount,
+            allowance,
+            challengeId
+          );
+        }
+
         await createAndAcceptChallenge(
           Contract,
           Token,
@@ -790,7 +852,7 @@ describe("SportsVybe Contract", function () {
         );
 
         await expect(
-          submitVote(Contract, addr2, actionId, team4_value)
+          submitVote(Contract, addr2, actionId, challengeId, team1_value)
         ).to.be.revertedWith(
           `VoteUnauthorized(${challengeId}, "${addr2.address}")`
         );
@@ -818,42 +880,42 @@ describe("SportsVybe Contract", function () {
           allowance,
           challengeId
         );
-        await submitVote(Contract, addr4, actionId, team4_value);
+        await submitVote(Contract, addr4, actionId, challengeId, team4_value);
 
         await expect(
-          submitVote(Contract, addr4, actionId, team4_value)
+          submitVote(Contract, addr4, actionId, challengeId, team4_value)
         ).to.be.revertedWith(
           `VoteDuplicate(${challengeId}, "${addr4.address}")`
         );
       });
 
-      // it("Should revert if vote for a invalid team", async function () {
-      //   const { addr4, addr1, Token, Contract } = await loadFixture(
-      //     deployFixture
-      //   );
-      //   const { team4_value, team1_value, team2_value } = await getTeams();
-      //   const actionId = generateActionId();
-      //   const amount = 10;
-      //   const allowance = 50;
-      //   const challengeId = 900;
+      it("Should revert if vote for a invalid team", async function () {
+        const { addr4, addr1, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team4_value, team1_value, team2_value } = await getTeams();
+        const actionId = generateActionId();
+        const amount = 10;
+        const allowance = 50;
+        const challengeId = 900;
 
-      //   await createAndAcceptChallenge(
-      //     Contract,
-      //     Token,
-      //     addr1,
-      //     addr4,
-      //     actionId,
-      //     team1_value,
-      //     team4_value,
-      //     amount,
-      //     allowance,
-      //     challengeId
-      //   );
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr1,
+          addr4,
+          actionId,
+          team1_value,
+          team4_value,
+          amount,
+          allowance,
+          challengeId
+        );
 
-      //   await expect(
-      //     submitVote(Contract, addr4, actionId, team2_value)
-      //   ).to.be.revertedWith(`TeamInvalid(${team2_value})`);
-      // });
+        await expect(
+          submitVote(Contract, addr4, actionId, challengeId, team2_value)
+        ).to.be.revertedWith(`TeamInvalid(${team2_value})`);
+      });
 
       it("Should emit VoteSubmit", async function () {
         const { addr4, addr1, Token, Contract } = await loadFixture(
@@ -878,7 +940,9 @@ describe("SportsVybe Contract", function () {
           challengeId
         );
 
-        await expect(submitVote(Contract, addr4, actionId, team4_value))
+        await expect(
+          submitVote(Contract, addr4, actionId, challengeId, team4_value)
+        )
           .to.emit(Contract, "VoteSubmit")
           .withArgs(actionId, addr4.address, challengeId, team4_value);
       });
