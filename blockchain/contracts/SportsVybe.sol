@@ -44,7 +44,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
 
   constructor(address payable _sportsVybeToken) {
     sportsVybeToken = IERC20(_sportsVybeToken);
-    console.log("C - Deployed SportsVybe");
+    console.log("\n//-------- Deployed SportsVybe Contract --------//");
   }
 
   // ----- Team structs -------- //
@@ -502,16 +502,16 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
       totalChallengePoolVotes(challenge_id) ==
       challengePoolTeamMemberCount(challenge_id)
     ) {
+      challengePools[challenge_id].isClosed = true;
+      emit ChallengePoolClosed(challenge_id);
       //=======check if it's due to give out reward========
-      // checkForWinner(challenge_id);
-      console.log("check for winner");
+      checkForWinner(challenge_id);
     }
   }
 
   function checkForWinner(uint256 challenge_id) private returns (uint256) {
     if (
       challengePools[challenge_id].isCompleted ||
-      challengePools[challenge_id].isClosed ||
       !challengePools[challenge_id].isAccepted ||
       totalChallengePoolVotes(challenge_id) !=
       challengePoolTeamMemberCount(challenge_id)
@@ -523,6 +523,11 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     uint256 loser = 0;
     uint256 team1 = challengePools[challenge_id].team1;
     uint256 team2 = challengePools[challenge_id].team2;
+    bool logMe = false;
+
+    if (logMe) {
+      console.log("Here");
+    }
 
     if (
       challengePools[challenge_id].team1_count ==
@@ -568,8 +573,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         emit Win(challenge_id, winner);
       }
     }
-    challengePools[challenge_id].isClosed = true;
-    emit ChallengePoolClosed(challenge_id);
+
     return challenge_id;
   }
 
