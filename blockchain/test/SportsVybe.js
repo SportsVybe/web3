@@ -5,9 +5,9 @@ function generateActionId() {
   return Math.random().toString(36).substring(2, 15);
 }
 
-describe("SportsVybe Contract Tests", function () {
+describe("SportsVybe Contract - Test Cases", function () {
   async function deployFixture() {
-    const [owner, addr1, addr2, addr3, addr4, addr5] =
+    const [owner, addr1, addr2, addr3, addr4, addr5, addr6] =
       await ethers.getSigners();
     const SportsVybeToken = await ethers.getContractFactory("SportsVybeToken");
     const Token = await SportsVybeToken.deploy();
@@ -16,15 +16,6 @@ describe("SportsVybe Contract Tests", function () {
     const SportsVybeContract = await ethers.getContractFactory("SportsVybe");
     const Contract = await SportsVybeContract.deploy(Token.address);
     await Contract.deployed();
-
-    console.log("\n//-------------- Test Addresses --------------//\n");
-    console.log("team0", owner.address);
-    console.log("team1", addr1.address);
-    console.log("team2", addr2.address);
-    console.log("team3", addr3.address);
-    console.log("team4", addr4.address);
-    console.log("team5", addr5.address);
-    console.log("\n//-------------- Starting Tests --------------//\n");
 
     // Fixtures can return anything you consider useful for your tests
     return {
@@ -38,6 +29,7 @@ describe("SportsVybe Contract Tests", function () {
       addr3,
       addr4,
       addr5,
+      addr6,
     };
   }
 
@@ -125,6 +117,23 @@ describe("SportsVybe Contract Tests", function () {
       actionId,
       teamId
     );
+  }
+
+  async function sendAndAcceptRequest(
+    Contract,
+    account,
+    actionId,
+    teamId,
+    inviteAccount
+  ) {
+    await sendRequest(
+      Contract,
+      account,
+      actionId,
+      teamId,
+      inviteAccount.address
+    );
+    await acceptRequest(Contract, inviteAccount, actionId, teamId);
   }
 
   async function createChallenge(
@@ -238,23 +247,47 @@ describe("SportsVybe Contract Tests", function () {
   }
 
   describe("Deployment", function () {
-    it("Should assign the total supply of tokens to the owner", async function () {
-      const { Token, owner } = await loadFixture(deployFixture);
-
-      const ownerBalance = await Token.balanceOf(owner.address);
-      expect(await Token.totalSupply()).to.equal(ownerBalance);
+    it("Should deploy contract", async function () {
+      const { Contract } = await loadFixture(deployFixture);
+      expect(Contract).to.include(Contract);
     });
 
-    it("Should transfer tokens between accounts", async function () {
-      const { Token, addr1, addr2 } = await loadFixture(deployFixture);
+    it("Should match signers to team.from addresses", async function () {
+      const { owner, addr1, addr2, addr3, addr4, addr5 } = await loadFixture(
+        deployFixture
+      );
+      const { team0, team1, team2, team3, team4, team5 } = await getTeams();
+      expect(owner.address).to.equal(team0.from);
 
-      // Transfer 50 tokens from owner to addr1
-      await Token.transfer(addr1.address, 50);
-      expect(await Token.balanceOf(addr1.address)).to.equal(50);
+      expect(addr1.address).to.equal(team1.from);
 
-      // Transfer 50 tokens from addr1 to addr2
-      await Token.connect(addr1).transfer(addr2.address, 50);
-      expect(await Token.balanceOf(addr2.address)).to.equal(50);
+      expect(addr2.address).to.equal(team2.from);
+
+      expect(addr3.address).to.equal(team3.from);
+
+      expect(addr4.address).to.equal(team4.from);
+
+      expect(addr5.address).to.equal(team5.from);
+    });
+
+    describe("Token", function () {
+      it("Should assign the total supply of tokens to the owner", async function () {
+        const { Token, owner } = await loadFixture(deployFixture);
+        const ownerBalance = await Token.balanceOf(owner.address);
+        expect(await Token.totalSupply()).to.equal(ownerBalance);
+      });
+
+      it("Should transfer tokens between accounts", async function () {
+        const { Token, addr1, addr2 } = await loadFixture(deployFixture);
+
+        // Transfer 50 tokens from owner to addr1
+        await Token.transfer(addr1.address, 50);
+        expect(await Token.balanceOf(addr1.address)).to.equal(50);
+
+        // Transfer 50 tokens from addr1 to addr2
+        await Token.connect(addr1).transfer(addr2.address, 50);
+        expect(await Token.balanceOf(addr2.address)).to.equal(50);
+      });
     });
   });
 
@@ -622,9 +655,15 @@ describe("SportsVybe Contract Tests", function () {
         );
 
         expect(
-          await Contract.getChallengePoolTeam1Members(challengeId).length
+          await Contract.getChallengePoolTeamMembersByTeam(
+            challengeId,
+            team0_id
+          ).length
         ).to.be.equal(
-          await Contract.getChallengePoolTeam2Members(challengeId).length
+          await Contract.getChallengePoolTeamMembersByTeam(
+            challengeId,
+            team1_id
+          ).length
         );
       });
 
@@ -655,8 +694,9 @@ describe("SportsVybe Contract Tests", function () {
           amount
         );
 
-        const team_1_members = await Contract.getChallengePoolTeam1Members(
-          challengeId
+        const team_1_members = await Contract.getChallengePoolTeamMembersByTeam(
+          challengeId,
+          team4_id
         );
 
         const team_2_members = await Contract.getTeamMates(team1_id);
@@ -1095,5 +1135,360 @@ describe("SportsVybe Contract Tests", function () {
           .withArgs(challengeId, challengeTeam2);
       });
     });
+
+    describe("createReward", function () {
+      it("Should set the challenge as completed", async function () {
+        const { addr5, addr3, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team5_id, team3_id } = await getTeams();
+        const actionId = generateActionId();
+        const amount = 70;
+        const allowance = 80;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr3,
+          addr5,
+          actionId,
+          team3_id,
+          team5_id,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await submitVote(Contract, addr3, actionId, challengeId, team3_id);
+        await submitVote(Contract, addr5, actionId, challengeId, team5_id);
+        expect((await Contract.challengePools(challengeId)).isCompleted).to.be
+          .true;
+      });
+
+      it("Should create a challengeReward for the winner (1 player team)", async function () {
+        const { addr5, addr3, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team5_id, team3_id } = await getTeams();
+        const actionId = generateActionId();
+        const amount = 70;
+        const allowance = 80;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr3,
+          addr5,
+          actionId,
+          team3_id,
+          team5_id,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await submitVote(Contract, addr3, actionId, challengeId, team3_id);
+        await submitVote(Contract, addr5, actionId, challengeId, team3_id);
+
+        expect(
+          await Contract.getUserChallengeRewards(addr3.address)
+        ).to.have.length(2);
+
+        expect((await Contract.challengePools(challengeId)).isCompleted).to.be
+          .true;
+      });
+
+      it("Should create a challengeReward for both team owners", async function () {
+        const { addr5, addr3, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team5_id, team3_id } = await getTeams();
+        const actionId = generateActionId();
+        const amount = 70;
+        const allowance = 80;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr3,
+          addr5,
+          actionId,
+          team3_id,
+          team5_id,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await submitVote(Contract, addr3, actionId, challengeId, team3_id);
+        await submitVote(Contract, addr5, actionId, challengeId, team5_id);
+
+        expect(
+          await Contract.getUserChallengeRewards(addr3.address)
+        ).to.have.length(1);
+
+        expect(
+          await Contract.getUserChallengeRewards(addr5.address)
+        ).to.have.length(1);
+
+        expect((await Contract.challengePools(challengeId)).isCompleted).to.be
+          .true;
+      });
+
+      it("Should create a challengeReward for all players on winning team", async function () {
+        const { addr1, addr2, addr3, addr4, addr5, addr6, Token, Contract } =
+          await loadFixture(deployFixture);
+        const { team5_id, team3_id } = await getTeams();
+        const actionId = generateActionId();
+        const amount = 70;
+        const allowance = 80;
+        const challengeId = 900;
+        await transferAndApproveAmount(
+          Contract,
+          Token,
+          addr1,
+          allowance,
+          actionId
+        );
+        await transferAndApproveAmount(
+          Contract,
+          Token,
+          addr2,
+          allowance,
+          actionId
+        );
+        await transferAndApproveAmount(
+          Contract,
+          Token,
+          addr4,
+          allowance,
+          actionId
+        );
+        await transferAndApproveAmount(
+          Contract,
+          Token,
+          addr6,
+          allowance,
+          actionId
+        );
+        await sendAndAcceptRequest(Contract, addr3, actionId, team3_id, addr1);
+        await sendAndAcceptRequest(Contract, addr3, actionId, team3_id, addr2);
+        await sendAndAcceptRequest(Contract, addr5, actionId, team5_id, addr4);
+        await sendAndAcceptRequest(Contract, addr5, actionId, team5_id, addr6);
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr3,
+          addr5,
+          actionId,
+          team3_id,
+          team5_id,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await submitVote(Contract, addr1, actionId, challengeId, team3_id);
+        await submitVote(Contract, addr2, actionId, challengeId, team3_id);
+        await submitVote(Contract, addr3, actionId, challengeId, team3_id);
+        await submitVote(Contract, addr4, actionId, challengeId, team5_id);
+        await submitVote(Contract, addr5, actionId, challengeId, team5_id);
+        await submitVote(Contract, addr6, actionId, challengeId, team3_id);
+        expect(
+          await Contract.getUserChallengeRewards(addr1.address)
+        ).to.have.length(1);
+
+        expect(
+          await Contract.getUserChallengeRewards(addr2.address)
+        ).to.have.length(1);
+
+        // owner of team3
+        expect(
+          await Contract.getUserChallengeRewards(addr3.address)
+        ).to.have.length(2);
+      });
+
+      it("Should emit RewardCreated both Teams in a Tie", async function () {
+        const { addr5, addr3, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team5_id, team3_id } = await getTeams();
+        const actionId = generateActionId();
+        const amount = 70;
+        const allowance = 80;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr3,
+          addr5,
+          actionId,
+          team3_id,
+          team5_id,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await submitVote(Contract, addr3, actionId, challengeId, team3_id);
+        const secondVote = await submitVote(
+          Contract,
+          addr5,
+          actionId,
+          challengeId,
+          team5_id
+        );
+        await expect(secondVote)
+          .to.emit(Contract, "RewardCreated")
+          .withArgs(
+            actionId,
+            0,
+            challengeId,
+            team3_id,
+            amount,
+            false,
+            addr3.address
+          );
+        await expect(secondVote)
+          .to.emit(Contract, "RewardCreated")
+          .withArgs(
+            actionId,
+            1,
+            challengeId,
+            team5_id,
+            amount,
+            false,
+            addr5.address
+          );
+      });
+
+      it("Should emit RewardCreated for Winning Team", async function () {
+        const { addr5, addr3, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team5_id, team3_id } = await getTeams();
+        const actionId = generateActionId();
+        const amount = 70;
+        const allowance = 80;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr3,
+          addr5,
+          actionId,
+          team3_id,
+          team5_id,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await submitVote(Contract, addr3, actionId, challengeId, team3_id);
+        const secondVote = await submitVote(
+          Contract,
+          addr5,
+          actionId,
+          challengeId,
+          team3_id
+        );
+
+        await expect(secondVote)
+          .to.emit(Contract, "RewardCreated")
+          .withArgs(
+            actionId,
+            0,
+            challengeId,
+            team3_id,
+            amount,
+            false,
+            addr3.address
+          );
+
+        await expect(secondVote)
+          .to.emit(Contract, "RewardCreated")
+          .withArgs(
+            actionId,
+            1,
+            challengeId,
+            team3_id,
+            amount,
+            false,
+            addr3.address
+          );
+      });
+    });
+
+    // describe("claimReward", function () {
+    //   it("Should ...", async function () {
+    //     const { addr4, addr1, addr2, Token, Contract } = await loadFixture(
+    //       deployFixture
+    //     );
+    //     const { team4_id, team1_id } = await getTeams();
+
+    //     console.log("Work in progress");
+    //   });
+    // });
   });
+
+  // describe("\nContract Functions", function () {
+  //   describe("public", function () {
+  //     it("Should show teamMembers", async function () {
+  //       console.log("teamMembers");
+  //     });
+
+  //     it("Should show sportsmanship", async function () {
+  //       console.log("sportsmanship");
+  //     });
+
+  //     it("team_membership_request", async function () {
+  //       console.log("team_membership_request");
+  //     });
+
+  //     it("Should show team_owner", async function () {
+  //       console.log("team_owner");
+  //     });
+
+  //     it("Should show pending_challenge_pool_ids", async function () {
+  //       console.log("pending_challenge_pool_ids ");
+  //     });
+
+  //     it("Should show challengePools", async function () {
+  //       console.log("challengePools");
+  //     });
+
+  //     it("Should show votes", async function () {
+  //       console.log("votes");
+  //     });
+
+  //     it("Should show getTeamMates", async function () {
+  //       console.log("getTeamMates");
+  //     });
+
+  //     it("Should show getChallengePoolTeamMembers", async function () {
+  //       console.log("getChallengePoolTeamMembers");
+  //     });
+
+  //     it("Should show getChallengePoolTeamMembersByTeam", async function () {
+  //       console.log("getChallengePoolTeamMembersByTeam");
+  //     });
+
+  //     it("Should show getChallengePoolTeam2Members", async function () {
+  //       console.log("getChallengePoolTeam2Members");
+  //     });
+
+  //     it("Should show getSVTBalance", async function () {
+  //       console.log("getSVTBalance");
+  //     });
+
+  //     it("Should show getSVTAllowance", async function () {
+  //       console.log("getSVTAllowance");
+  //     });
+  //   });
+  // });
 });

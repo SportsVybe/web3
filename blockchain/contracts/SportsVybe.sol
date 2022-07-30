@@ -18,7 +18,6 @@ Main contract for the SportsVybe platform.
 // ----- Contract errors -------- //
 error NotFound(string);
 error MissingActionId();
-error Unauthorized(uint256);
 
 // ----- Team errors -------- //
 error TeamMembershipRequestNotFound(uint256, address);
@@ -34,6 +33,7 @@ error ChallengePoolCreationUnauthorized(uint256);
 error ChallengePoolAlreadyAccepted(uint256);
 error ChallengePoolAlreadyClosed(uint256);
 error SenderInsufficientBalance(uint256, uint256);
+error ChallengePoolUnauthorized(uint256);
 
 // ----- Vote errors -------- //
 error VoteUnauthorized(uint256, address);
@@ -44,7 +44,6 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
 
   constructor(address payable _sportsVybeToken) {
     sportsVybeToken = IERC20(_sportsVybeToken);
-    console.log("\n//-------- Deployed SportsVybe Contract --------//");
   }
 
   // ----- Team structs -------- //
@@ -67,10 +66,21 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     bool isCompleted;
     uint256 createdAt;
     uint256 interval;
-    uint256 team1_count;
-    uint256 team2_count;
+    uint256 team_1_votes;
+    uint256 team_2_votes;
     address[] team_1_members;
     address[] team_2_members;
+  }
+
+  // ----- Reward struts -------- //
+
+  struct Reward {
+    string action_id;
+    uint256 reward_id;
+    uint256 challenge_id;
+    uint256 team_id;
+    uint256 amount;
+    bool isClaimed;
   }
 
   // ----- Team events -------- //
@@ -117,6 +127,17 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
   event Lose(uint256 challenge_id, uint256 team_id);
   event Tie(uint256 challenge_id, uint256 team1_id, uint256 team2_id);
 
+  // ----- Reward events -------- //
+  event RewardCreated(
+    string action_id,
+    uint256 reward_id,
+    uint256 challenge_id,
+    uint256 team_id,
+    uint256 amount,
+    bool isClaimed,
+    address user
+  );
+
   // ----- Chainlink variables -------- //
   uint256 upkeepCounter = 0; // deprecated
 
@@ -130,19 +151,24 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
 
   // new counter openzepplin
   using Counters for Counters.Counter;
-  Counters.Counter public team_id_counter;
+  Counters.Counter private team_id_counter;
   // TODO: use chainlink VRF for unique Identifier -> team_id
+
+  Counters.Counter private challenge_id_counter;
+  // TODO: use chainlink VRF for unique Identifier -> challenge_id
+
+  Counters.Counter private reward_id_counter;
 
   // ----- Challenge variables -------- //
   mapping(uint256 => ChallengePool) public challengePools; // mapped by challenge_id
   mapping(uint256 => address[]) private challengePoolTeamMembers; // mapped by challenge_id
   uint256[] public pending_challenge_pool_ids; // deprecated
 
-  Counters.Counter public challenge_id_counter;
-  // TODO: use chainlink VRF for unique Identifier -> challenge_id
-
   // ----- Vote variables -------- //
   mapping(address => ChallengeVote[]) public votes;
+
+  // ----- Reward variables -------- //
+  mapping(address => Reward[]) public challengeRewards;
 
   // ----- Team functions -------- //
   function createTeam(string memory action_id)
@@ -189,7 +215,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
   }
 
   function acceptTeamMembershipRequest(string memory action_id, uint256 team_id)
-    public
+    external
     newSportsmanship
     hasActionId(action_id)
     returns (bool)
@@ -417,7 +443,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     emit ChallengePoolClosed(challenge_id);
   }
 
-  function getChallengePoolTeamMembers(uint256 challenge_id)
+  function getAllChallengePoolTeamMembers(uint256 challenge_id)
     public
     view
     returns (address[] memory)
@@ -425,20 +451,18 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     return challengePoolTeamMembers[challenge_id];
   }
 
-  function getChallengePoolTeam1Members(uint256 challenge_id)
-    public
-    view
-    returns (address[] memory)
-  {
-    return challengePools[challenge_id].team_1_members;
-  }
-
-  function getChallengePoolTeam2Members(uint256 challenge_id)
-    public
-    view
-    returns (address[] memory)
-  {
-    return challengePools[challenge_id].team_2_members;
+  function getChallengePoolTeamMembersByTeam(
+    uint256 challenge_id,
+    uint256 team_id
+  ) public view returns (address[] memory) {
+    address[] memory members;
+    if (team_id == challengePools[challenge_id].team2) {
+      members = challengePools[challenge_id].team_2_members;
+    }
+    if (team_id == challengePools[challenge_id].team1) {
+      members = challengePools[challenge_id].team_1_members;
+    }
+    return members;
   }
 
   function totalChallengePoolVotes(uint256 challenge_id)
@@ -447,8 +471,8 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     returns (uint256)
   {
     return
-      challengePools[challenge_id].team1_count +
-      challengePools[challenge_id].team2_count;
+      challengePools[challenge_id].team_1_votes +
+      challengePools[challenge_id].team_2_votes;
   }
 
   function challengePoolTeamMemberCount(uint256 challenge_id)
@@ -480,14 +504,14 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
       revert VoteDuplicate(challenge_id, msg.sender);
     }
     if (compareStrings(action_id, "log")) {
-      console.log("team1_count %d", challengePools[challenge_id].team1_count);
-      console.log("team2_count %d", challengePools[challenge_id].team2_count);
+      console.log("team_1_votes %d", challengePools[challenge_id].team_1_votes);
+      console.log("team_2_votes %d", challengePools[challenge_id].team_2_votes);
     }
     //increase vote count for team ID
     if (challengePools[challenge_id].team1 == team_id) {
-      challengePools[challenge_id].team1_count += 1;
+      challengePools[challenge_id].team_1_votes += 1;
     } else if (challengePools[challenge_id].team2 == team_id) {
-      challengePools[challenge_id].team2_count += 1;
+      challengePools[challenge_id].team_2_votes += 1;
     } else {
       revert TeamInvalid(team_id);
     }
@@ -516,7 +540,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
       totalChallengePoolVotes(challenge_id) !=
       challengePoolTeamMemberCount(challenge_id)
     ) {
-      revert Unauthorized(challenge_id);
+      revert ChallengePoolUnauthorized(challenge_id);
     }
 
     uint256 winner = 0;
@@ -530,8 +554,8 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     }
 
     if (
-      challengePools[challenge_id].team1_count ==
-      challengePools[challenge_id].team2_count
+      challengePools[challenge_id].team_1_votes ==
+      challengePools[challenge_id].team_2_votes
     ) {
       // tie reduce sportsmanship of both teams
       handleSportsmanship("tie", team1);
@@ -546,10 +570,11 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
         !challengePools[challenge_id].isClosed
       ) {
         // TODO: create reward workflow
+        createReward(challenge_id, team1, team2);
       }
     } else if (
-      challengePools[challenge_id].team1_count >
-      challengePools[challenge_id].team2_count
+      challengePools[challenge_id].team_1_votes >
+      challengePools[challenge_id].team_2_votes
     ) {
       winner = team1;
       loser = team2;
@@ -569,6 +594,7 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
       ) {
         // TODO: create reward workflow
 
+        createReward(challenge_id, winner, loser);
         challengePools[challenge_id].isCompleted = true;
         emit Win(challenge_id, winner);
       }
@@ -602,30 +628,165 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     return isDup;
   }
 
-  // ----- Token functions -------- //
-
-  function getSVTBalance() public view returns (uint256) {
-    return sportsVybeToken.balanceOf(msg.sender);
-  }
-
-  function getSVTAllowance() public view returns (uint256) {
-    return sportsVybeToken.allowance(msg.sender, address(this));
-  }
-
-  // ----- Helper functions -------- //
-  function compareStrings(string memory a, string memory b)
-    private
-    pure
-    returns (bool)
-  {
-    return (keccak256(abi.encodePacked((a))) ==
-      keccak256(abi.encodePacked((b))));
-  }
-
   // ----- Reward functions -------- //
-  function createReward(uint256 challenge_id) private {}
+  function createReward(
+    uint256 challenge_id,
+    uint256 winner_team_id,
+    uint256 loser_team_id
+  ) private {
+    if (
+      !challengePools[challenge_id].isClosed &&
+      !challengePools[challenge_id].isAccepted &&
+      !challengePools[challenge_id].isCompleted &&
+      (totalChallengePoolVotes(challenge_id) ==
+        challengePoolTeamMemberCount(challenge_id))
+    ) {
+      revert ChallengePoolUnauthorized(challenge_id);
+    }
 
-  function claimReward(uint256 challenge_id) public payable {
+    require(
+      (winner_team_id != challengePools[challenge_id].team1 &&
+        loser_team_id != challengePools[challenge_id].team2) ||
+        (loser_team_id != challengePools[challenge_id].team1 &&
+          winner_team_id != challengePools[challenge_id].team2),
+      "Invalid Team"
+    );
+
+    if (
+      challengePools[challenge_id].team_1_votes ==
+      challengePools[challenge_id].team_2_votes &&
+      (totalChallengePoolVotes(challenge_id) ==
+        challengePoolTeamMemberCount(challenge_id))
+    ) {
+      // console.log("TIE");
+      address team_1_owner = team_owner[winner_team_id];
+      address team_2_owner = team_owner[loser_team_id];
+      uint256 amount = challengePools[challenge_id].amount / 2;
+
+      // TODO: reward for team owners only since they opened the challenge
+      challengeRewards[team_1_owner].push(
+        Reward(
+          challengePools[challenge_id].action_id,
+          reward_id_counter.current(),
+          challenge_id,
+          winner_team_id,
+          amount,
+          false
+        )
+      );
+      emit RewardCreated(
+        challengePools[challenge_id].action_id,
+        reward_id_counter.current(),
+        challenge_id,
+        winner_team_id,
+        amount,
+        false,
+        team_1_owner
+      );
+
+      reward_id_counter.increment();
+
+      challengeRewards[team_2_owner].push(
+        Reward(
+          challengePools[challenge_id].action_id,
+          reward_id_counter.current(),
+          challenge_id,
+          loser_team_id,
+          amount,
+          false
+        )
+      );
+
+      emit RewardCreated(
+        challengePools[challenge_id].action_id,
+        reward_id_counter.current(),
+        challenge_id,
+        loser_team_id,
+        amount,
+        false,
+        team_2_owner
+      );
+
+      reward_id_counter.increment();
+
+      // complete challenge
+      challengePools[challenge_id].isCompleted = true;
+
+      if (compareStrings(challengePools[challenge_id].action_id, "log")) {
+        Reward[] memory _challenge_rewards_2 = challengeRewards[team_2_owner];
+        console.log("team2: action_id ", _challenge_rewards_2[0].action_id);
+        console.log("reward_id %d", _challenge_rewards_2[0].reward_id);
+        console.log("challenge_id %d", _challenge_rewards_2[0].challenge_id);
+        console.log("team_id %d", _challenge_rewards_2[0].team_id);
+        console.log("amount %d", _challenge_rewards_2[0].amount);
+        console.log("isClaimed ", _challenge_rewards_2[0].isClaimed);
+      }
+    } else if (
+      (challengePools[challenge_id].team_1_votes !=
+        challengePools[challenge_id].team_2_votes) &&
+      (totalChallengePoolVotes(challenge_id) ==
+        challengePoolTeamMemberCount(challenge_id))
+    ) {
+      // console.log("WIN");
+      address[] memory members = getChallengePoolTeamMembersByTeam(
+        challenge_id,
+        winner_team_id
+      );
+      uint256 owner_amount = challengePools[challenge_id].amount / 2;
+      uint256 team_amount = owner_amount / members.length;
+
+      // TODO: reward owner first
+      address winner_owner = team_owner[winner_team_id];
+      challengeRewards[winner_owner].push(
+        Reward(
+          challengePools[challenge_id].action_id,
+          reward_id_counter.current(),
+          challenge_id,
+          winner_team_id,
+          owner_amount,
+          false
+        )
+      );
+      emit RewardCreated(
+        challengePools[challenge_id].action_id,
+        reward_id_counter.current(),
+        challenge_id,
+        winner_team_id,
+        owner_amount,
+        false,
+        winner_owner
+      );
+      reward_id_counter.increment();
+
+      // TODO: reward winning teammembers
+
+      for (uint256 i; i < members.length; i++) {
+        challengeRewards[members[i]].push(
+          Reward(
+            challengePools[challenge_id].action_id,
+            reward_id_counter.current(),
+            challenge_id,
+            winner_team_id,
+            owner_amount,
+            false
+          )
+        );
+        emit RewardCreated(
+          challengePools[challenge_id].action_id,
+          reward_id_counter.current(),
+          challenge_id,
+          winner_team_id,
+          team_amount,
+          false,
+          members[i]
+        );
+        reward_id_counter.increment();
+      }
+    }
+  }
+
+  function claimReward(uint256 action_id, uint256 challenge_id) public payable {
+    // TODO: deduct POS fee when claimed
     // address payable team_1_owner = team_owner[team1];
     // address payable team_2_owner = team_owner[team2];
     // sportsVybeToken.transferFrom(
@@ -649,6 +810,14 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     // payable(winner_team_owner).transfer(
     //   challengePools[challenge_id].amount
     // );
+  }
+
+  function getUserChallengeRewards(address user)
+    public
+    view
+    returns (Reward[] memory)
+  {
+    return challengeRewards[user];
   }
 
   // ----- POS functions -------- //
@@ -687,6 +856,26 @@ contract SportsVybe is Ownable, KeeperCompatibleInterface {
     @returns: uint
     */
     return team_sportsmanship[_team_id] / teamCount[_team_id];
+  }
+
+  // ----- Token functions -------- //
+
+  function getSVTBalance() public view returns (uint256) {
+    return sportsVybeToken.balanceOf(msg.sender);
+  }
+
+  function getSVTAllowance() public view returns (uint256) {
+    return sportsVybeToken.allowance(msg.sender, address(this));
+  }
+
+  // ----- Helper functions -------- //
+  function compareStrings(string memory a, string memory b)
+    private
+    pure
+    returns (bool)
+  {
+    return (keccak256(abi.encodePacked((a))) ==
+      keccak256(abi.encodePacked((b))));
   }
 
   // ----- Chainlink functions -------- //

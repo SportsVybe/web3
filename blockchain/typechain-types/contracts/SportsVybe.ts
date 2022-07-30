@@ -28,25 +28,52 @@ import type {
   PromiseOrValue,
 } from "../common";
 
+export declare namespace SportsVybe {
+  export type RewardStruct = {
+    action_id: PromiseOrValue<string>;
+    reward_id: PromiseOrValue<BigNumberish>;
+    challenge_id: PromiseOrValue<BigNumberish>;
+    team_id: PromiseOrValue<BigNumberish>;
+    amount: PromiseOrValue<BigNumberish>;
+    isClaimed: PromiseOrValue<boolean>;
+  };
+
+  export type RewardStructOutput = [
+    string,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    boolean
+  ] & {
+    action_id: string;
+    reward_id: BigNumber;
+    challenge_id: BigNumber;
+    team_id: BigNumber;
+    amount: BigNumber;
+    isClaimed: boolean;
+  };
+}
+
 export interface SportsVybeInterface extends utils.Interface {
   functions: {
     "acceptChallengePool(string,uint256,uint256,uint256)": FunctionFragment;
     "acceptTeamMembershipRequest(string,uint256)": FunctionFragment;
     "challengePools(uint256)": FunctionFragment;
-    "challenge_id_counter()": FunctionFragment;
+    "challengeRewards(address,uint256)": FunctionFragment;
     "checkUpkeep(bytes)": FunctionFragment;
     "claimReward(uint256)": FunctionFragment;
     "createChallengePool(string,uint256,uint256,uint256)": FunctionFragment;
     "createTeam(string)": FunctionFragment;
     "declineChallenge(uint256,uint256)": FunctionFragment;
-    "getChallengePoolTeam1Members(uint256)": FunctionFragment;
-    "getChallengePoolTeam2Members(uint256)": FunctionFragment;
-    "getChallengePoolTeamMembers(uint256)": FunctionFragment;
+    "getAllChallengePoolTeamMembers(uint256)": FunctionFragment;
+    "getChallengePoolTeamMembersByTeam(uint256,uint256)": FunctionFragment;
     "getSVTAllowance()": FunctionFragment;
     "getSVTBalance()": FunctionFragment;
     "getTeamCount(uint256)": FunctionFragment;
     "getTeamMates(uint256)": FunctionFragment;
     "getTeamSportsmanship(uint256)": FunctionFragment;
+    "getUserChallengeRewards(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "pending_challenge_pool_ids(uint256)": FunctionFragment;
     "performUpkeep(bytes)": FunctionFragment;
@@ -56,7 +83,6 @@ export interface SportsVybeInterface extends utils.Interface {
     "sportsmanship(address)": FunctionFragment;
     "submitVote(string,uint256,uint256)": FunctionFragment;
     "teamMembers(uint256,uint256)": FunctionFragment;
-    "team_id_counter()": FunctionFragment;
     "team_membership_request(uint256,uint256)": FunctionFragment;
     "team_owner(uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
@@ -68,20 +94,20 @@ export interface SportsVybeInterface extends utils.Interface {
       | "acceptChallengePool"
       | "acceptTeamMembershipRequest"
       | "challengePools"
-      | "challenge_id_counter"
+      | "challengeRewards"
       | "checkUpkeep"
       | "claimReward"
       | "createChallengePool"
       | "createTeam"
       | "declineChallenge"
-      | "getChallengePoolTeam1Members"
-      | "getChallengePoolTeam2Members"
-      | "getChallengePoolTeamMembers"
+      | "getAllChallengePoolTeamMembers"
+      | "getChallengePoolTeamMembersByTeam"
       | "getSVTAllowance"
       | "getSVTBalance"
       | "getTeamCount"
       | "getTeamMates"
       | "getTeamSportsmanship"
+      | "getUserChallengeRewards"
       | "owner"
       | "pending_challenge_pool_ids"
       | "performUpkeep"
@@ -91,7 +117,6 @@ export interface SportsVybeInterface extends utils.Interface {
       | "sportsmanship"
       | "submitVote"
       | "teamMembers"
-      | "team_id_counter"
       | "team_membership_request"
       | "team_owner"
       | "transferOwnership"
@@ -116,8 +141,8 @@ export interface SportsVybeInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "challenge_id_counter",
-    values?: undefined
+    functionFragment: "challengeRewards",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "checkUpkeep",
@@ -145,16 +170,12 @@ export interface SportsVybeInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getChallengePoolTeam1Members",
+    functionFragment: "getAllChallengePoolTeamMembers",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getChallengePoolTeam2Members",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getChallengePoolTeamMembers",
-    values: [PromiseOrValue<BigNumberish>]
+    functionFragment: "getChallengePoolTeamMembersByTeam",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "getSVTAllowance",
@@ -175,6 +196,10 @@ export interface SportsVybeInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getTeamSportsmanship",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getUserChallengeRewards",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -218,10 +243,6 @@ export interface SportsVybeInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "team_id_counter",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "team_membership_request",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
@@ -251,7 +272,7 @@ export interface SportsVybeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "challenge_id_counter",
+    functionFragment: "challengeRewards",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -272,15 +293,11 @@ export interface SportsVybeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getChallengePoolTeam1Members",
+    functionFragment: "getAllChallengePoolTeamMembers",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getChallengePoolTeam2Members",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getChallengePoolTeamMembers",
+    functionFragment: "getChallengePoolTeamMembersByTeam",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -301,6 +318,10 @@ export interface SportsVybeInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getTeamSportsmanship",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUserChallengeRewards",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -334,10 +355,6 @@ export interface SportsVybeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "team_id_counter",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "team_membership_request",
     data: BytesLike
   ): Result;
@@ -354,6 +371,7 @@ export interface SportsVybeInterface extends utils.Interface {
     "ChallengePoolCreated(string,uint256,uint256,uint256,uint256)": EventFragment;
     "Lose(uint256,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
+    "RewardCreated(string,uint256,uint256,uint256,uint256,bool,address)": EventFragment;
     "TeamCreated(string,uint256)": EventFragment;
     "TeamMembershipRequestAccept(string,uint256,address)": EventFragment;
     "TeamMembershipRequestSent(string,uint256,address,address)": EventFragment;
@@ -367,6 +385,7 @@ export interface SportsVybeInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ChallengePoolCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Lose"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RewardCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TeamCreated"): EventFragment;
   getEvent(
     nameOrSignatureOrTopic: "TeamMembershipRequestAccept"
@@ -436,6 +455,22 @@ export type OwnershipTransferredEvent = TypedEvent<
 
 export type OwnershipTransferredEventFilter =
   TypedEventFilter<OwnershipTransferredEvent>;
+
+export interface RewardCreatedEventObject {
+  action_id: string;
+  reward_id: BigNumber;
+  challenge_id: BigNumber;
+  team_id: BigNumber;
+  amount: BigNumber;
+  isClaimed: boolean;
+  user: string;
+}
+export type RewardCreatedEvent = TypedEvent<
+  [string, BigNumber, BigNumber, BigNumber, BigNumber, boolean, string],
+  RewardCreatedEventObject
+>;
+
+export type RewardCreatedEventFilter = TypedEventFilter<RewardCreatedEvent>;
 
 export interface TeamCreatedEventObject {
   action_id: string;
@@ -575,14 +610,25 @@ export interface SportsVybe extends BaseContract {
         isCompleted: boolean;
         createdAt: BigNumber;
         interval: BigNumber;
-        team1_count: BigNumber;
-        team2_count: BigNumber;
+        team_1_votes: BigNumber;
+        team_2_votes: BigNumber;
       }
     >;
 
-    challenge_id_counter(
+    challengeRewards(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<[BigNumber] & { _value: BigNumber }>;
+    ): Promise<
+      [string, BigNumber, BigNumber, BigNumber, BigNumber, boolean] & {
+        action_id: string;
+        reward_id: BigNumber;
+        challenge_id: BigNumber;
+        team_id: BigNumber;
+        amount: BigNumber;
+        isClaimed: boolean;
+      }
+    >;
 
     checkUpkeep(
       arg0: PromiseOrValue<BytesLike>,
@@ -615,18 +661,14 @@ export interface SportsVybe extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getChallengePoolTeam1Members(
+    getAllChallengePoolTeamMembers(
       challenge_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string[]]>;
 
-    getChallengePoolTeam2Members(
+    getChallengePoolTeamMembersByTeam(
       challenge_id: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string[]]>;
-
-    getChallengePoolTeamMembers(
-      challenge_id: PromiseOrValue<BigNumberish>,
+      team_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string[]]>;
 
@@ -648,6 +690,11 @@ export interface SportsVybe extends BaseContract {
       _team_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    getUserChallengeRewards(
+      user: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[SportsVybe.RewardStructOutput[]]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -691,10 +738,6 @@ export interface SportsVybe extends BaseContract {
       arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    team_id_counter(
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { _value: BigNumber }>;
 
     team_membership_request(
       arg0: PromiseOrValue<BigNumberish>,
@@ -759,12 +802,25 @@ export interface SportsVybe extends BaseContract {
       isCompleted: boolean;
       createdAt: BigNumber;
       interval: BigNumber;
-      team1_count: BigNumber;
-      team2_count: BigNumber;
+      team_1_votes: BigNumber;
+      team_2_votes: BigNumber;
     }
   >;
 
-  challenge_id_counter(overrides?: CallOverrides): Promise<BigNumber>;
+  challengeRewards(
+    arg0: PromiseOrValue<string>,
+    arg1: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, BigNumber, BigNumber, BigNumber, BigNumber, boolean] & {
+      action_id: string;
+      reward_id: BigNumber;
+      challenge_id: BigNumber;
+      team_id: BigNumber;
+      amount: BigNumber;
+      isClaimed: boolean;
+    }
+  >;
 
   checkUpkeep(
     arg0: PromiseOrValue<BytesLike>,
@@ -797,18 +853,14 @@ export interface SportsVybe extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  getChallengePoolTeam1Members(
+  getAllChallengePoolTeamMembers(
     challenge_id: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string[]>;
 
-  getChallengePoolTeam2Members(
+  getChallengePoolTeamMembersByTeam(
     challenge_id: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string[]>;
-
-  getChallengePoolTeamMembers(
-    challenge_id: PromiseOrValue<BigNumberish>,
+    team_id: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string[]>;
 
@@ -830,6 +882,11 @@ export interface SportsVybe extends BaseContract {
     _team_id: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  getUserChallengeRewards(
+    user: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<SportsVybe.RewardStructOutput[]>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -873,8 +930,6 @@ export interface SportsVybe extends BaseContract {
     arg1: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
-
-  team_id_counter(overrides?: CallOverrides): Promise<BigNumber>;
 
   team_membership_request(
     arg0: PromiseOrValue<BigNumberish>,
@@ -939,12 +994,25 @@ export interface SportsVybe extends BaseContract {
         isCompleted: boolean;
         createdAt: BigNumber;
         interval: BigNumber;
-        team1_count: BigNumber;
-        team2_count: BigNumber;
+        team_1_votes: BigNumber;
+        team_2_votes: BigNumber;
       }
     >;
 
-    challenge_id_counter(overrides?: CallOverrides): Promise<BigNumber>;
+    challengeRewards(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, BigNumber, BigNumber, BigNumber, BigNumber, boolean] & {
+        action_id: string;
+        reward_id: BigNumber;
+        challenge_id: BigNumber;
+        team_id: BigNumber;
+        amount: BigNumber;
+        isClaimed: boolean;
+      }
+    >;
 
     checkUpkeep(
       arg0: PromiseOrValue<BytesLike>,
@@ -977,18 +1045,14 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    getChallengePoolTeam1Members(
+    getAllChallengePoolTeamMembers(
       challenge_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string[]>;
 
-    getChallengePoolTeam2Members(
+    getChallengePoolTeamMembersByTeam(
       challenge_id: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string[]>;
-
-    getChallengePoolTeamMembers(
-      challenge_id: PromiseOrValue<BigNumberish>,
+      team_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string[]>;
 
@@ -1010,6 +1074,11 @@ export interface SportsVybe extends BaseContract {
       _team_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getUserChallengeRewards(
+      user: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<SportsVybe.RewardStructOutput[]>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1051,8 +1120,6 @@ export interface SportsVybe extends BaseContract {
       arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
-
-    team_id_counter(overrides?: CallOverrides): Promise<BigNumber>;
 
     team_membership_request(
       arg0: PromiseOrValue<BigNumberish>,
@@ -1125,6 +1192,25 @@ export interface SportsVybe extends BaseContract {
       previousOwner?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
     ): OwnershipTransferredEventFilter;
+
+    "RewardCreated(string,uint256,uint256,uint256,uint256,bool,address)"(
+      action_id?: null,
+      reward_id?: null,
+      challenge_id?: null,
+      team_id?: null,
+      amount?: null,
+      isClaimed?: null,
+      user?: null
+    ): RewardCreatedEventFilter;
+    RewardCreated(
+      action_id?: null,
+      reward_id?: null,
+      challenge_id?: null,
+      team_id?: null,
+      amount?: null,
+      isClaimed?: null,
+      user?: null
+    ): RewardCreatedEventFilter;
 
     "TeamCreated(string,uint256)"(
       action_id?: null,
@@ -1200,7 +1286,11 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    challenge_id_counter(overrides?: CallOverrides): Promise<BigNumber>;
+    challengeRewards(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     checkUpkeep(
       arg0: PromiseOrValue<BytesLike>,
@@ -1231,18 +1321,14 @@ export interface SportsVybe extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    getChallengePoolTeam1Members(
+    getAllChallengePoolTeamMembers(
       challenge_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getChallengePoolTeam2Members(
+    getChallengePoolTeamMembersByTeam(
       challenge_id: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getChallengePoolTeamMembers(
-      challenge_id: PromiseOrValue<BigNumberish>,
+      team_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1262,6 +1348,11 @@ export interface SportsVybe extends BaseContract {
 
     getTeamSportsmanship(
       _team_id: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getUserChallengeRewards(
+      user: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1308,8 +1399,6 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    team_id_counter(overrides?: CallOverrides): Promise<BigNumber>;
-
     team_membership_request(
       arg0: PromiseOrValue<BigNumberish>,
       arg1: PromiseOrValue<BigNumberish>,
@@ -1353,7 +1442,9 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    challenge_id_counter(
+    challengeRewards(
+      arg0: PromiseOrValue<string>,
+      arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1386,18 +1477,14 @@ export interface SportsVybe extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    getChallengePoolTeam1Members(
+    getAllChallengePoolTeamMembers(
       challenge_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getChallengePoolTeam2Members(
+    getChallengePoolTeamMembersByTeam(
       challenge_id: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getChallengePoolTeamMembers(
-      challenge_id: PromiseOrValue<BigNumberish>,
+      team_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1417,6 +1504,11 @@ export interface SportsVybe extends BaseContract {
 
     getTeamSportsmanship(
       _team_id: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getUserChallengeRewards(
+      user: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1462,8 +1554,6 @@ export interface SportsVybe extends BaseContract {
       arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    team_id_counter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     team_membership_request(
       arg0: PromiseOrValue<BigNumberish>,
