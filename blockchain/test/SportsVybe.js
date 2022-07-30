@@ -91,9 +91,6 @@ describe("SportsVybe Contract - Test Cases", function () {
     amount,
     actionId
   ) {
-    if (actionId === "log") {
-      console.log(account.address, amount);
-    }
     await transferAmount(Token, account, amount);
     await approveAmount(Contract, Token, account, amount);
   }
@@ -202,6 +199,7 @@ describe("SportsVybe Contract - Test Cases", function () {
   ) {
     if (actionId === "log") {
       console.log(
+        "TESTS: createAndAcceptChallenge",
         creator.address,
         challenger.address,
         actionId,
@@ -241,7 +239,7 @@ describe("SportsVybe Contract - Test Cases", function () {
 
   async function submitVote(Contract, voter, actionId, challengeId, vote) {
     if (actionId === "log") {
-      console.log(voter, actionId, challengeId, vote);
+      console.log(voter.address, actionId, challengeId, vote);
     }
     return Contract.connect(voter).submitVote(actionId, challengeId, vote);
   }
@@ -293,16 +291,16 @@ describe("SportsVybe Contract - Test Cases", function () {
 
   describe("\nTeam Functions", function () {
     describe("createTeam", function () {
-      // it("Should revert if actionId is null", async function () {
-      //   const { Contract } = await loadFixture(deployFixture);
-      //   const newTeam = Contract.createTeam(" ");
-      //   await expect(newTeam).to.be.reverted;
-      // });
-
-      it("Should revert if actionId is empty", async function () {
+      it("Should revert if actionId is empty/missing", async function () {
         const { Contract } = await loadFixture(deployFixture);
-        const newTeam = Contract.createTeam("");
-        await expect(newTeam).to.be.revertedWith("Action ID cannot be empty");
+        await expect(Contract.createTeam(" ")).to.be.revertedWith(
+          "Action ID is required"
+        );
+        await expect(Contract.createTeam("")).to.be.revertedWith(
+          "Action ID is required"
+        );
+
+        await expect(Contract.createTeam()).to.be.reverted;
       });
 
       it("Should emit TeamCreated", async function () {
@@ -1193,8 +1191,8 @@ describe("SportsVybe Contract - Test Cases", function () {
         await submitVote(Contract, addr5, actionId, challengeId, team3_id);
 
         expect(
-          await Contract.getUserChallengeRewards(addr3.address)
-        ).to.have.length(2);
+          await Contract.getAllUserChallengeRewards(addr3.address)
+        ).to.have.length(3);
 
         expect((await Contract.challengePools(challengeId)).isCompleted).to.be
           .true;
@@ -1227,12 +1225,12 @@ describe("SportsVybe Contract - Test Cases", function () {
         await submitVote(Contract, addr5, actionId, challengeId, team5_id);
 
         expect(
-          await Contract.getUserChallengeRewards(addr3.address)
-        ).to.have.length(1);
+          await Contract.getAllUserChallengeRewards(addr3.address)
+        ).to.have.length(2);
 
         expect(
-          await Contract.getUserChallengeRewards(addr5.address)
-        ).to.have.length(1);
+          await Contract.getAllUserChallengeRewards(addr5.address)
+        ).to.have.length(2);
 
         expect((await Contract.challengePools(challengeId)).isCompleted).to.be
           .true;
@@ -1298,17 +1296,17 @@ describe("SportsVybe Contract - Test Cases", function () {
         await submitVote(Contract, addr5, actionId, challengeId, team5_id);
         await submitVote(Contract, addr6, actionId, challengeId, team3_id);
         expect(
-          await Contract.getUserChallengeRewards(addr1.address)
-        ).to.have.length(1);
+          await Contract.getAllUserChallengeRewards(addr1.address)
+        ).to.have.length(2);
 
         expect(
-          await Contract.getUserChallengeRewards(addr2.address)
-        ).to.have.length(1);
+          await Contract.getAllUserChallengeRewards(addr2.address)
+        ).to.have.length(2);
 
         // owner of team3
         expect(
-          await Contract.getUserChallengeRewards(addr3.address)
-        ).to.have.length(2);
+          await Contract.getAllUserChallengeRewards(addr3.address)
+        ).to.have.length(3);
       });
 
       it("Should emit RewardCreated both Teams in a Tie", async function () {
@@ -1424,16 +1422,306 @@ describe("SportsVybe Contract - Test Cases", function () {
       });
     });
 
-    // describe("claimReward", function () {
-    //   it("Should ...", async function () {
-    //     const { addr4, addr1, addr2, Token, Contract } = await loadFixture(
-    //       deployFixture
-    //     );
-    //     const { team4_id, team1_id } = await getTeams();
+    describe("claimReward", function () {
+      it("Should revert if the reward is invalid", async function () {
+        const { addr5, addr3, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team5_id, team3_id } = await getTeams();
+        const rewardActionId = generateActionId();
+        const claimActionId = generateActionId();
 
-    //     console.log("Work in progress");
-    //   });
-    // });
+        const amount = 70;
+        const allowance = 80;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr3,
+          addr5,
+          rewardActionId,
+          team3_id,
+          team5_id,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await submitVote(
+          Contract,
+          addr3,
+          rewardActionId,
+          challengeId,
+          team3_id
+        );
+        await submitVote(
+          Contract,
+          addr5,
+          rewardActionId,
+          challengeId,
+          team3_id
+        );
+
+        expect(
+          await Contract.getAllUserChallengeRewards(addr3.address)
+        ).to.have.length(3);
+
+        expect((await Contract.challengePools(challengeId)).isCompleted).to.be
+          .true;
+
+        await Contract.connect(addr3).claimReward(
+          claimActionId,
+          rewardActionId,
+          0,
+          challengeId
+        );
+
+        await expect(
+          Contract.connect(addr3).claimReward(
+            claimActionId,
+            rewardActionId,
+            5, // invalid index
+            challengeId
+          )
+        ).to.be.revertedWith("Invalid Reward");
+      });
+
+      it("Should revert if the reward is already claimed", async function () {
+        const { addr5, addr3, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team5_id, team3_id } = await getTeams();
+        const rewardActionId = generateActionId();
+        const claimActionId = generateActionId();
+
+        const amount = 70;
+        const allowance = 80;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr3,
+          addr5,
+          rewardActionId,
+          team3_id,
+          team5_id,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await submitVote(
+          Contract,
+          addr3,
+          rewardActionId,
+          challengeId,
+          team3_id
+        );
+        await submitVote(
+          Contract,
+          addr5,
+          rewardActionId,
+          challengeId,
+          team3_id
+        );
+
+        expect(
+          await Contract.getAllUserChallengeRewards(addr3.address)
+        ).to.have.length(3);
+
+        expect((await Contract.challengePools(challengeId)).isCompleted).to.be
+          .true;
+
+        await Contract.connect(addr3).claimReward(
+          claimActionId,
+          rewardActionId,
+          0,
+          challengeId
+        );
+
+        await expect(
+          Contract.connect(addr3).claimReward(
+            claimActionId,
+            rewardActionId,
+            0,
+            challengeId
+          )
+        ).to.be.revertedWith("Reward Already Claimed");
+      });
+
+      it("Should revert if user has no rewards", async function () {
+        const { addr5, addr3, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+
+        await transferAndApproveAmount(
+          Contract,
+          Token,
+          addr3,
+          100,
+          generateActionId()
+        );
+
+        await expect(
+          Contract.connect(addr3).claimReward(
+            generateActionId(),
+            generateActionId(),
+            0,
+            900
+          )
+        ).to.revertedWith("User has no rewards");
+      });
+
+      it("Should emit RewardClaimed", async function () {
+        const { addr5, addr3, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team5_id, team3_id } = await getTeams();
+        const rewardActionId = generateActionId();
+        const claimActionId = generateActionId();
+
+        const amount = 70;
+        const allowance = 80;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr3,
+          addr5,
+          rewardActionId,
+          team3_id,
+          team5_id,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await submitVote(
+          Contract,
+          addr3,
+          rewardActionId,
+          challengeId,
+          team3_id
+        );
+        await submitVote(
+          Contract,
+          addr5,
+          rewardActionId,
+          challengeId,
+          team3_id
+        );
+
+        expect(
+          await Contract.getAllUserChallengeRewards(addr3.address)
+        ).to.have.length(3);
+
+        expect((await Contract.challengePools(challengeId)).isCompleted).to.be
+          .true;
+
+        expect(
+          await Contract.connect(addr3).claimReward(
+            claimActionId,
+            rewardActionId,
+            0,
+            challengeId
+          )
+        )
+          .to.emit(Contract, "RewardClaimed")
+          .withArgs(
+            claimActionId,
+            rewardActionId,
+            1,
+            challengeId,
+            team3_id,
+            amount,
+            false,
+            0,
+            addr3.address
+          );
+      });
+
+      it("Should transfer SVT to user", async function () {
+        const { addr5, addr3, Token, Contract } = await loadFixture(
+          deployFixture
+        );
+        const { team5_id, team3_id } = await getTeams();
+        const rewardActionId = generateActionId();
+        const claimActionId = generateActionId();
+
+        const amount = 70;
+        const allowance = 80;
+        const challengeId = 900;
+
+        await createAndAcceptChallenge(
+          Contract,
+          Token,
+          addr3,
+          addr5,
+          rewardActionId,
+          team3_id,
+          team5_id,
+          amount,
+          allowance,
+          challengeId
+        );
+
+        await submitVote(
+          Contract,
+          addr3,
+          rewardActionId,
+          challengeId,
+          team3_id
+        );
+
+        const balanceBeforeClaim = await Token.balanceOf(addr3.address);
+
+        await submitVote(
+          Contract,
+          addr5,
+          rewardActionId,
+          challengeId,
+          team3_id
+        );
+
+        expect(
+          await Contract.getAllUserChallengeRewards(addr3.address)
+        ).to.have.length(3);
+
+        expect((await Contract.challengePools(challengeId)).isCompleted).to.be
+          .true;
+
+        await expect(
+          Contract.connect(addr3).claimReward(
+            claimActionId,
+            rewardActionId,
+            0,
+            challengeId
+          )
+        )
+          .to.emit(Contract, "RewardClaimed")
+          .withArgs(
+            claimActionId,
+            rewardActionId,
+            0,
+            challengeId,
+            team3_id,
+            amount,
+            true,
+            addr3.address
+          );
+
+        const balanceAfterClaim = await Token.balanceOf(addr3.address);
+
+        expect(balanceAfterClaim.sub(balanceBeforeClaim)).to.be.equal(amount);
+
+        expect(await balanceAfterClaim.toNumber()).to.be.greaterThan(
+          await balanceBeforeClaim.toNumber()
+        );
+      });
+    });
   });
 
   // describe("\nContract Functions", function () {
