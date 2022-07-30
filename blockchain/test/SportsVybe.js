@@ -294,10 +294,10 @@ describe("SportsVybe Contract - Test Cases", function () {
       it("Should revert if actionId is empty/missing", async function () {
         const { Contract } = await loadFixture(deployFixture);
         await expect(Contract.createTeam(" ")).to.be.revertedWith(
-          "Action ID is required"
+          "MissingActionId()"
         );
         await expect(Contract.createTeam("")).to.be.revertedWith(
-          "Action ID is required"
+          "MissingActionId()"
         );
 
         await expect(Contract.createTeam()).to.be.reverted;
@@ -339,7 +339,9 @@ describe("SportsVybe Contract - Test Cases", function () {
             team2_id,
             addr2.address
           )
-        ).to.be.revertedWith("Cannot send an invite to yourself");
+        ).to.be.revertedWith(
+          `TeamMembershipRequestUnauthorized(${team2_id}, "${addr2.address}")`
+        );
       });
 
       it("Should emit TeamMembershipRequestSent", async function () {
@@ -1434,6 +1436,7 @@ describe("SportsVybe Contract - Test Cases", function () {
         const amount = 70;
         const allowance = 80;
         const challengeId = 900;
+        const rewardId = 0;
 
         await createAndAcceptChallenge(
           Contract,
@@ -1473,7 +1476,7 @@ describe("SportsVybe Contract - Test Cases", function () {
         await Contract.connect(addr3).claimReward(
           claimActionId,
           rewardActionId,
-          0,
+          rewardId,
           challengeId
         );
 
@@ -1484,7 +1487,7 @@ describe("SportsVybe Contract - Test Cases", function () {
             5, // invalid index
             challengeId
           )
-        ).to.be.revertedWith("Invalid Reward");
+        ).to.be.revertedWith(`RewardInvalid("${rewardActionId}", ${5})`);
       });
 
       it("Should revert if the reward is already claimed", async function () {
@@ -1548,7 +1551,9 @@ describe("SportsVybe Contract - Test Cases", function () {
             0,
             challengeId
           )
-        ).to.be.revertedWith("Reward Already Claimed");
+        ).to.be.revertedWith(
+          `RewardAlreadyClaimed("${rewardActionId}", ${0}, ${challengeId})`
+        );
       });
 
       it("Should revert if user has no rewards", async function () {
@@ -1571,7 +1576,7 @@ describe("SportsVybe Contract - Test Cases", function () {
             0,
             900
           )
-        ).to.revertedWith("User has no rewards");
+        ).to.be.revertedWith(`RewardsNotFound("${addr3.address}")`);
       });
 
       it("Should emit RewardClaimed", async function () {

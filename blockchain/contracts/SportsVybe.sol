@@ -5,7 +5,6 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "hardhat/console.sol";
 
 /*
 @Description: SportsVybe 
@@ -35,6 +34,12 @@ error ChallengePoolUnauthorized(uint256);
 // ----- Vote errors -------- //
 error VoteUnauthorized(uint256, address);
 error VoteDuplicate(uint256, address);
+
+// ----- Reward errors -------- //
+error RewardInvalid(string, uint256);
+error RewardInsufficientAmount(string, uint256, uint256);
+error RewardAlreadyClaimed(string, uint256, uint256);
+error RewardsNotFound(address);
 
 contract SportsVybe is Ownable {
   IERC20 public sportsVybeToken;
@@ -213,7 +218,7 @@ contract SportsVybe is Ownable {
     returns (bool)
   {
     if (msg.sender == user) {
-      revert("Cannot send an invite to yourself");
+      revert TeamMembershipRequestUnauthorized(team_id, msg.sender);
     }
     team_membership_request[team_id].push(TeamMate(user));
     emit TeamMembershipRequestSent(action_id, team_id, user, msg.sender);
@@ -227,7 +232,7 @@ contract SportsVybe is Ownable {
     returns (bool)
   {
     if (msg.sender == team_owner[team_id]) {
-      revert("Cannot accept an invite to yourself");
+      revert TeamMembershipRequestUnauthorized(team_id, msg.sender);
     }
 
     uint256 found = 0;
@@ -280,14 +285,6 @@ contract SportsVybe is Ownable {
     // TODO: remove interval
     uint256 _interval = 5;
     uint256 new_challenge_id = 900 + challenge_id_counter.current();
-    if (compareStrings(action_id, "log")) {
-      console.log(
-        "createChallengePool: new_challenge_id: %d, creator_id: %d, challenger_id: %d",
-        new_challenge_id,
-        team_id,
-        challenged_team_id
-      );
-    }
     if (amount == 0) {
       revert ChallengePoolInsufficientAmount(0, amount);
     }
@@ -351,15 +348,6 @@ contract SportsVybe is Ownable {
     //if challenge is already accepted then reject
     if (challengePools[challenge_id].isAccepted) {
       revert ChallengePoolAlreadyAccepted(challenge_id);
-    }
-
-    if (compareStrings(action_id, "log")) {
-      console.log(
-        "acceptChallenge_id: challenge_id: %d, creator_id: %d, challenger_id: %d",
-        challenge_id,
-        challengePools[challenge_id].team1,
-        challengePools[challenge_id].team2
-      );
     }
 
     //Ensure that team id has been challenged to participate in the challenge pool
@@ -517,17 +505,6 @@ contract SportsVybe is Ownable {
       revert TeamInvalid(team_id);
     }
 
-    if (compareStrings(action_id, "log")) {
-      console.log(
-        "isVoteDuplicate: team_1_votes %d",
-        challengePools[challenge_id].team_1_votes
-      );
-      console.log(
-        "isVoteDuplicate: team_2_votes %d",
-        challengePools[challenge_id].team_2_votes
-      );
-    }
-
     // add votes to ChallengeVote[]
     votes[msg.sender].push(ChallengeVote(challenge_id));
 
@@ -559,11 +536,6 @@ contract SportsVybe is Ownable {
     uint256 loser = 0;
     uint256 team1 = challengePools[challenge_id].team1;
     uint256 team2 = challengePools[challenge_id].team2;
-    bool logMe = false;
-
-    if (logMe) {
-      console.log("Here");
-    }
 
     if (
       challengePools[challenge_id].team_1_votes ==
@@ -647,22 +619,22 @@ contract SportsVybe is Ownable {
     uint256 loser_team_id
   ) private {
     if (
-      !challengePools[challenge_id].isClosed &&
-      !challengePools[challenge_id].isAccepted &&
-      !challengePools[challenge_id].isCompleted &&
-      (totalChallengePoolVotes(challenge_id) ==
+      !challengePools[challenge_id].isAccepted ||
+      challengePools[challenge_id].isCompleted ||
+      (totalChallengePoolVotes(challenge_id) !=
         challengePoolTeamMemberCount(challenge_id))
     ) {
       revert ChallengePoolUnauthorized(challenge_id);
     }
 
-    require(
-      (winner_team_id != challengePools[challenge_id].team1 &&
-        loser_team_id != challengePools[challenge_id].team2) ||
-        (loser_team_id != challengePools[challenge_id].team1 &&
-          winner_team_id != challengePools[challenge_id].team2),
-      "Invalid Team"
-    );
+    if (
+      (winner_team_id != challengePools[challenge_id].team1 ||
+        loser_team_id != challengePools[challenge_id].team2) &&
+      (loser_team_id != challengePools[challenge_id].team1 ||
+        winner_team_id != challengePools[challenge_id].team2)
+    ) {
+      revert ChallengePoolUnauthorized(challenge_id);
+    }
 
     if (
       challengePools[challenge_id].team_1_votes ==
@@ -670,7 +642,6 @@ contract SportsVybe is Ownable {
       (totalChallengePoolVotes(challenge_id) ==
         challengePoolTeamMemberCount(challenge_id))
     ) {
-      // console.log("TIE");
       address team_1_owner = team_owner[winner_team_id];
       address team_2_owner = team_owner[loser_team_id];
       uint256 amount = challengePools[challenge_id].amount / 2;
@@ -728,38 +699,12 @@ contract SportsVybe is Ownable {
 
       // complete challenge
       challengePools[challenge_id].isCompleted = true;
-
-      if (compareStrings(challengePools[challenge_id].action_id, "log")) {
-        Reward[] storage _challenge_rewards_2 = challengeRewards[team_2_owner];
-        console.log(
-          "RewardCreated: team2: action_id ",
-          _challenge_rewards_2[0].action_id
-        );
-        console.log(
-          "RewardCreated: reward_id %d",
-          _challenge_rewards_2[0].reward_id
-        );
-        console.log(
-          "RewardCreated: challenge_id %d",
-          _challenge_rewards_2[0].challenge_id
-        );
-        console.log(
-          "RewardCreated: team_id %d",
-          _challenge_rewards_2[0].team_id
-        );
-        console.log("RewardCreated: amount %d", _challenge_rewards_2[0].amount);
-        console.log(
-          "RewardCreated: isClaimed ",
-          _challenge_rewards_2[0].isClaimed
-        );
-      }
     } else if (
       (challengePools[challenge_id].team_1_votes !=
         challengePools[challenge_id].team_2_votes) &&
       (totalChallengePoolVotes(challenge_id) ==
         challengePoolTeamMemberCount(challenge_id))
     ) {
-      // console.log("WIN");
       address[] memory members = getChallengePoolTeamMembersByTeam(
         challenge_id,
         winner_team_id
@@ -843,28 +788,20 @@ contract SportsVybe is Ownable {
       challenge_id
     );
 
-    if (compareStrings(claim_action_id, "log")) {
-      console.log("claimReward: isValidReward ", isValidReward);
-      console.log("claimReward: reward_id %d", _userReward.reward_id);
-      console.log("claimReward: challenge_id %d", _userReward.challenge_id);
-      console.log("claimReward: team_id %d", _userReward.team_id);
-      console.log("claimReward: amount %d", _userReward.amount);
-      console.log("claimReward: isClaimed ", _userReward.isClaimed);
-      console.log("claimReward: action_id %s", _userReward.action_id);
-      console.log("msg balance bf: %d", sportsVybeToken.balanceOf(msg.sender));
-      console.log(
-        "contract balance bf: %d",
-        sportsVybeToken.balanceOf(address(this))
-      );
+    if (!isValidReward) {
+      revert RewardInvalid(reward_action_id, reward_id);
     }
 
-    require(isValidReward, "Invalid Reward");
-    require(
-      compareStrings(_userReward.action_id, reward_action_id),
-      "Invalid Action Id"
-    );
-    require(_userReward.amount != 0, "No Reward Amount");
-    require(!_userReward.isClaimed, "Reward Already Claimed");
+    if (!compareStrings(_userReward.action_id, reward_action_id))
+      revert MissingActionId();
+    if (_userReward.amount == 0)
+      revert RewardInsufficientAmount(
+        reward_action_id,
+        reward_id,
+        _userReward.amount
+      );
+    if (_userReward.isClaimed)
+      revert RewardAlreadyClaimed(reward_action_id, reward_id, challenge_id);
 
     if (
       isValidReward &&
@@ -894,26 +831,9 @@ contract SportsVybe is Ownable {
         msg.sender
       );
 
-      if (compareStrings(claim_action_id, "log")) {
-        console.log("claimed: isValidReward ", isValidReward);
-        console.log("claimed: reward_id %d", _userReward.reward_id);
-        console.log("claimed: challenge_id %d", _userReward.challenge_id);
-        console.log("claimed: team_id %d", _userReward.team_id);
-        console.log("claimed: amount %d", _userReward.amount);
-        console.log("claimed: isClaimed ", _userReward.isClaimed);
-        console.log("claimed: action_id %s", _userReward.action_id);
-        console.log(
-          "msg balance after: %d",
-          sportsVybeToken.balanceOf(msg.sender)
-        );
-        console.log(
-          "contract balance after: %d",
-          sportsVybeToken.balanceOf(address(this))
-        );
-      }
       return true;
     } else {
-      revert("Reward not found");
+      revert RewardsNotFound(msg.sender);
     }
   }
 
@@ -933,45 +853,13 @@ contract SportsVybe is Ownable {
     Reward[] storage _allUserRewards = challengeRewards[msg.sender];
     Reward storage _userReward = _allUserRewards[0];
     bool isValidReward = false;
-    if (compareStrings(reward_action_id, "log")) {
-      console.log(
-        "getUserReward: _allUserRewards.length %d",
-        _allUserRewards.length
-      );
-    }
+
     for (uint256 i = 1; i < _allUserRewards.length; i++) {
       if (
         compareStrings(_allUserRewards[i].action_id, reward_action_id) &&
         _allUserRewards[i].challenge_id == challenge_id &&
         _allUserRewards[i].reward_id == reward_id
       ) {
-        if (compareStrings(reward_action_id, "log")) {
-          console.log(
-            "getUserReward: _allUserRewards.action_id %s, %d",
-            _allUserRewards[i].action_id,
-            i
-          );
-          console.log(
-            "getUserReward: _allUserRewards[i].reward_id %d",
-            _allUserRewards[i].reward_id
-          );
-          console.log(
-            "getUserReward: _allUserRewards[i].challenge_id %d",
-            _allUserRewards[i].challenge_id
-          );
-          console.log(
-            "getUserReward: _allUserRewards[i].team_id %d",
-            _allUserRewards[i].team_id
-          );
-          console.log(
-            "getUserReward: _allUserRewards[i].amount %d",
-            _allUserRewards[i].amount
-          );
-          console.log(
-            "getUserReward: _allUserRewards[i].isClaimed ",
-            _allUserRewards[i].isClaimed
-          );
-        }
         _userReward = _allUserRewards[i];
         isValidReward = true;
       }
@@ -1064,15 +952,15 @@ contract SportsVybe is Ownable {
 
   // hasActionId: Ensure that the action ID is valid and not empty
   modifier hasActionId(string memory action_id) {
-    require(!compareStrings(action_id, " "), "Action ID is required");
-    require(bytes(action_id).length > 0, "Action ID is required");
+    if (compareStrings(action_id, " ")) revert MissingActionId();
+    if (bytes(action_id).length <= 0) revert MissingActionId();
     _;
   }
 
   // hasRewards: Ensure the msg.sender has rewards to claim
   modifier hasRewards(address user) {
     if (challengeRewards[user].length == 0) {
-      revert("User has no rewards");
+      revert RewardsNotFound(msg.sender);
     }
     _;
   }
