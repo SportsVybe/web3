@@ -61,8 +61,7 @@ export interface SportsVybeInterface extends utils.Interface {
     "acceptTeamMembershipRequest(string,uint256)": FunctionFragment;
     "challengePools(uint256)": FunctionFragment;
     "challengeRewards(address,uint256)": FunctionFragment;
-    "checkUpkeep(bytes)": FunctionFragment;
-    "claimReward(uint256)": FunctionFragment;
+    "claimReward(uint256,uint256)": FunctionFragment;
     "createChallengePool(string,uint256,uint256,uint256)": FunctionFragment;
     "createTeam(string)": FunctionFragment;
     "declineChallenge(uint256,uint256)": FunctionFragment;
@@ -76,7 +75,6 @@ export interface SportsVybeInterface extends utils.Interface {
     "getUserChallengeRewards(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "pending_challenge_pool_ids(uint256)": FunctionFragment;
-    "performUpkeep(bytes)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "sendTeamMembershipRequest(string,uint256,address)": FunctionFragment;
     "sportsVybeToken()": FunctionFragment;
@@ -95,7 +93,6 @@ export interface SportsVybeInterface extends utils.Interface {
       | "acceptTeamMembershipRequest"
       | "challengePools"
       | "challengeRewards"
-      | "checkUpkeep"
       | "claimReward"
       | "createChallengePool"
       | "createTeam"
@@ -110,7 +107,6 @@ export interface SportsVybeInterface extends utils.Interface {
       | "getUserChallengeRewards"
       | "owner"
       | "pending_challenge_pool_ids"
-      | "performUpkeep"
       | "renounceOwnership"
       | "sendTeamMembershipRequest"
       | "sportsVybeToken"
@@ -145,12 +141,8 @@ export interface SportsVybeInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "checkUpkeep",
-    values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "claimReward",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "createChallengePool",
@@ -205,10 +197,6 @@ export interface SportsVybeInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "pending_challenge_pool_ids",
     values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "performUpkeep",
-    values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -276,10 +264,6 @@ export interface SportsVybeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "checkUpkeep",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "claimReward",
     data: BytesLike
   ): Result;
@@ -327,10 +311,6 @@ export interface SportsVybeInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "pending_challenge_pool_ids",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "performUpkeep",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -630,14 +610,8 @@ export interface SportsVybe extends BaseContract {
       }
     >;
 
-    checkUpkeep(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, string] & { upkeepNeeded: boolean; performData: string }
-    >;
-
     claimReward(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -702,11 +676,6 @@ export interface SportsVybe extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    performUpkeep(
-      performData: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -822,14 +791,8 @@ export interface SportsVybe extends BaseContract {
     }
   >;
 
-  checkUpkeep(
-    arg0: PromiseOrValue<BytesLike>,
-    overrides?: CallOverrides
-  ): Promise<
-    [boolean, string] & { upkeepNeeded: boolean; performData: string }
-  >;
-
   claimReward(
+    action_id: PromiseOrValue<BigNumberish>,
     challenge_id: PromiseOrValue<BigNumberish>,
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -894,11 +857,6 @@ export interface SportsVybe extends BaseContract {
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
-
-  performUpkeep(
-    performData: PromiseOrValue<BytesLike>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   renounceOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1014,14 +972,8 @@ export interface SportsVybe extends BaseContract {
       }
     >;
 
-    checkUpkeep(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<
-      [boolean, string] & { upkeepNeeded: boolean; performData: string }
-    >;
-
     claimReward(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1086,11 +1038,6 @@ export interface SportsVybe extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    performUpkeep(
-      performData: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
@@ -1292,12 +1239,8 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    checkUpkeep(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     claimReward(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -1361,11 +1304,6 @@ export interface SportsVybe extends BaseContract {
     pending_challenge_pool_ids(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    performUpkeep(
-      performData: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     renounceOwnership(
@@ -1448,12 +1386,8 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    checkUpkeep(
-      arg0: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     claimReward(
+      action_id: PromiseOrValue<BigNumberish>,
       challenge_id: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
@@ -1517,11 +1451,6 @@ export interface SportsVybe extends BaseContract {
     pending_challenge_pool_ids(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    performUpkeep(
-      performData: PromiseOrValue<BytesLike>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
