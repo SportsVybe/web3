@@ -96,7 +96,7 @@ export const ManageTeam = ({
 
         // reload page after saving
         if (
-          (!getTeamsDB.isSaving && !isContractLoading && !contractMessage) ||
+          (!getTeamsDB.isSaving && !isContractLoading) ||
           (teamObject && !teamObject.isSaving)
         )
           router.reload();
@@ -248,7 +248,7 @@ export const ManageTeam = ({
               {createNewTeam ? "Create Team" : "Update Team"}
             </button>
             {contractMessage && !isContractLoading && (
-              <Toast type={contractMessage.status}>
+              <Toast open type={contractMessage.status}>
                 {contractMessage.message}
               </Toast>
             )}
