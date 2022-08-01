@@ -22,7 +22,7 @@ export default function PlayerPage() {
         <ProfileController user={username} isCurrentUser={false} />
       ) : (
         <div className="flex flex-col justify-center items-center">
-          <p>No Username</p>
+          <p>No User Found!</p>
         </div>
       )}
     </div>

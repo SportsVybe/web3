@@ -147,7 +147,7 @@ export default function TeamPage({
                     toggleManageTeamMembersModal(!manageTeamMembersModal)
                   }
                 >
-                  Manage Team Members
+                  Invite Players
                 </button>
               )}
             </div>
@@ -176,6 +176,7 @@ export default function TeamPage({
           <ManageTeam
             user={user}
             team={team}
+            teamIsLoading={teamIsLoading}
             teamObject={teamObject}
             toggleModal={toggleManageTeamModal}
             modalView={manageTeamModal}

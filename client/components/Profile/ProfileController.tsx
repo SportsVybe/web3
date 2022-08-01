@@ -25,7 +25,7 @@ export const ProfileController = ({
   const [teams, setTeams] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userObject, setUserObject] = useState({});
-  const [username, setUsername] = useState(user && user);
+  const [username, setUsername] = useState("");
   let newUser = {};
   if (isCurrentUser) {
     newUser = {
@@ -43,23 +43,14 @@ export const ProfileController = ({
       const userValue = isCurrentUser ? user.id : user;
       const userMethod = isCurrentUser ? "objectId" : "username";
       const results: any = await fetchUser(userValue, userMethod, false);
-      console.log(userValue, userMethod, results.user.attributes);
 
       if (results != null && results.length != 0) {
         setUserData(results.user.attributes);
         setUserObject(results.user);
-        setUsername(results.user.attributes);
+        setUsername(results.user.attributes.username);
         setIsLoading(false);
         if (results && username) {
-          const teamMembers = await getAllPossibleObjects(
-            "teams",
-            "teamMembers",
-            username
-          );
-          if (teamMembers != null && teamMembers.length != 0) {
-            setIsLoading(false);
-            setTeams(teamMembers);
-          }
+          await getTeams();
         }
       } else if (results.length == 0 && results == null) {
         createNewUser.save(newUser, {
@@ -74,11 +65,42 @@ export const ProfileController = ({
     }
   };
 
+  const getTeams = async () => {
+    try {
+      if (username && username.length != 0 && username != null) {
+        const teamMembers = await getAllPossibleObjects(
+          "teams",
+          "teamMembers",
+          username
+        );
+        if (teamMembers != null && teamMembers.length != 0) {
+          setIsLoading(false);
+          setTeams(teamMembers);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       getUser();
+      getTeams();
     }
+    return () => {
+      setIsLoading(true);
+    };
   }, []);
+
+  useEffect(() => {
+    if (username) {
+      getTeams();
+    }
+    return () => {
+      setTeams([]);
+    };
+  }, [username]);
 
   return (
     <Profile

@@ -32,7 +32,6 @@ export const ManageProfile = ({
   const [userDisplayName, setUserDisplayName] = useState("");
   const [userUsername, setUserUsername] = useState("");
   const [isUsernameValid, setIsUsernameValid] = useState(true);
-  const [usernameChanged, setUsernameChanged] = useState(false);
   const [editUsername, setEditUsername] = useState(newProfile);
   const [userSportsPreferences, setUserSportsPreferences] = useState<string[]>(
     []
@@ -53,10 +52,6 @@ export const ManageProfile = ({
       };
 
       try {
-        if (userUsername !== user.username) {
-          setUsernameChanged(true);
-        }
-
         if (newProfile) {
           const newUserAction = await createUserAction(
             contractActions.createTeamForUser
@@ -74,7 +69,7 @@ export const ManageProfile = ({
         }
         // update user in database
         const currentUser: any = Moralis.User.current();
-        if (usernameChanged) {
+        if (user.username !== currentUser.username) {
           await currentUser.save({ username: userUsername });
         }
         await userObject.save(formData);
@@ -176,7 +171,7 @@ export const ManageProfile = ({
               </span>
               <input
                 value={userUsername}
-                disabled={user.usernameLocked}
+                disabled={(user.usernameLocked || !editUsername) && !newProfile}
                 className={`m-2 px-2 py-1 rounded disabled:bg-gray-700 disabled:text-stone-50  ${
                   isUsernameValid ? "bg-gray-300" : "bg-red-400"
                 } outline-green-400`}
@@ -204,11 +199,8 @@ export const ManageProfile = ({
                   </button>
                 </>
               ) : (
-                <button
-                  disabled={user.usernameLocked}
-                  onClick={() => setEditUsername(true)}
-                >
-                  {user.usernameLocked ? 0 : 1} Edit Remaining
+                <button disabled={true} onClick={() => setEditUsername(true)}>
+                  Edit* <span className=" text-xs ">Soon</span>
                 </button>
               )}
             </div>
