@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useWallet } from "../../../context/WalletProvider";
 import { Photo } from "../../Layout/Photo";
-import { ManageChallenge } from "../../Modals/ChallengeModal";
+import { ManageChallenge } from "../../Modals/ManageChallenge";
+import { ManageTeam } from "../../Modals/ManageTeam";
+import { ManageTeamMembers } from "../../Modals/ManageTeamMembers";
 import { TeamMembersController } from "../TeamMembers/TeamMembersController";
 
 type Props = {
@@ -17,8 +19,13 @@ export default function TeamPage({
   wallet,
   teamObject,
 }: Props) {
-  const { user, isAuthenticating, connectWallet } = useWallet();
+  const { user, isAuthenticated, isAuthenticating, connectWallet } =
+    useWallet();
   const [manageChallengeModal, toggleManageChallengeModal] = useState(false);
+
+  const [manageTeamModal, toggleManageTeamModal] = useState(false);
+  const [manageTeamMembersModal, toggleManageTeamMembersModal] =
+    useState(false);
 
   let isTeamMember = false;
   let isAdmin = false;
@@ -56,8 +63,8 @@ export default function TeamPage({
                 Member Since{" "}
                 {team.createdAt
                   ? team.createdAt.toLocaleDateString("en-US", {
-                    year: "numeric",
-                  })
+                      year: "numeric",
+                    })
                   : "--"}
               </span>
               <span>{team.teamDescription}</span>
@@ -73,9 +80,20 @@ export default function TeamPage({
               Challenge Team
             </button>
           )}
-          {user && isTeamMember && (
-            <button className="px-4 py-3 my-4  w-full bg-red-200 rounded-full">
+          {user && isTeamMember && !isAdmin && (
+            <button
+              className="px-4 py-3 my-4  w-full bg-red-200 rounded-full hover:bg-red-400"
+              onClick={() => alert("Leave")}
+            >
               Leave Team
+            </button>
+          )}
+          {user && isTeamMember && isAdmin && (
+            <button
+              className="px-4 py-3 my-4  w-full bg-yellow-200 rounded-full hover:bg-yellow-400"
+              onClick={() => toggleManageTeamModal(!manageTeamModal)}
+            >
+              Manage Team
             </button>
           )}
           {!user && (
@@ -120,7 +138,19 @@ export default function TeamPage({
 
         <div className="flex flex-col my-4 w-full justify-around items-center border-2 border-gray-200 rounded-lg shadow-lg bg-white hover:shadow-2xl transition ease-in-out delay-100  hover:ease-in-out p-2">
           <div className="flex flex-col w-full justify-center py-3 items-center">
-            <h1>Members </h1>
+            <div className="flex flex-row w-full justify-center py-3 items-center">
+              <h1>Member(s) </h1>
+              {isAuthenticated && isAdmin && (
+                <button
+                  className="px-2 py-1 w-[240px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
+                  onClick={() =>
+                    toggleManageTeamMembersModal(!manageTeamMembersModal)
+                  }
+                >
+                  Manage Team Members
+                </button>
+              )}
+            </div>
             {!teamIsLoading && (
               <TeamMembersController
                 members={team.teamMembers}
@@ -140,6 +170,26 @@ export default function TeamPage({
           modalView={manageChallengeModal}
           createNewChallenge={true}
         />
+      )}
+      {user && isAdmin && (
+        <>
+          <ManageTeam
+            user={user}
+            team={team}
+            teamObject={teamObject}
+            toggleModal={toggleManageTeamModal}
+            modalView={manageTeamModal}
+          />
+          <ManageTeamMembers
+            user={user}
+            team={team}
+            teamObject={teamObject}
+            teamIsLoading={teamIsLoading}
+            members={team.teamMembers}
+            toggleModal={toggleManageTeamMembersModal}
+            modalView={manageTeamMembersModal}
+          />
+        </>
       )}
     </div>
   );

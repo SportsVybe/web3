@@ -6,6 +6,7 @@ type Props = {
   member: any;
   isLoadingMembers: boolean;
   memberObject?: any;
+  targetSelf?: boolean;
 };
 
 export const TeamMember = ({
@@ -13,6 +14,7 @@ export const TeamMember = ({
   isLoadingMembers,
   memberObject = null,
   team = null,
+  targetSelf = true,
 }: Props) => {
   const { user } = useWallet();
 
@@ -38,6 +40,8 @@ export const TeamMember = ({
             <a
               href={`/profile/${member.username}`}
               className="px-2 py-1 my-4 bg-blue-400 hover:bg-blue-700 rounded-full text-xs"
+              target={targetSelf ? "_self" : "_blank"}
+              rel="noreferrer"
             >
               View Player
             </a>
