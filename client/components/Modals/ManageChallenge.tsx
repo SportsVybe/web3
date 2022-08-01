@@ -263,8 +263,10 @@ export const ManageChallenge = ({
             <button
               disabled={
                 isContractLoading ||
-                Number(userApprovedAmount) < challengeAmount ||
-                !userApprovedAmount
+                Number(userApprovedAmount) < Number(challengeAmount) ||
+                !userApprovedAmount ||
+                userApprovedAmount == "0" ||
+                challengeAmount == "0"
               }
               className="my-3 px-2 py-1 bg-green-300 rounded-full disabled:bg-slate-300"
               onClick={() => handleSubmit()}
@@ -272,7 +274,10 @@ export const ManageChallenge = ({
               {createNewChallenge ? "Create Challenge" : "Update Challenge"}
             </button>
             {contractMessage && !isContractLoading && (
-              <Toast type={contractMessage.status}>
+              <Toast
+                open={contractMessage && !isContractLoading}
+                type={contractMessage.status}
+              >
                 {contractMessage.message}
               </Toast>
             )}

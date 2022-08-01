@@ -7,7 +7,8 @@ import { useCustomMoralis } from "../../context/CustomMoralisProvider";
 import { Photo } from "../Layout/Photo";
 import { Toast } from "../Layout/Toast";
 import { ManageEvent } from "../Modals/ManageEvent";
-// import { ManageChallenge } from "./ChallengeModal";
+import { ManageVote } from "../Modals/ManageVote";
+// import { ManageChallenge } from "./ManageChallenge";
 
 type Props = {
   challenge: any;
@@ -27,6 +28,7 @@ export const ChallengeCard = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [manageEventModal, toggleManageEventModal] = useState(false);
+  const [manageVoteModal, toggleManageVoteModal] = useState(false);
   const { createUserAction } = useCustomMoralis();
   const { acceptChallenge, isContractLoading, contractMessage } = useContract();
 
@@ -137,7 +139,7 @@ export const ChallengeCard = ({
                 isLoading={isLoading}
               />
               <span>
-                {team1 && team1.attributes && team1.attributes.teamName}
+                {team1 && team1.attributes && team1.attributes.teamName}-
                 {challenge && challenge.challengeChainId}
               </span>
               <span>
@@ -149,8 +151,7 @@ export const ChallengeCard = ({
               <span>
                 {team1 &&
                   team1.attributes &&
-                  `${team1.attributes.teamWins} Wins - ${team1.attributes.teamLosses} Losses
-                                `}
+                  `${team1.attributes.teamWins} Wins - ${team1.attributes.teamLosses} Losses`}
               </span>
             </div>
             <div className="flex flex-col w-1/2 items-center p-2">
@@ -173,8 +174,7 @@ export const ChallengeCard = ({
               <span>
                 {team2 &&
                   team2.attributes &&
-                  `${team2.attributes.teamWins} Wins - ${team2.attributes.teamLosses} Losses
-                                `}
+                  `${team2.attributes.teamWins} Wins - ${team2.attributes.teamLosses} Losses`}
               </span>
             </div>
           </>
@@ -198,24 +198,32 @@ export const ChallengeCard = ({
             {isContractLoading ? (
               <>Minting...</>
             ) : isAuthenticated && challenge.isAccepted ? (
-              <button
-                className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
-                onClick={() => toggleManageEventModal(!manageEventModal)}
-              >
-                Create Event
-              </button>
+              <>
+                <button
+                  className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
+                  onClick={() => toggleManageEventModal(!manageEventModal)}
+                >
+                  Create Event
+                </button>
+                <button
+                  className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
+                  onClick={() => toggleManageVoteModal(!manageVoteModal)}
+                >
+                  Vote
+                </button>
+              </>
             ) : (
               challenge.challengeChainId &&
               !challenge.challengerActionId && (
                 <>
                   <button
                     onClick={handleAccept}
-                    className="px-2 py-1 m-4 bg-green-200 rounded-full hover:bg-green-400 "
+                    className="px-2 py-1 w-[120px] m-4 bg-green-200 rounded-full hover:bg-green-400 "
                   >
                     Accept
                   </button>
-                  <button className="px-2 py-1 m-4 bg-red-200 rounded-full">
-                    Deny
+                  <button className="px-2 py-1 w-[120px] m-4 bg-red-200 rounded-full">
+                    Deny (pending)
                   </button>
                 </>
               )
@@ -223,23 +231,57 @@ export const ChallengeCard = ({
 
             <a
               href={`/teams/${team1 && team1.id}`}
-              className="px-2 py-1 m-4 text-white bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100  hover:ease-in-out"
+              className="px-2 py-1 w-[120px] m-4 text-white bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100  hover:ease-in-out"
             >
               View Challenger
             </a>
           </>
         )}
         {type == "created" && (
-          <a
-            href={`/teams/${team2 && team2.id}`}
-            className="px-2 py-1 m-4 text-white bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100  hover:ease-in-out"
-          >
-            View Opponent
-          </a>
+          <>
+            {isContractLoading ? (
+              <>Minting...</>
+            ) : isAuthenticated && challenge.isAccepted ? (
+              <>
+                <button
+                  className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
+                  onClick={() => toggleManageEventModal(!manageEventModal)}
+                >
+                  Create Event
+                </button>
+                <button
+                  className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
+                  onClick={() => toggleManageVoteModal(!manageVoteModal)}
+                >
+                  Vote
+                </button>
+              </>
+            ) : (
+              challenge.challengeChainId &&
+              !challenge.challengerActionId && (
+                <>
+                  <button className="px-2 py-1 w-[120px] m-4 bg-red-200 rounded-full">
+                    Cancel (pending)
+                  </button>
+                </>
+              )
+            )}
+            <a
+              href={`/teams/${team2 && team2.id}`}
+              className="px-2 py-1 w-[120px] m-4 text-center text-white bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100 hover:ease-in-out"
+            >
+              View Opponent
+            </a>
+          </>
         )}
       </div>
       {contractMessage && !isContractLoading && (
-        <Toast type={contractMessage.status}>{contractMessage.message}</Toast>
+        <Toast
+          open={contractMessage && !isContractLoading}
+          type={contractMessage.status}
+        >
+          {contractMessage.message}
+        </Toast>
       )}
 
       <ManageEvent
@@ -249,6 +291,14 @@ export const ChallengeCard = ({
         toggleModal={toggleManageEventModal}
         modalView={manageEventModal}
         createNewEvent={true}
+      />
+      <ManageVote
+        challenge={challengeObject}
+        challengeTeam1={team1}
+        challengeTeam2={team2}
+        isLoading={isLoading}
+        toggleModal={toggleManageVoteModal}
+        modalView={manageVoteModal}
       />
     </div>
   );

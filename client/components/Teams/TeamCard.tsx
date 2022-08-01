@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useWallet } from "../../context/WalletProvider";
 import { Photo } from "../Layout/Photo";
-import { ManageChallenge } from "../Modals/ChallengeModal";
+import { ManageChallenge } from "../Modals/ManageChallenge";
 import { ManageTeam } from "../Modals/ManageTeam";
 
 type Props = {
