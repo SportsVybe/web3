@@ -14,7 +14,6 @@ export default function ProfilePage() {
       {wallet && user && !isAuthenticating ? (
         <ProfileController
           user={user}
-          username={user.attributes.username}
           isAuthenticating={isAuthenticating}
           wallet={wallet}
           isCurrentUser={true}

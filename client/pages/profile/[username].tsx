@@ -19,7 +19,7 @@ export default function PlayerPage() {
         <meta name="description" content="Player Profile" />
       </Head>
       {username ? (
-        <ProfileController username={username} isCurrentUser={false} />
+        <ProfileController user={username} isCurrentUser={false} />
       ) : (
         <div className="flex flex-col justify-center items-center">
           <p>No Username</p>

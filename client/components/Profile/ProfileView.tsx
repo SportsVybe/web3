@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useWallet } from "../../context/WalletProvider";
 import { Photo } from "../Layout/Photo";
-import { EditProfile } from "../Modals/EditProfile";
+import { ManageProfile } from "../Modals/ManageProfile";
 import { ManageTeam } from "../Modals/ManageTeam";
 import { TeamCard } from "../Teams/TeamCard";
 
@@ -46,14 +46,18 @@ export default function Profile({
             </div>
             <div className="flex flex-col w-1/2">
               <span>
+                Username: {userData.username ? userData.username : "--"}
+              </span>
+              <span>
+                Display Name:{" "}
                 {userData.userDisplayName ? userData.userDisplayName : "--"}
               </span>
               <span>
-                Member Since{" "}
+                Member Since
                 {userData.createdAt
                   ? userData.createdAt.toLocaleDateString("en-US", {
-                    year: "numeric",
-                  })
+                      year: "numeric",
+                    })
                   : "--"}
               </span>
             </div>
@@ -124,7 +128,7 @@ export default function Profile({
         <div className="flex flex-col my-4 w-full justify-around items-center  p-2">
           <div className="flex flex-row w-full justify-center py-3 items-center">
             <h1>Team(s) </h1>
-            {isAuthenticated && isCurrentUser && (
+            {isAuthenticated && isCurrentUser && userData.createTeamsAvailable && (
               <button
                 className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
                 onClick={() => toggleManageTeamModal(!manageTeamModal)}
@@ -148,11 +152,12 @@ export default function Profile({
         </div>
       </div>
 
-      <EditProfile
+      <ManageProfile
         user={userData}
         toggleModal={toggleEditProfileModal}
         modalView={editProfileModal}
         userObject={userObject}
+        newProfile={userData.newUser}
       />
 
       <ManageTeam
