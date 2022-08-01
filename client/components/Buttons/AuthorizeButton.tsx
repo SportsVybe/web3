@@ -21,17 +21,17 @@ export default function AuthorizeButton({
 }: IAuthorizeButtonProps) {
   const { approveAmount, isContractLoading } = useContract();
   const handleTokenApproval = async () => {
-    //console.log("Allow to spend, "+ amount);
     await approveAmount(String(amount));
   };
 
   return !userHasApprovedSVT ||
-    userApprovedAmount < amount ||
-    !userApprovedAmount ? (
+    Number(userApprovedAmount) < amount ||
+    !userApprovedAmount ||
+    Number(userApprovedAmount) === 0 ? (
     <button
       className="my-3 px-2 py-1 bg-red-600 text-white rounded-full disabled:bg-slate-300"
       onClick={() => handleTokenApproval()}
-      disabled={isContractLoading || amount === 0}
+      disabled={isContractLoading || amount === 0 || !amount}
     >
       Increase SVT Approval
     </button>

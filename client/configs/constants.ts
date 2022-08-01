@@ -20,6 +20,11 @@ export const contractVariables = {
   ChallengePool: "ChallengePool",
 };
 
+export const moralisCloudFunction = {
+  sendTeamMembership: "sendTeamMembership",
+  acceptTeamMembership: "acceptTeamMembership",
+};
+
 export const sports = [
   "Basketball",
   "Baseball",
@@ -37,4 +42,6 @@ export const contractActions = {
   sendTeamMembershipRequest: "ehpzbsiTMHAVvpQ6r8GD4YJJ",
   acceptTeamMembershipRequest: "Sr8hnZFFo4VcPkiMOqSO9xQt",
   submitVote: "2zlFECNrF2dEo3GQGBpvNEWj",
+  claimReward: "w7wGEv6itfJUyT6vDtzm4YvT",
+  createTeamForUser: "f7bLPQlibFB9ThROjzYJ60PV",
 };

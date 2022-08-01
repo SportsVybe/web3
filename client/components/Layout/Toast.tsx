@@ -5,17 +5,16 @@ type Props = {
   children: React.ReactNode;
   type: "success" | "error" | "warning" | "info";
   duration?: number;
-  open?: boolean;
+  open: boolean;
 };
 
 export const Toast = ({
   children,
   type = "error",
   duration = 5000,
-  open = true,
+  open,
 }: Props) => {
-  const [isOpen, setIsOpen] = useState(open);
-
+  const [isOpen, setIsOpen] = useState(open || false);
   const { setContractMessage } = useContract();
 
   const getColor = (type: string) => {
@@ -34,13 +33,15 @@ export const Toast = ({
   };
 
   useEffect(() => {
-    setTimeout(() => {
-      setIsOpen(false);
-      setContractMessage({});
-    }, duration);
+    if (isOpen) {
+      setTimeout(() => {
+        setIsOpen(false);
+        setContractMessage({});
+      }, duration);
+    }
   }, [isOpen]);
 
-  return (
+  return isOpen ? (
     <div
       className={`fixed top-0 right-0 m-4 p-4 border-l-4 rounded-lg 
       shadow-lg ${getColor(type)}`}
@@ -51,5 +52,5 @@ export const Toast = ({
     >
       {children}
     </div>
-  );
+  ) : null;
 };
