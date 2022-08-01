@@ -11,8 +11,6 @@ const defaultState = {
   connectWallet: (routeToProfile = true) => {},
 };
 
-const ethereum = typeof window !== "undefined" && (window as any).ethereum;
-
 const WalletContext = createContext(defaultState);
 
 const WalletProvider = (props: any) => {
@@ -28,7 +26,7 @@ const WalletProvider = (props: any) => {
     enableWeb3,
   } = useMoralis();
   const router = useRouter();
-  const { switchNetwork, chainId, chain } = useChain();
+  const { switchNetwork, chain } = useChain();
   const [wallet, setWallet] = useState("");
 
   const connectWallet = async (routeToProfile = true) => {
@@ -116,15 +114,11 @@ const WalletProvider = (props: any) => {
 
   useEffect(() => {
     const networkEmitter = Moralis.onChainChanged((chain) => {
-      if (isAuthenticated) {
-        monitorNetwork(chain);
-      }
+      monitorNetwork(chain);
     });
 
     const accountEmitter = Moralis.onAccountChanged((account) => {
-      if (isAuthenticated) {
-        monitorAccount(account);
-      }
+      monitorAccount(account);
     });
 
     return () => {
@@ -132,7 +126,7 @@ const WalletProvider = (props: any) => {
       networkEmitter().removeAllListeners();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, isWeb3Enabled, chain]);
+  }, [isAuthenticated, isWeb3Enabled, chain, user]);
 
   useEffect(() => {
     // if the user isAuthenticated then check if wallet is connected

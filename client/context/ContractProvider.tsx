@@ -11,7 +11,7 @@ const ethereum = typeof window !== "undefined" && (window as any).ethereum;
 
 const defaultState = {
   isContractLoading: false,
-  setIsContractLoading: {},
+  setIsContractLoading: (loading: boolean) => {},
   contractMessage: { status: "", message: "" } as any,
   setContractMessage: {} as any,
   createTeam: async (actionId: string) => {
@@ -31,6 +31,20 @@ const defaultState = {
     challengeId: string,
     challengeTeam2Id: string,
     challengeAmount: string
+  ) => {
+    return false;
+  },
+  submitVote: async (
+    actionId: string,
+    challengeId: string,
+    vote: string // teamId
+  ) => {
+    return false;
+  },
+  sendTeamMembershipRequest: async (
+    actionId: string,
+    teamId: string,
+    user: string // ethAddress
   ) => {
     return false;
   },
@@ -69,7 +83,7 @@ const ContractProvider = ({ children }: { children: any }) => {
       if (approve) {
         setContractMessage({
           status: "success",
-          message: `Approved ${challengeAmount} SVT`,
+          message: `Pending ${challengeAmount} SVT approval`,
         });
         setIsContractLoading(false);
       }
@@ -133,9 +147,9 @@ const ContractProvider = ({ children }: { children: any }) => {
       });
       setIsContractLoading(false);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       setIsContractLoading(false);
-      if (error instanceof Error) {
+      if (error && error.message) {
         setContractMessage({ status: "error", message: error.message });
       } else {
         setContractMessage({ status: "error", message: "Unknown" });
@@ -185,6 +199,66 @@ const ContractProvider = ({ children }: { children: any }) => {
     }
   };
 
+  const submitVote = async (
+    actionId: string,
+    challengeId: string,
+    vote: string
+  ) => {
+    setIsContractLoading(true);
+    try {
+      const contract = await getContract();
+      await contract.functions.submitVote(actionId, challengeId, vote, {
+        gasLimit: 3500000,
+      });
+      setContractMessage({
+        status: "info",
+        message: "Vote is being submitted on chain.",
+      });
+      setIsContractLoading(false);
+      return true;
+    } catch (error) {
+      setIsContractLoading(false);
+      if (error instanceof Error) {
+        setContractMessage({ status: "error", message: error.message });
+      } else {
+        setContractMessage({ status: "error", message: "Unknown" });
+      }
+      console.error(error);
+      return false;
+    }
+  };
+
+  const sendTeamMembershipRequest = async (
+    actionId: string,
+    teamId: string,
+    user: string
+  ) => {
+    setIsContractLoading(true);
+    try {
+      const contract = await getContract();
+      await contract.functions.sendTeamMembershipRequest(
+        actionId,
+        teamId,
+        user
+      );
+      setContractMessage({
+        status: "info",
+        message: "Membership Request is being processed on chain.",
+      });
+      setIsContractLoading(false);
+      return true;
+    } catch (error) {
+      setIsContractLoading(false);
+      if (error instanceof Error) {
+        setContractMessage({ status: "error", message: error.message });
+      } else {
+        setContractMessage({ status: "error", message: "Unknown" });
+      }
+      console.error(error);
+      return false;
+    }
+  };
+
   return (
     <ContractContext.Provider
       value={{
@@ -196,6 +270,8 @@ const ContractProvider = ({ children }: { children: any }) => {
         setContractMessage,
         setIsContractLoading,
         acceptChallenge,
+        submitVote,
+        sendTeamMembershipRequest,
       }}
     >
       {children}
