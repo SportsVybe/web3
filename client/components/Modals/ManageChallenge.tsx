@@ -72,11 +72,13 @@ export const ManageChallenge = ({
     challengeTeam1Admin: user.get("username"),
     challengeTeam2Admin: challengeTeam2Admin,
     challengeChainId: challenge.challengeChainId || "",
+    challengeTeam1Count:
+      (team && team.teamMembers && team.teamMembers.length) || 0,
+    challengeTeam2Count: 0,
     actionId: challenge.actionId || "",
   };
 
   const handleSubmit = async () => {
-    console.log("challenge form data", challengeFormData);
     if (isFormValid()) {
       try {
         if (createNewChallenge) {

@@ -82,7 +82,7 @@ const ContractProvider = ({ children }: { children: any }) => {
 
       if (approve) {
         setContractMessage({
-          status: "success",
+          status: "info",
           message: `Pending ${challengeAmount} SVT approval`,
         });
         setIsContractLoading(false);
@@ -172,7 +172,7 @@ const ContractProvider = ({ children }: { children: any }) => {
 
       // create challenge transaction
       const contract = await getContract();
-      await contract.functions.acceptChallenge(
+      await contract.functions.acceptChallengePool(
         actionId,
         challengeId,
         challengeTeam2Id,

@@ -1,7 +1,7 @@
-import Moralis from "moralis/types";
+import MoralisTypes from "moralis/types";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useState } from "react";
-import { useNewMoralisObject } from "react-moralis";
+import { useMoralis, useNewMoralisObject } from "react-moralis";
 import { contractActions } from "../../configs/constants";
 import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
@@ -10,8 +10,8 @@ import { Photo } from "../Layout/Photo";
 import { Toast } from "../Layout/Toast";
 
 type Props = {
-  challengeTeam1?: Moralis.Object<Moralis.Attributes>;
-  challengeTeam2?: Moralis.Object<Moralis.Attributes>;
+  challengeTeam1?: MoralisTypes.Object<MoralisTypes.Attributes>;
+  challengeTeam2?: MoralisTypes.Object<MoralisTypes.Attributes>;
   challenge: any;
   toggleModal: Dispatch<SetStateAction<boolean>>;
   modalView: boolean;
@@ -27,23 +27,24 @@ export const ManageVote = ({
   isLoading,
 }: Props) => {
   const router = useRouter();
+  const { user } = useMoralis();
   const getVotesDB = useNewMoralisObject("votes");
   const { createUserAction } = useCustomMoralis();
   const { submitVote, isContractLoading, contractMessage } = useContract();
 
   const [selectedTeam, setVoteTeamId] =
-    useState<Moralis.Object<Moralis.Attributes>>();
+    useState<MoralisTypes.Object<MoralisTypes.Attributes>>();
 
   const selectedTeamCSS = "border-2 border-green-100";
 
   const voteFormData = {
     selectedTeam: selectedTeam,
     challengeId: challenge,
+    voter: user,
     actionId: {},
   };
 
   const handleSubmit = async () => {
-    console.log("vote form data", voteFormData);
     if (isFormValid()) {
       try {
         const action = await createUserAction(contractActions.submitVote);

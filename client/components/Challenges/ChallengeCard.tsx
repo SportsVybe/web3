@@ -1,4 +1,5 @@
 import Moralis from "moralis/types";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useMoralisQuery } from "react-moralis";
 import { contractActions } from "../../configs/constants";
@@ -23,17 +24,24 @@ export const ChallengeCard = ({
   isAuthenticated,
   challengeObject = null,
 }: Props) => {
+  const router = useRouter();
+  const { createUserAction } = useCustomMoralis();
+  const { acceptChallenge, isContractLoading, contractMessage } = useContract();
   const [team1, setTeam1] = useState<Moralis.Object<Moralis.Attributes>>();
   const [team2, setTeam2] = useState<Moralis.Object<Moralis.Attributes>>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [manageEventModal, toggleManageEventModal] = useState(false);
   const [manageVoteModal, toggleManageVoteModal] = useState(false);
-  const { createUserAction } = useCustomMoralis();
-  const { acceptChallenge, isContractLoading, contractMessage } = useContract();
 
   const challengeFormData = {
     challengerActionId: challenge.challengerActionId || "",
+    challengeTeam2count:
+      (team2 &&
+        team2.attributes &&
+        team2.attributes.teamMembers &&
+        team2.attributes.teamMembers.count) ||
+      0,
   };
 
   const handleAccept = async () => {
@@ -52,8 +60,15 @@ export const ChallengeCard = ({
       console.log("acceptChallengeOnChain", acceptChallengeOnChain);
 
       // update challenge in database
-      if (challengeObject && acceptChallengeOnChain) {
+      if (!isContractLoading && challengeObject && acceptChallengeOnChain) {
         await challengeObject.save(challengeFormData);
+        if (challengeObject.error) console.log(challengeObject.error.message);
+      } else if (!isContractLoading && !acceptChallengeOnChain) {
+        await action.save({ actionStatus: false });
+      }
+      // reload page after saving
+      if (!challengeObject.isSaving && !isContractLoading && !contractMessage) {
+        router.push("/challenges");
       }
     } catch (error) {
       console.error(error);
@@ -80,13 +95,17 @@ export const ChallengeCard = ({
 
   const getChallengeStatus = () => {
     let status = "Minting on chain...";
-    if (challenge.isCompleted && challenge.isClosed && challenge.isAccepted) {
+    if (
+      challenge.isCompleted &&
+      challenge.isClosed &&
+      challenge.isAcceptedOnChain
+    ) {
       status = "Completed";
     }
     if (
       !challenge.isCompleted &&
       !challenge.isClosed &&
-      !challenge.isAccepted &&
+      !challenge.isAcceptedOnChain &&
       challenge.challengeChainId &&
       !challenge.challengerActionId
     ) {
@@ -95,7 +114,7 @@ export const ChallengeCard = ({
     if (
       !challenge.isCompleted &&
       !challenge.isClosed &&
-      !challenge.isAccepted &&
+      !challenge.isAcceptedOnChain &&
       challenge.challengeChainId &&
       challenge.challengerActionId
     ) {
@@ -104,7 +123,11 @@ export const ChallengeCard = ({
     if (challenge.isClosed && !challenge.isCompleted) {
       status = "Closed";
     }
-    if (!challenge.isClosed && !challenge.isCompleted && challenge.isAccepted) {
+    if (
+      !challenge.isClosed &&
+      !challenge.isCompleted &&
+      challenge.isAcceptedOnChain
+    ) {
       status = "Accepted";
     }
     return status;
@@ -129,7 +152,7 @@ export const ChallengeCard = ({
         {isLoading && team1 == undefined && team2 == undefined ? (
           <>Loading...</>
         ) : (
-          <>
+          <div className="flex flex-row w-full items-center">
             <div className="flex flex-col w-1/2 items-center justify-center p-2">
               <Photo
                 src={team1 && team1.attributes && team1.attributes.teamPhoto}
@@ -154,6 +177,7 @@ export const ChallengeCard = ({
                   `${team1.attributes.teamWins} Wins - ${team1.attributes.teamLosses} Losses`}
               </span>
             </div>
+            <span>VS</span>
             <div className="flex flex-col w-1/2 items-center p-2">
               <Photo
                 src={team2 && team2.attributes && team2.attributes.teamPhoto}
@@ -177,27 +201,31 @@ export const ChallengeCard = ({
                   `${team2.attributes.teamWins} Wins - ${team2.attributes.teamLosses} Losses`}
               </span>
             </div>
-          </>
+          </div>
         )}
       </div>
-      <div className="flex flex-col w-full p-2">
-        <span> Status: {getChallengeStatus()}</span>
-        <span>
-          Amount: {challenge.challengeAmount} SVT
-          <span className=" text-gray-400 italic text-xs">Est. $10(?)</span>
-        </span>
-        <span>
-          {challenge.challengeMessage && (
-            <>Message: {challenge.challengeMessage}</>
-          )}
-        </span>
+      <div className="m-auto">
+        <div className="flex flex-col w-full p-2">
+          <span> Status: {getChallengeStatus()}</span>
+          <span>
+            Prize Pool: {challenge.challengeAmount} SVT
+            <span className="ml-2 text-gray-400 italic text-xs">
+              Est. $10(?)
+            </span>
+          </span>
+          <span>
+            {challenge.challengeMessage && (
+              <>Message: {challenge.challengeMessage}</>
+            )}
+          </span>
+        </div>
       </div>
       <div className="flex flex-row w-full items-center justify-around p-2">
         {type == "against" && (
           <>
             {isContractLoading ? (
               <>Minting...</>
-            ) : isAuthenticated && challenge.isAccepted ? (
+            ) : isAuthenticated && challenge.isAcceptedOnChain ? (
               <>
                 <button
                   className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
@@ -241,7 +269,7 @@ export const ChallengeCard = ({
           <>
             {isContractLoading ? (
               <>Minting...</>
-            ) : isAuthenticated && challenge.isAccepted ? (
+            ) : isAuthenticated && challenge.isAcceptedOnChain ? (
               <>
                 <button
                   className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
@@ -276,10 +304,7 @@ export const ChallengeCard = ({
         )}
       </div>
       {contractMessage && !isContractLoading && (
-        <Toast
-          open={contractMessage && !isContractLoading}
-          type={contractMessage.status}
-        >
+        <Toast open type={contractMessage.status}>
           {contractMessage.message}
         </Toast>
       )}
