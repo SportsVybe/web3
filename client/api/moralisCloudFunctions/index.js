@@ -1,3 +1,5 @@
+// ----------- Helper Functions ------------ //
+
 const logger = Moralis.Cloud.getLogger();
 
 const getObject = async (schema, field, objectId) => {
@@ -13,6 +15,39 @@ const getAllObjects = async (schema, field, searchString) => {
   query.equalTo(field, searchString);
   return await query.find({ useMasterKey: true });
 };
+
+const getUserAction = async (actionId) => {
+  if (!actionId) return null;
+  const result = await getAllObjects("user_actions", "objectId", actionId);
+  if (result.length === 0) return null;
+  return result[0];
+};
+
+// ----------- SVT Contract Functions ------------ //
+
+Moralis.Cloud.afterSave("tokenApprovals", async (request) => {
+  const confirmed = request.object.get("confirmed");
+  const owner = request.object.get("owner");
+  const amount = request.object.get("value");
+  try {
+    if (confirmed) {
+      const user = await getAllObjects("_User", "ethAddress", owner);
+      const currentAmount = user[0].attributes.approvedSTVAmount;
+      const newAmount = Number(currentAmount) + Number(amount);
+      logger.info(
+        `tokenApprovals: ${owner}: ${currentAmount} + ${amount} = ${newAmount}`
+      );
+      if (!user[0].attributes.hasApprovedSVT) {
+        await user[0].save("hasApprovedSVT", true);
+      }
+      await user[0].save("approvedSTVAmount", newAmount);
+    }
+  } catch (error) {
+    logger.error(`contractChallengeAccepted: Error: ${error}`);
+  }
+});
+
+// ----------- SportsVybe Contract Functions ------------ //
 
 Moralis.Cloud.afterSave("contractTeamCreated", async (request) => {
   const confirmed = request.object.get("confirmed");
@@ -57,9 +92,135 @@ Moralis.Cloud.afterSave("contractTeamCreated", async (request) => {
       }
     }
   } catch (error) {
+    logger.error(`contractTeamCreated: Error: ${error}`);
+  }
+});
+
+Moralis.Cloud.afterSave("contractChallengeCreated", async (request) => {
+  const confirmed = request.object.get("confirmed");
+  const actionId = request.object.get("action_id");
+  const challengeId = request.object.get("challenge_id");
+  logger.info(
+    `contractChallengeCreated: ${confirmed} ${actionId} ${challengeId}`
+  );
+  try {
+    if (confirmed) {
+      const userAction = await getUserAction(actionId);
+      const actionStatus = await userAction.get("actionStatus");
+      if (!actionStatus) {
+        await userAction.save("actionStatus", true);
+        const challengeUpdate = await getAllObjects(
+          "challenges",
+          "actionId",
+          userAction
+        );
+        await challengeUpdate[0].save("challengeChainId", challengeId);
+      }
+    }
+  } catch (error) {
+    logger.error(`contractChallengeCreated: Error: ${error}`);
+  }
+});
+
+Moralis.Cloud.afterSave("contractChallengeAccepted", async (request) => {
+  const confirmed = request.object.get("confirmed");
+  const actionId = request.object.get("action_id");
+  logger.info(`contractChallengeAccepted: ${confirmed} ${actionId}`);
+  try {
+    if (confirmed) {
+      const userAction = await getUserAction(actionId);
+      const actionStatus = await userAction.get("actionStatus");
+      if (!actionStatus) {
+        await userAction.save("actionStatus", true);
+        const challengeUpdate = await getAllObjects(
+          "challenges",
+          "challengerActionId",
+          userAction
+        );
+        await challengeUpdate[0].save("isAcceptedOnChain", true);
+      }
+    }
+  } catch (error) {
+    logger.error(`contractChallengeAccepted: Error: ${error}`);
+  }
+});
+
+Moralis.Cloud.afterSave("contractVoteSubmit", async (request) => {
+  const confirmed = request.object.get("confirmed");
+  const actionId = request.object.get("action_id");
+  logger.info(`contractVoteSubmit: ${confirmed} ${actionId}`);
+
+  try {
+    if (confirmed) {
+      const userAction = await getObject("user_actions", "objectId", actionId);
+      if (!userAction.attributes.actionStatus) {
+        await userAction.save("actionStatus", true);
+        const voteUpdate = await getObject("votes", "actionId", userAction);
+        await voteUpdate.save("confirmedOnChain", true);
+      }
+    }
+  } catch (error) {
     console.error(error);
   }
 });
+
+Moralis.Cloud.afterSave("contractTeamMembershipSent", async (request) => {
+  const confirmed = request.object.get("confirmed");
+  const actionId = request.object.get("action_id");
+  logger.info(`contractTeamMembershipSent: ${confirmed} ${actionId}`);
+
+  try {
+    if (confirmed) {
+      const userAction = await getAllObjects(
+        "user_actions",
+        "objectId",
+        actionId
+      );
+      const actionStatus = await userAction[0].get("actionStatus");
+      if (!actionStatus) {
+        await userAction[0].save("actionStatus", true);
+        const result = await getAllObjects(
+          "db_TeamMembershipRequests",
+          "sentActionId",
+          userAction[0]
+        );
+        await result[0].save("sentOnChain", true);
+      }
+    }
+  } catch (error) {
+    logger.error(`contractTeamMembershipSent: Error: ${error}`);
+  }
+});
+
+Moralis.Cloud.afterSave("contractTeamMembershipAccept", async (request) => {
+  const confirmed = request.object.get("confirmed");
+  const actionId = request.object.get("action_id");
+  logger.info(`contractTeamMembershipAccept: ${confirmed} ${actionId}`);
+
+  try {
+    if (confirmed) {
+      const userAction = await getAllObjects(
+        "user_actions",
+        "objectId",
+        actionId
+      );
+      const actionStatus = await userAction[0].get("actionStatus");
+      if (!actionStatus) {
+        await userAction[0].save("actionStatus", true);
+        const result = await getAllObjects(
+          "db_TeamMembershipRequests",
+          "acceptActionId",
+          userAction[0]
+        );
+        await result[0].save("acceptOnChain", true);
+      }
+    }
+  } catch (error) {
+    logger.error(`contractTeamMembershipAccept: Error: ${error}`);
+  }
+});
+
+// ----------- Cloud Functions ------------ //
 
 Moralis.Cloud.define("teatContractTeamCreated", async (request) => {
   const confirmed = true;
@@ -110,93 +271,7 @@ Moralis.Cloud.define("teatContractTeamCreated", async (request) => {
   }
 });
 
-Moralis.Cloud.afterSave("contractChallengePoolCreated", async (request) => {
-  const confirmed = request.object.get("confirmed");
-  const actionId = request.object.get("action_id");
-  const challengeId = request.object.get("challenge_id");
-  logger.info(
-    `contractChallengePoolCreated: ${confirmed} ${actionId} ${challengeId}`
-  );
-  try {
-    if (confirmed) {
-      const userAction = await getObject("user_actions", "objectId", actionId);
-      if (!userAction.attributes.actionStatus) {
-        await userAction.save("actionStatus", true);
-        const challengeUpdate = await getObject(
-          "challenges",
-          "actionId",
-          userAction
-        );
-        await challengeUpdate.save("challengeChainId", challengeId);
-      }
-    }
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-Moralis.Cloud.afterSave("contractChallengeAccepted", async (request) => {
-  const confirmed = request.object.get("confirmed");
-  const actionId = request.object.get("action_id");
-  logger.info(`contractChallengeAccepted: ${confirmed} ${actionId}`);
-  try {
-    if (confirmed) {
-      const userAction = await getObject("user_actions", "objectId", actionId);
-      if (!userAction.attributes.actionStatus) {
-        await userAction.save("actionStatus", true);
-        const challengeUpdate = await getObject(
-          "challenges",
-          "challengerActionId",
-          userAction
-        );
-        await challengeUpdate.save("isAccepted", true);
-      }
-    }
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-Moralis.Cloud.afterSave("contractVoteSubmit", async (request) => {
-  const confirmed = request.object.get("confirmed");
-  const actionId = request.object.get("action_id");
-  logger.info(`contractVoteSubmit: ${confirmed} ${actionId}`);
-
-  try {
-    if (confirmed) {
-      const userAction = await getObject("user_actions", "objectId", actionId);
-      if (!userAction.attributes.actionStatus) {
-        await userAction.save("actionStatus", true);
-        const voteUpdate = await getObject("votes", "actionId", userAction);
-        await voteUpdate.save("confirmedOnChain", true);
-      }
-    }
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-Moralis.Cloud.afterSave("tokenApprovals", async (request) => {
-  const confirmed = request.object.get("confirmed");
-  const owner = request.object.get("owner");
-  const amount = request.object.get("value");
-  try {
-    if (confirmed) {
-      const user = await getObject("_User", "ethAddress", owner);
-      const currentAmount = user.attributes.approvedSTVAmount;
-      if (!user.attributes.hasApprovedSVT) {
-        await user.save("hasApprovedSVT", true);
-      }
-      await user.save(
-        "approvedSTVAmount",
-        Number(currentAmount) + Number(amount)
-      );
-    }
-  } catch (error) {
-    console.error(error);
-  }
-});
-
+// getUser: returns {user: object, success: bool, ethAddress?: string}
 Moralis.Cloud.define(
   "getUser",
   async (request) => {
@@ -221,7 +296,7 @@ Moralis.Cloud.define(
       }
       return null;
     } catch (error) {
-      logger.info(error);
+      logger.info(`getUser: Error: ${error}`);
       return null;
     }
   },
@@ -252,49 +327,3 @@ Moralis.Cloud.define(
     },
   }
 );
-
-Moralis.Cloud.afterSave("contractTeamMembershipSent", async (request) => {
-  const confirmed = request.object.get("confirmed");
-  const actionId = request.object.get("action_id");
-  logger.info(`contractTeamMembershipSent: ${confirmed} ${actionId}`);
-
-  try {
-    if (confirmed) {
-      const userAction = await getObject("user_actions", "objectId", actionId);
-      if (!userAction.attributes.actionStatus) {
-        await userAction.save("actionStatus", true);
-        const result = await getObject(
-          "db_TeamMembershipRequests",
-          "sentActionId",
-          userAction
-        );
-        await result.save("sentOnChain", true);
-      }
-    }
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-Moralis.Cloud.afterSave("contractTeamMembershipAccept", async (request) => {
-  const confirmed = request.object.get("confirmed");
-  const actionId = request.object.get("action_id");
-  logger.info(`contractTeamMembershipAccept: ${confirmed} ${actionId}`);
-
-  try {
-    if (confirmed) {
-      const userAction = await getObject("user_actions", "objectId", actionId);
-      if (!userAction.attributes.actionStatus) {
-        await userAction.save("actionStatus", true);
-        const result = await getObject(
-          "db_TeamMembershipRequests",
-          "acceptActionId",
-          userAction
-        );
-        await result.save("acceptOnChain", true);
-      }
-    }
-  } catch (error) {
-    console.error(error);
-  }
-});
