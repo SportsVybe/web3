@@ -53,15 +53,17 @@ export const ManageProfile = ({
 
       try {
         if (newProfile) {
-          const newUserAction = await createUserAction(
+          const action = await createUserAction(
             contractActions.createTeamForUser
           );
-          formData.actionId = newUserAction;
-          const actionId = newUserAction.id;
+          formData.actionId = action;
+          const actionId = action.id;
 
           // create user on chain to be challenged
           const createTeamOnChain = await createTeam(actionId);
-          if (!createTeamOnChain) return;
+          if (!createTeamOnChain && !isContractLoading) {
+            await action.save({ actionStatus: false });
+          }
         }
         if (file && !newProfile) {
           const fileUpload = await saveFile(user.username, file);

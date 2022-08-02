@@ -79,8 +79,11 @@ export const ManageTeam = ({
           const createTeamOnChain = await createTeam(actionId);
 
           // create new team to database...
-          if (!isContractLoading && createTeamOnChain)
+          if (!isContractLoading && createTeamOnChain) {
             await getTeamsDB.save(teamFormData);
+          } else if (!createTeamOnChain && !isContractLoading) {
+            await action.save({ actionStatus: false });
+          }
           if (getTeamsDB.error) console.log(getTeamsDB.error.message);
         }
 
@@ -135,10 +138,7 @@ export const ManageTeam = ({
     <Modal open={modalView} onClose={async () => toggleModal(false)}>
       <div className="flex flex-col border-2 border-green-100 p-4 items-center">
         <div> {createNewTeam ? "Create Team" : "Manage Team"}</div>
-
-        {/* {teamError && <span className="py-2">Team Update Error:{teamError}</span>} */}
-        {/* {error && <span className="py-2">Upload Error: {error}</span>} */}
-        {isContractLoading && !contractMessage ? (
+        {isContractLoading ? (
           <span className="my-3 px-2 py-1 ">...Minting</span>
         ) : (
           <>

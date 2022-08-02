@@ -96,8 +96,11 @@ export const ManageChallenge = ({
           console.log("createChallengeOnChain", createChallengeOnChain);
 
           // create new challenge to database...
-          if (!isContractLoading && createChallengeOnChain)
+          if (!isContractLoading && createChallengeOnChain) {
             await getChallengesDB.save(challengeFormData);
+          } else if (!isContractLoading && !createChallengeOnChain) {
+            await action.save({ actionStatus: false });
+          }
           if (getChallengesDB.error) console.log(getChallengesDB.error.message);
         }
 
@@ -162,15 +165,11 @@ export const ManageChallenge = ({
     <Modal open={modalView} onClose={async () => toggleModal(false)}>
       <div className="flex flex-col border-2 border-green-100 p-4 items-center">
         <div>
-          {" "}
           {createNewChallenge
             ? `Create Challenge Against ${team.teamName}`
             : `Manage Challenge`}
         </div>
-
-        {/* {challengeError && <span className="py-2">Challenge Update Error:{challengeError}</span>} */}
-        {/* {error && <span className="py-2">Upload Error: {error}</span>} */}
-        {isContractLoading && !contractMessage ? (
+        {isContractLoading ? (
           <span className="my-3 px-2 py-1 ">...Minting</span>
         ) : (
           <>

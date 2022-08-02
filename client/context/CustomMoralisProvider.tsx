@@ -3,7 +3,7 @@ import { useMoralis } from "react-moralis";
 
 const defaultState = {
   createUserAction: async (contractAction: string) => {
-    return { id: "", actionId: "", contractAction: "" };
+    return { id: "", actionId: "", contractAction: "", save: async ({}) => {} };
   },
   getFirstObject: async (schema: string, field: string, objectId: string) => {
     return {};

@@ -72,6 +72,8 @@ export const ManageTeamMembers = ({
           await teamObject.save({
             teamInvitesPending: teamObject.teamInvitesPending + 1,
           });
+        } else if (!isContractLoading && !createTeamMembershipRequestOnChain) {
+          await action.save({ actionStatus: false });
         }
 
         // reload page after saving
@@ -136,7 +138,7 @@ export const ManageTeamMembers = ({
       <div className="flex flex-col border-2 border-green-100 p-4 items-center">
         <div>Invite Player</div>
 
-        {isContractLoading && !contractMessage ? (
+        {isContractLoading ? (
           <span className="my-3 px-2 py-1 ">...Minting</span>
         ) : (
           <>

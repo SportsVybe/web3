@@ -46,11 +46,9 @@ export const ManageVote = ({
     console.log("vote form data", voteFormData);
     if (isFormValid()) {
       try {
-        const newUserAction = await createUserAction(
-          contractActions.submitVote
-        );
-        voteFormData.actionId = newUserAction;
-        const actionId = newUserAction.id;
+        const action = await createUserAction(contractActions.submitVote);
+        voteFormData.actionId = action;
+        const actionId = action.id;
 
         const challengeId = challenge.attributes.challengeChainId;
         const selectedTeamChainId = selectedTeam?.attributes.teamChainId;
@@ -67,6 +65,8 @@ export const ManageVote = ({
         // submit vote to database...
         if (!isContractLoading && submitVoteOnChain) {
           await getVotesDB.save(voteFormData);
+        } else if (!isContractLoading && !submitVoteOnChain) {
+          await action.save({ actionStatus: false });
         }
         if (getVotesDB.error) console.log(getVotesDB.error.message);
 
@@ -102,7 +102,7 @@ export const ManageVote = ({
             challenge.attributes.challengeChainId}
         </div>
 
-        {isContractLoading && !contractMessage ? (
+        {isContractLoading ? (
           <span className="my-3 px-2 py-1 ">...Minting</span>
         ) : (
           <>
