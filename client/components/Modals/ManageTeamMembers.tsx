@@ -1,5 +1,6 @@
+import Moralis from "moralis/types";
 import { useRouter } from "next/router";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useMoralis, useNewMoralisObject } from "react-moralis";
 import { contractActions } from "../../configs/constants";
 import { useContract } from "../../context/ContractProvider";
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export const ManageTeamMembers = ({
+  user,
   team = false,
   toggleModal,
   modalView,
@@ -36,12 +38,25 @@ export const ManageTeamMembers = ({
   const [username, setUsername] = useState("");
   const [address, setAddress] = useState("");
   const [userEthAddress, setUserEthAddress] = useState("");
-  const [user, setUser] = useState<any>([]);
+  const [requestUser, setRequestUser] = useState<Moralis.Object>();
+  const [currentUser, setCurrentUser] = useState<Moralis.Object>();
   const [loading, setLoading] = useState(false);
 
+  const getCurrentUser = async () => {
+    const userObject = await getAllObjects(
+      "users",
+      "username",
+      user.attributes.username
+    );
+    if (userObject) {
+      setCurrentUser(userObject[0]);
+    }
+    return null;
+  };
+
   const sendRequestData = {
-    sentUser: Moralis.User.current(),
-    acceptUser: user,
+    sentUser: currentUser,
+    acceptUser: requestUser,
     team: teamObject,
     sentActionId: {},
     acceptActionId: null,
@@ -70,7 +85,7 @@ export const ManageTeamMembers = ({
         if (!isContractLoading && createTeamMembershipRequestOnChain) {
           await getDB.save(sendRequestData);
           await teamObject.save({
-            teamInvitesPending: teamObject.teamInvitesPending + 1,
+            teamInvitesPending: team.teamInvitesPending + 1,
           });
         } else if (!isContractLoading && !createTeamMembershipRequestOnChain) {
           await action.save({ actionStatus: false });
@@ -107,7 +122,8 @@ export const ManageTeamMembers = ({
     try {
       const results: any = await fetchUser(username, "username", true);
       if (results != null && results.success) {
-        setUser(results.user);
+        getCurrentUser();
+        setRequestUser(results.user);
         setUserEthAddress(results.ethAddress);
         setLoading(false);
       } else {
@@ -121,17 +137,13 @@ export const ManageTeamMembers = ({
   };
 
   const resetTeamMember = (clear: boolean = false) => {
-    setUser([]);
+    setRequestUser(undefined);
     setLoading(false);
     if (clear) {
       setUsername("");
       setAddress("");
     }
   };
-
-  useEffect(() => {
-    console.log(user);
-  }, [user]);
 
   return (
     <Modal open={modalView} onClose={async () => toggleModal(false)}>
@@ -155,7 +167,7 @@ export const ManageTeamMembers = ({
                 />
                 <button
                   className="m-1"
-                  disabled={user.length !== 0}
+                  disabled={requestUser !== undefined}
                   onClick={() => getUser()}
                 >
                   Search
@@ -190,7 +202,9 @@ export const ManageTeamMembers = ({
 
             <div className="flex flex-row justify-center ">
               <button
-                disabled={isContractLoading || !user || user.length === 0}
+                disabled={
+                  isContractLoading || !requestUser || requestUser === undefined
+                }
                 className="m-3 px-2 py-1 bg-green-300 rounded-full disabled:bg-slate-300"
                 onClick={(e) => handleSubmit(e)}
               >
@@ -207,18 +221,18 @@ export const ManageTeamMembers = ({
             <div>
               {loading
                 ? "Searching....."
-                : user
-                ? user.length !== 0 && (
+                : requestUser
+                ? requestUser !== undefined && (
                     <>
                       <TeamMember
-                        member={user.attributes}
+                        member={requestUser.attributes}
                         isLoadingMembers={teamIsLoading}
                         team={team}
                         targetSelf={false}
                       />
                     </>
                   )
-                : "No Members Found"}
+                : "No Member Found"}
             </div>
             {contractMessage && !isContractLoading && (
               <Toast open type={contractMessage.status}>
