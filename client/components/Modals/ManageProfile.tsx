@@ -4,6 +4,7 @@ import { useMoralis, useMoralisFile } from "react-moralis";
 import { contractActions, sports } from "../../configs/constants";
 import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
+import { usernameRules, validateUsername } from "../../helper/validateUsername";
 import Modal from "../Layout/Modal";
 import { Toast } from "../Layout/Toast";
 
@@ -32,6 +33,7 @@ export const ManageProfile = ({
   const [userDisplayName, setUserDisplayName] = useState("");
   const [userUsername, setUserUsername] = useState("");
   const [isUsernameValid, setIsUsernameValid] = useState(true);
+  const [usernameError, setUsernameError] = useState("");
   const [editUsername, setEditUsername] = useState(newProfile);
   const [userSportsPreferences, setUserSportsPreferences] = useState<string[]>(
     []
@@ -106,7 +108,14 @@ export const ManageProfile = ({
   };
 
   const searchUsername = async () => {
-    if (editUsername || newProfile) {
+    const checkUsername = validateUsername(userUsername);
+    if (!checkUsername) {
+      setUsernameError(
+        `Username is not valid. Try again.\n\n ${usernameRules}`
+      );
+      return;
+    }
+    if ((editUsername || newProfile) && userUsername != "" && userUsername) {
       setLoading(true);
       try {
         const results: any = await fetchUser(userUsername, "username", false);
@@ -144,6 +153,13 @@ export const ManageProfile = ({
     return true;
   };
 
+  const resetFormToDefaults = () => {
+    setUserDisplayName(user.userDisplayName);
+    setUserUsername(user.username);
+    setUserSportsPreferences(user.userSportsPreferences);
+    setFile(null);
+  };
+
   useEffect(() => {
     if (user) {
       setUserDisplayName(user.userDisplayName || "");
@@ -153,7 +169,13 @@ export const ManageProfile = ({
   }, [user]);
 
   return (
-    <Modal open={modalView} onClose={async () => toggleModal(false)}>
+    <Modal
+      open={modalView}
+      onClose={async () => {
+        toggleModal(false);
+        resetFormToDefaults();
+      }}
+    >
       <div className="flex flex-col border-2 border-green-100 p-4 items-center w-full">
         <div className="p-2">
           {user && newProfile ? (
@@ -206,6 +228,9 @@ export const ManageProfile = ({
                 </button>
               )}
             </div>
+            {usernameError && usernameError.length > 0 && (
+              <span className="text-red-400">{usernameError}</span>
+            )}
             {user && !newProfile && (
               <>
                 <div className="h-[60px] my-1 flex flex-row justify-center items-center">
@@ -277,7 +302,7 @@ export const ManageProfile = ({
             <button
               onClick={async () => {
                 toggleModal(false);
-                router.reload();
+                resetFormToDefaults();
               }}
             >
               Cancel

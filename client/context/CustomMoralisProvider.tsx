@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react";
 import { useMoralis } from "react-moralis";
+import { validateUsername } from "../helper/validateUsername";
 
 const defaultState = {
   createUserAction: async (contractAction: string) => {
@@ -113,22 +114,19 @@ const CustomMoralisProvider = ({ children }: { children: any }) => {
     includeEthAddress: boolean = false
   ): Promise<any> => {
     try {
-      let check = true;
-      if (value.length > 3 && value) {
-        if (method === "username") {
-          const usernameRegex = /^[a-zA-Z0-9]+$/;
-          check = usernameRegex.test(value);
-          console.log(value, method, includeEthAddress, check);
-        }
-        if (check) {
-          const results = await cloudFunction("getUser", {
-            value,
-            method,
-            includeEthAddress,
-          });
-          if (results != null && results.success) {
-            return results;
-          }
+      let isUsernameValid: boolean = false;
+      if (!value) return null;
+      if (method === "username") {
+        isUsernameValid = validateUsername(value);
+      }
+      if (isUsernameValid || method !== "username") {
+        const results = await cloudFunction("getUser", {
+          value,
+          method,
+          includeEthAddress,
+        });
+        if (results != null && results.success) {
+          return results;
         }
       }
       return null;
