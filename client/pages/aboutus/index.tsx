@@ -1,4 +1,4 @@
-import About from "../components/AboutUs";
+import About from "../../components/AboutUs";
 export default function AboutPage() {
   return (
     <div className="mb-auto">
