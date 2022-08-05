@@ -344,6 +344,27 @@ describe("SportsVybe Contract - Test Cases", function () {
         );
       });
 
+      it("Should revert if already sent to a user", async function () {
+        const { addr2, addr1, Contract } = await loadFixture(deployFixture);
+        const { team2_id } = await getTeams();
+        await sendRequest(
+          Contract,
+          addr2,
+          generateActionId(),
+          team2_id,
+          addr1.address
+        );
+        await expect(
+          sendRequest(
+            Contract,
+            addr2,
+            generateActionId(),
+            team2_id,
+            addr1.address
+          )
+        ).to.be.revertedWith(`TeamMemberDuplicate("${addr1.address}")`);
+      });
+
       it("Should emit TeamMembershipRequestSent", async function () {
         const { Contract, addr3, addr2 } = await loadFixture(deployFixture);
         const { team3, team3_id } = await getTeams();

@@ -220,6 +220,19 @@ contract SportsVybe is Ownable {
     if (msg.sender == user) {
       revert TeamMembershipRequestUnauthorized(team_id, msg.sender);
     }
+
+    uint256 duplicateInvite = 0;
+    for (uint256 i = 0; i < team_membership_request[team_id].length; i++) {
+      if (team_membership_request[team_id][i].user == user) {
+        duplicateInvite = 1;
+        break;
+      }
+    }
+
+    if (duplicateInvite == 1) {
+      revert TeamMemberDuplicate(user);
+    }
+
     team_membership_request[team_id].push(TeamMate(user));
     emit TeamMembershipRequestSent(action_id, team_id, user, msg.sender);
     return true;
