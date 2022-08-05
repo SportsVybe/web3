@@ -52,7 +52,9 @@ export const ProfileController = ({
         if (results && username) {
           await getTeams();
         }
-      } else if (results.length == 0 && results == null) {
+      } else if (!results || results.length == 0 || results == null) {
+        console.log("No user found");
+
         createNewUser.save(newUser, {
           onSuccess: (user: any) => {
             setUserData(user.attributes);

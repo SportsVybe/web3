@@ -153,18 +153,16 @@ export const ManageProfile = ({
     return true;
   };
 
-  const resetFormToDefaults = () => {
-    setUserDisplayName(user.userDisplayName);
-    setUserUsername(user.username);
-    setUserSportsPreferences(user.userSportsPreferences);
+  const setFormDefaults = () => {
+    setUserDisplayName(user.userDisplayName || "");
+    setUserUsername(user.username || "");
+    setUserSportsPreferences(user.userSportsPreferences || []);
     setFile(null);
   };
 
   useEffect(() => {
     if (user) {
-      setUserDisplayName(user.userDisplayName || "");
-      setUserUsername(user.username || "");
-      setUserSportsPreferences(user.userSportsPreferences || []);
+      setFormDefaults();
     }
   }, [user]);
 
@@ -173,7 +171,7 @@ export const ManageProfile = ({
       open={modalView}
       onClose={async () => {
         toggleModal(false);
-        resetFormToDefaults();
+        setFormDefaults();
       }}
     >
       <div className="flex flex-col border-2 border-green-100 p-4 items-center w-full">
@@ -212,9 +210,7 @@ export const ManageProfile = ({
                   </button>
                   <button
                     disabled={
-                      !isUsernameValid ||
-                      user.username !== userUsername ||
-                      userUsername.length === 0
+                      !isUsernameValid || user.username !== userUsername
                     }
                     className="mx-1"
                     onClick={() => setEditUsername(false)}
@@ -302,7 +298,7 @@ export const ManageProfile = ({
             <button
               onClick={async () => {
                 toggleModal(false);
-                resetFormToDefaults();
+                setFormDefaults();
               }}
             >
               Cancel
