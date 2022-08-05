@@ -6,7 +6,7 @@ const getObject = async (schema, field, objectId) => {
   if (!schema || !field || !searchString) return null;
   const query = new Moralis.Query(schema);
   query.equalTo(field, objectId);
-  return await query.first();
+  return await query.first({ useMasterKey: true });
 };
 
 const getAllObjects = async (schema, field, searchString) => {
@@ -23,6 +23,44 @@ const getAllObjectsData = async (schema, field, searchString) => {
   const result = await query.find({ useMasterKey: true });
   if (result.length === 0) return null;
   return result[0];
+};
+
+const getInviteObjects = async (schema, field, searchString) => {
+  if (!schema || !field || !searchString) return [];
+  const query = new Moralis.Query(schema);
+  query.select(
+    "id",
+    "acceptOnChain",
+    "sentOnChain",
+    "status",
+    "createdAt",
+    "sentUser.id",
+    "sentUser.username",
+    "sentUser.userDisplayName",
+    "sentUser.userPhoto",
+    "sentUser.userPOS",
+    "sentUser.userWins",
+    "sentUser.userLosses",
+    "acceptUser.id",
+    "acceptUser.username",
+    "acceptUser.userDisplayName",
+    "acceptUser.userPhoto",
+    "acceptUser.userPOS",
+    "acceptUser.userWins",
+    "acceptUser.userLosses",
+    "team.id",
+    "team.teamName",
+    "team.teamPhoto",
+    "team.teamPOS",
+    "team.teamWins",
+    "team.teamLosses",
+    "team.teamMembers",
+    "team.teamSportsPreferences",
+    "team.teamAdmin",
+    "team.teamChainId"
+  );
+  query.equalTo(field, searchString);
+  return await query.find({ useMasterKey: true });
 };
 
 const getUserAction = async (actionId) => {
@@ -284,6 +322,7 @@ Moralis.Cloud.afterSave("contractTeamMembershipAccept", async (request) => {
           userAction
         );
         await result[0].save("acceptOnChain", true);
+        await result[0].save("status", "accepted");
       }
     }
   } catch (error) {
@@ -293,54 +332,36 @@ Moralis.Cloud.afterSave("contractTeamMembershipAccept", async (request) => {
 
 // ----------- Cloud Functions ------------ //
 
-Moralis.Cloud.define("teatContractTeamCreated", async (request) => {
-  const confirmed = true;
-  const actionId = request.params.actionId;
-  let userAction = null;
-  let teamId = "4";
-  let contractAction = null;
-  let actionName = null;
-  let teamUpdate = null;
-  let userUpdate = null;
-  try {
-    if (confirmed) {
-      userAction = await getAllObjects("user_actions", "objectId", actionId);
-      const actionStatus = await userAction[0].get("actionStatus");
-      if (!actionStatus) {
-        await userAction[0].save("actionStatus", true);
-        contractAction = await userAction[0].get("contractAction");
+Moralis.Cloud.define(
+  "testFunction",
+  async (request) => {
+    const user = request.user;
+    if (!user) return { fromUser: null, toUser: null, success: false };
+    try {
+      const fromUser = await getAllObjects(
+        "db_TeamMembershipRequests",
+        "sentUser",
+        user
+      );
+      const toUser = await getAllObjects(
+        "db_TeamMembershipRequests",
+        "acceptUser",
+        user
+      );
 
-        getContractAction = await getAllObjects(
-          "contractActions",
-          "objectId",
-          contractAction.id
-        );
-        actionName = await getContractAction[0].get("actionName");
-        if (actionName === "createTeam") {
-          teamUpdate = await getAllObjects("teams", "actionId", userAction[0]);
-          await teamUpdate[0].save("teamChainId", teamId);
-        } else if (actionName === "createTeamForUser") {
-          userUpdate = await getAllObjects("users", "actionId", userAction[0]);
-          await userUpdate[0].save("userChainId", teamId);
-          await userUpdate[0].save("createTeamsAvailable", true);
-          await userUpdate[0].save("userPOS", 100);
-        }
-      }
       return {
-        userAction,
-        contractAction,
-        getContractAction,
-        actionStatus,
-        actionName,
-        teamUpdate,
-        userUpdate,
+        fromUser: fromUser,
+        toUser: toUser,
+        success: true,
+        error: null,
       };
+    } catch (error) {
+      logger.info(`getUser: Error: ${error}`);
+      return { fromUser: null, toUser: null, success: false, error: error };
     }
-  } catch (error) {
-    console.error(error);
-    return { error };
-  }
-});
+  },
+  { requireUser: true }
+);
 
 // getUser: returns {user: object, success: bool, ethAddress?: string}
 Moralis.Cloud.define(
@@ -398,3 +419,62 @@ Moralis.Cloud.define(
     },
   }
 );
+
+// getUserInvites:
+// requires user to be logged in
+// returns { sent: [], accepted: [], pending: [], success: bool, error: string }
+Moralis.Cloud.define(
+  "getUserInvites",
+  async (request) => {
+    const user = request.user;
+    if (!user) return { fromUser: null, toUser: null, success: false };
+    try {
+      const userObj = await getAllObjectsData("users", "userAccount", user);
+
+      const fromUser = await getInviteObjects(
+        "db_TeamMembershipRequests",
+        "sentUser",
+        userObj
+      );
+      const toUser = await getInviteObjects(
+        "db_TeamMembershipRequests",
+        "acceptUser",
+        userObj
+      );
+
+      const { sent, pending, accepted } = await formatInvites({
+        fromUser,
+        toUser,
+      });
+      // return { fromUser, toUser, success: true };
+      return { sent, pending, accepted, success: true, error: null };
+    } catch (error) {
+      logger.info(`getUserInvites: Error: ${error}`);
+      return {
+        sent: [],
+        accepted: [],
+        pending: [],
+        success: false,
+        error: error,
+      };
+    }
+  },
+  { requireUser: true }
+);
+
+const formatInvites = async (invites) => {
+  const { fromUser, toUser } = invites;
+  const sentInvites = fromUser;
+  const acceptedInvites = toUser.filter(
+    (invite) => invite.get("acceptOnChain") === true
+  );
+  const pendingInvites = toUser.filter(
+    (invite) => invite.get("acceptOnChain") === false
+  );
+  const formattedInvites = {
+    sent: sentInvites,
+    accepted: acceptedInvites,
+    pending: pendingInvites,
+  };
+  return formattedInvites;
+};

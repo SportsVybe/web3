@@ -48,6 +48,9 @@ const defaultState = {
   ) => {
     return false;
   },
+  acceptTeamMembershipRequest: async (actionId: string, teamId: string) => {
+    return false;
+  },
 };
 
 const ContractContext = createContext(defaultState);
@@ -259,6 +262,32 @@ const ContractProvider = ({ children }: { children: any }) => {
     }
   };
 
+  const acceptTeamMembershipRequest = async (
+    actionId: string,
+    teamId: string
+  ) => {
+    setIsContractLoading(true);
+    try {
+      const contract = await getContract();
+      await contract.functions.acceptTeamMembershipRequest(actionId, teamId);
+      setContractMessage({
+        status: "info",
+        message: "Membership Request is being processed on chain.",
+      });
+      setIsContractLoading(false);
+      return true;
+    } catch (error) {
+      setIsContractLoading(false);
+      if (error instanceof Error) {
+        setContractMessage({ status: "error", message: error.message });
+      } else {
+        setContractMessage({ status: "error", message: "Unknown" });
+      }
+      console.error(error);
+      return false;
+    }
+  };
+
   return (
     <ContractContext.Provider
       value={{
@@ -272,6 +301,7 @@ const ContractProvider = ({ children }: { children: any }) => {
         acceptChallenge,
         submitVote,
         sendTeamMembershipRequest,
+        acceptTeamMembershipRequest,
       }}
     >
       {children}

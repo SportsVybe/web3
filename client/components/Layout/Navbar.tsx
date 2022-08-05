@@ -79,6 +79,11 @@ export default function Navbar() {
           {isAuthenticated && (
             <>
               <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600">
+                <Link href="/invites" className="px-2">
+                  Invites
+                </Link>
+              </div>
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600">
                 <Link href="/profile" className="px-2">
                   My Profile
                 </Link>
