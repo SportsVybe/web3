@@ -71,6 +71,15 @@ box-shadow: 0px 2px 3px 4px #2AA25B;
   box-shadow: 0px 2px 3px 8px #2AA25B;
 }
 
+.modal-glassmorphism {
+background: rgba(0, 0, 0, 0.81);
+border-radius: 16px;
+box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+backdrop-filter: blur(4.6px);
+-webkit-backdrop-filter: blur(7.6px);
+border: 1px solid rgba(0, 0, 0, 0.27);
+}
+
 .text-gradient {
   background-color: #fff;
   background-image: radial-gradient(
