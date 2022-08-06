@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import type { AppProps } from "next/app";
 import "../styles/globals.css";
 
@@ -7,8 +8,15 @@ import { moralis } from "../configs/configs";
 import { ContractProvider } from "../context/ContractProvider";
 import { CustomMoralisProvider } from "../context/CustomMoralisProvider";
 import { WalletProvider } from "../context/WalletProvider";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  useEffect(() => {
+    setTimeout(() => {
+      AOS.init();
+    }, 0);
+  }, []);
   return (
     <MoralisProvider
       appId={moralis.MORALIS_APP_ID}

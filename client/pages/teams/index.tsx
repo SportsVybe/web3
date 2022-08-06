@@ -5,7 +5,7 @@ export default function TeamsPage() {
     <div className="mb-auto">
       <div className="flex flex-col justify-center items-center">
         <div className="pb-4">
-          <h1 className="md:text-xl md:mb-8">
+          <h1 className="md:text-xl md:mb-8 text-white">
             Explore the various teams Available!
           </h1>
         </div>

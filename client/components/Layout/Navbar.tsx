@@ -15,15 +15,15 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="md:px-4 md:flex md:justify-between md:items-center border-b-2">
+    <nav className="md:px-8 md:flex md:justify-between md:items-center md:pt-4 ">
       <div className="flex items-center justify-between px-4">
         <div className="p-2 cursor-pointer">
           <ImageRef href="/">
             <Image
-              src="/logo_blackvybe.png"
+              src="/header_logo.png"
               alt="SportsVybe Logo"
-              width={125}
-              height={25}
+              width={120}
+              height={40}
             />
           </ImageRef>
         </div>
@@ -31,12 +31,15 @@ export default function Navbar() {
           <button
             onClick={() => setIsOpen(!isOpen)}
             type="button"
-            className="block text-[#17362a] hover:text-green-600"
+            className="block text-green-600"
           >
             {isOpen ? (
-              <h1 className="text-3xl text-bold">✖</h1>
+              <h1 className="text-3xl text-bold text-green-600">✖</h1>
             ) : (
-              <svg className="h-6 w-6 fill-current" viewBox="0 0 100 80">
+              <svg
+                className="h-6 w-6 fill-current text-green-600"
+                viewBox="0 0 100 80"
+              >
                 <rect width="100" height="20"></rect>
                 <rect y="30" width="100" height="20"></rect>
                 <rect y="60" width="100" height="20"></rect>
@@ -53,7 +56,7 @@ export default function Navbar() {
         <div className="md:flex list-none flex-row justify-between items-center flex-initial">
           {!wallet && (
             <>
-              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600">
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl">
                 <Link href="/" className="px-2">
                   Home
                 </Link>
@@ -61,34 +64,34 @@ export default function Navbar() {
             </>
           )}
 
-          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600">
+          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl">
             <Link href="/aboutus" className="px-2">
               About
             </Link>
           </div>
-          <div className="block rounded px-2 py-1 mb-3 md:mb-0 mx-4 cursor-pointer hover:text-green-600">
+          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl">
             <Link href="/teams" className="px-2">
               Teams
             </Link>
           </div>
-          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600">
+          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl">
             <Link href="/events" className="px-2">
               Events
             </Link>
           </div>
           {isAuthenticated && (
             <>
-              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600">
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl">
                 <Link href="/invites" className="px-2">
                   Invites
                 </Link>
               </div>
-              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600">
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl">
                 <Link href="/profile" className="px-2">
                   My Profile
                 </Link>
               </div>
-              <div className="block rounded px-2 py-1 mx-4 mb-6 md:mb-0 cursor-pointer hover:text-green-600">
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl">
                 <Link href="/challenges" className="px-2">
                   My Challenges
                 </Link>
@@ -100,7 +103,7 @@ export default function Navbar() {
           {wallet ? (
             <button
               disabled={isAuthenticating}
-              className="block rounded-full cursor-pointer px-6 py-2  mx-2 bg-green-200  disabled:bg-gray-400 hover:bg-green-400"
+              className="block rounded-full cursor-pointer px-6 py-2  mx-2 bg-green-400  disabled:bg-gray-400 hover:bg-green-600 button "
               onClick={() => signOutWallet()}
             >
               Disconnect {wallet.substring(0, 5)}

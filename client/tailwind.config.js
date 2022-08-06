@@ -38,6 +38,9 @@ module.exports = {
           "100%": { opacity: 1 },
         },
       },
+      backgroundImage: {
+        "process-pattern": "url('/blur-colors.png)",
+      },
     },
     plugins: [require("tailwindcss-animate")],
     variants: {
