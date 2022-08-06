@@ -16,7 +16,7 @@ export const InvitesView = (props: Props) => {
     <div>
       <div className="flex flex-row justify-center items-center mb-5 pb-4 border-b-2 border-gray-600">
         <div
-          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center p-2 ${
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 rounded-lg p-2 ${
             activeTab == "pending" && "bg-green-500 hover:bg-green-700"
           }`}
           onClick={() => setActiveTab("pending")}
@@ -24,7 +24,7 @@ export const InvitesView = (props: Props) => {
           {pending && pending.length} Pending
         </div>
         <div
-          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 p-2 mx-4 ${
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 rounded-lg p-2 mx-4 ${
             activeTab == "accepted" && "bg-green-500 hover:bg-green-700"
           }`}
           onClick={() => setActiveTab("accepted")}
@@ -32,7 +32,7 @@ export const InvitesView = (props: Props) => {
           {accepted && accepted.length} Accepted
         </div>
         <div
-          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center p-2 ${
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 rounded-lg p-2 ${
             activeTab == "sent" && "bg-green-500 hover:bg-green-700"
           }`}
           onClick={() => setActiveTab("sent")}
