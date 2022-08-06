@@ -64,7 +64,11 @@ body {
 }
 
 .card {
-box-shadow: 0px 2px 3px 5px #2AA25B;
+box-shadow: 0px 2px 3px 4px #2AA25B;
+}
+
+.card:hover{
+  box-shadow: 0px 2px 3px 8px #2AA25B;
 }
 
 .text-gradient {
