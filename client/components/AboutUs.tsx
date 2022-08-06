@@ -36,7 +36,7 @@ export default function AboutUs() {
       </div>
       <div className="flex md:flex-row flex-col justify-around items-center md:mb-48 mb-10">
         <div className="mb-4">
-          <div className="card rounded-full mb-8">
+          <div className="card rounded-full mb-8" data-aos="zoom-in">
             <Image
               width={265}
               height={300}
@@ -68,7 +68,7 @@ export default function AboutUs() {
           </p>
         </div>
         <div className="mb-4">
-          <div className=" card rounded-full mb-8">
+          <div className=" card rounded-full mb-8" data-aos="zoom-in">
             <Image
               width={265}
               height={300}
@@ -90,7 +90,7 @@ export default function AboutUs() {
           </p>
         </div>
         <div className="mb-4">
-          <div className="card rounded-full mb-8">
+          <div className="card rounded-full mb-8" data-aos="zoom-in">
             <Image
               width={265}
               height={300}

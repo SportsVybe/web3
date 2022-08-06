@@ -85,7 +85,7 @@ export const InvitesController = (props: Props) => {
     />
   ) : (
     <div>
-      <span className="text-1xl">Loading...</span>
+      <span className="text-1xl text-white">Loading...</span>
     </div>
   );
 };

@@ -29,7 +29,7 @@ const ProcessSection = () => {
       <div className="flex mf:flex-row items-center justify-between md:p-20 md:py-20 py-2 px-14">
         <div className="flex-1 flex-col justify-start items-start md:w-96 w-80">
           <h1
-            className="text-white text-2xl md:text-4xl sm:text-5xl py-2 "
+            className="text-white text-2xl md:text-5xl sm:text-5xl py-2"
             data-aos="fade-down-right"
             data-aos-duration="2400"
           >

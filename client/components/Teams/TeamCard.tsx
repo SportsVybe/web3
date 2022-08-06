@@ -57,7 +57,7 @@ export const TeamCard = ({ team, teamObject = null }: Props) => {
       <div className="flex flex-row w-full items-center justify-around p-2">
         {user && !isTeamMember && (
           <button
-            className="px-3 py-2 my-2 bg-green-200 rounded-full hover:bg-green-400 text-black"
+            className="px-3 py-2 my-2 rounded-full bg-green-300 hover:bg-green-600 text-black"
             onClick={() => toggleManageChallengeModal(!manageChallengeModal)}
           >
             Challenge Team
