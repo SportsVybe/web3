@@ -33,7 +33,7 @@ export default function Profile({
         <h1>PLAYER PROFILE:</h1>
       </div>
       <div className="flex flex-col w-[480px] lg:w-[600px]">
-        <div className="flex flex-col w-full justify-center items-center border-gray-200 p-2 rounded-lg shadow-lg bg-white hover:shadow-2xl transition ease-in-out delay-100  hover:ease-in-outp-5">
+        <div className="flex flex-col my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out">
           <div className="flex flex-row my-4 w-full justify-center items-center">
             <div className="flex flex-col w-1/2 items-center justify-center">
               <Photo
