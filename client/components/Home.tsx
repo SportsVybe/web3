@@ -58,35 +58,55 @@ export const Home = () => {
         <h1 className="text-left inline pb-1 border-green-700 text-white md:text-4xl text-2xl py-2 my-4">
           What is does:
         </h1>
-        <div
-          data-aos="fade-up"
-          data-aos-easing="linear"
-          data-aos-duration="1000"
-          className="md:text-[18px] text-sm"
-        >
-          <p className="mt-8">
+        <div className="md:text-[18px] text-sm">
+          <p
+            className="mt-8"
+            data-aos="fade-up"
+            data-aos-easing="linear"
+            data-aos-duration="1000"
+          >
             <span className="mr-2 text-green-600">➼</span> Users can find
             individual players or be apart of a team and challenge each other to
             a IRL sports match.
           </p>
-          <p className="mt-8">
+          <p
+            className="mt-8"
+            data-aos="fade-up"
+            data-aos-easing="linear"
+            data-aos-duration="1000"
+          >
             <span className="mr-2 text-green-600">➼</span> Upon completing a
             match, the players of the match (individual or team) will vote who
             was the winner. The winner of the match will take the pot.
           </p>
-          <p className="mt-8">
+          <p
+            className="mt-8"
+            data-aos="fade-up"
+            data-aos-easing="linear"
+            data-aos-duration="1000"
+          >
             <span className="mr-2 text-green-600">➼</span> Using smart contracts
             we secure the wager and introduce a new type of trust protocol we’re
             calling: Proof of Sportsmanship (POS).
           </p>
 
-          <p className="mt-8">
+          <p
+            className="mt-8"
+            data-aos="fade-up"
+            data-aos-easing="linear"
+            data-aos-duration="1000"
+          >
             <span className="mr-2 text-green-600">➼</span> The POS score ensures
             players and teams are honest when validating the winner of a match.
             The POS score starts at 100% and allows the player/team to claim
             100% of the pot.
           </p>
-          <p className="mt-8">
+          <p
+            className="mt-8"
+            data-aos="fade-up"
+            data-aos-easing="linear"
+            data-aos-duration="1000"
+          >
             <span className="mr-2 text-green-600">➼</span> When consensus is not
             met the POS will be adjusted and therefore adjusts the percentage
             returned to a user.

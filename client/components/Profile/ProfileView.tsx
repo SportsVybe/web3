@@ -45,15 +45,15 @@ export default function Profile({
               />
             </div>
             <div className="flex flex-col w-1/2">
-              <span>
+              <span className="py-3">
                 Username: {userData.username ? userData.username : "--"}
               </span>
-              <span>
+              <span className="py-3">
                 Display Name:{" "}
                 {userData.userDisplayName ? userData.userDisplayName : "--"}
               </span>
-              <span>
-                Member Since
+              <span className="py-3">
+                Member Since:{" "}
                 {userData.createdAt
                   ? userData.createdAt.toLocaleDateString("en-US", {
                       year: "numeric",
@@ -62,7 +62,7 @@ export default function Profile({
               </span>
             </div>
           </div>
-          {wallet && <p> Wallet: {wallet}</p>}
+          {wallet && <p className="py-3 font-bold"> Wallet: {wallet}</p>}
         </div>
         <div className="w-full">
           {wallet ? (
@@ -94,7 +94,7 @@ export default function Profile({
             </>
           )}
         </div>
-        <div className="flex flex-row my-4 justify-center items-start border-2 border-gray-200 rounded-lg shadow-lg bg-white hover:shadow-2xl transition ease-in-out delay-100  hover:ease-in-out p-2">
+        <div className="flex my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out p-2">
           <div className="flex flex-col w-1/2 items-center p-2">
             <div className="flex flex-col justify-center items-center">
               <span className="p-2 font-bold">Record:</span>

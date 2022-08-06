@@ -17,7 +17,7 @@ export default function ChallengesPage({
   const [activeTab, setActiveTab] = useState("against");
 
   return (
-    <div className="w-full flex flex-col justify-center items-center">
+    <div className="w-full flex flex-col justify-center items-center ">
       <h1 className="mb-3">Challenges Page</h1>
 
       <div className="flex flex-col w-full">
