@@ -64,11 +64,12 @@ body {
 }
 
 .card {
-box-shadow: 0px 2px 3px 4px #2AA25B;
+box-shadow: 0px 2px 3px 3px #2AA25B;
 }
 
 .card:hover{
-  box-shadow: 0px 2px 3px 8px #2AA25B;
+  box-shadow: 0px 2px 3px 6px #2AA25B;
+  transition: 0.4s easeInOut 0.4s;
 }
 
 .modal-glassmorphism {
@@ -88,6 +89,18 @@ border: 1px solid rgba(0, 0, 0, 0.27);
       transparent 53%
     ),
     radial-gradient(at 100% 60%, rgb(27, 27, 27) 0, transparent 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.word-gradient {
+  background-color: rgb(19, 160, 97);
+  background-image: radial-gradient(
+      at 4% 36%,
+      rgb(29, 182, 108) 0,
+      transparent 53%
+    ),
+    radial-gradient(at 100% 60%, rgb(234, 234, 234) 0, transparent 50%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

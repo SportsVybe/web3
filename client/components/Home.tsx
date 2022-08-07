@@ -13,15 +13,15 @@ export const Home = () => {
           <h4 className="text-md md:text-2xl text-gray-400">
             Connecting People to Recreational Sports
           </h4>
-          <p className="text-lg py-3 text-gray-400 pb-4">
+          <p className="text-lg py-3 pb-4 word-gradient">
             Our Mission is to improve the health in our community <br />
             through fitness and sociability.
           </p>
         </div>
 
-        <div className="animate-fade-in-right floater">
+        <div className="animate-fade-in-right floater md:">
           <Image
-            src="/landing_image2.png"
+            src="/hero_section.png"
             alt="SportsVybe header"
             width={500}
             height={500}
