@@ -14,26 +14,26 @@ export const InvitesView = (props: Props) => {
   const [error, setError] = useState("");
   return (
     <div>
-      <div className="flex flex-row justify-center items-center">
+      <div className="flex flex-row justify-center items-center mb-5 pb-4 border-b-2 border-gray-600">
         <div
-          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center p-2 ${
-            activeTab == "pending" && "bg-green-200"
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 rounded-lg p-2 ${
+            activeTab == "pending" && "bg-green-500 hover:bg-green-700"
           }`}
           onClick={() => setActiveTab("pending")}
         >
           {pending && pending.length} Pending
         </div>
         <div
-          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center p-2 ${
-            activeTab == "accepted" && "bg-green-200"
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 rounded-lg p-2 mx-4 ${
+            activeTab == "accepted" && "bg-green-500 hover:bg-green-700"
           }`}
           onClick={() => setActiveTab("accepted")}
         >
           {accepted && accepted.length} Accepted
         </div>
         <div
-          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center p-2 ${
-            activeTab == "sent" && "bg-green-200"
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 rounded-lg p-2 ${
+            activeTab == "sent" && "bg-green-500 hover:bg-green-700"
           }`}
           onClick={() => setActiveTab("sent")}
         >

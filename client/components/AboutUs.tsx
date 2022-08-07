@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function AboutUs() {
   return (
-    <div className="">
+    <div className="text-white">
       <div className="md:mx-32 mb-4 mt-10">
         <h1 className="text-left text-2xl border-b-2 inline pb-1 border-green-700">
           Project Inspiration:
@@ -36,7 +36,7 @@ export default function AboutUs() {
       </div>
       <div className="flex md:flex-row flex-col justify-around items-center md:mb-48 mb-10">
         <div className="mb-4">
-          <div className="border-4 border-green-500/75 rounded-full mb-8">
+          <div className="card rounded-full mb-8" data-aos="zoom-in">
             <Image
               width={265}
               height={300}
@@ -68,7 +68,7 @@ export default function AboutUs() {
           </p>
         </div>
         <div className="mb-4">
-          <div className="border-4 border-green-500/75 rounded-full mb-8">
+          <div className=" card rounded-full mb-8" data-aos="zoom-in">
             <Image
               width={265}
               height={300}
@@ -90,7 +90,7 @@ export default function AboutUs() {
           </p>
         </div>
         <div className="mb-4">
-          <div className="border-4 border-green-500/75 rounded-full mb-8">
+          <div className="card rounded-full mb-8" data-aos="zoom-in">
             <Image
               width={265}
               height={300}

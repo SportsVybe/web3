@@ -235,7 +235,7 @@ export const ManageProfile = ({
                   </span>
                   <input
                     value={userDisplayName}
-                    className="m-2 px-2 py-1 rounded bg-gray-300 outline-green-400"
+                    className="m-2 px-2 py-1 rounded bg-gray-300 text-black outline-green-400"
                     onChange={(e) => setUserDisplayName(e.target.value)}
                   />
                 </div>
@@ -249,8 +249,8 @@ export const ManageProfile = ({
                       return (
                         <button
                           key={i}
-                          className={`m-1 px-2 py-1 rounded text-sm  ${
-                            isChecked ? "bg-green-100" : "bg-gray-300"
+                          className={`m-1 px-2 py-1 rounded text-sm text-black  ${
+                            isChecked ? "bg-green-400" : "bg-gray-300"
                           }`}
                           onClick={() =>
                             handleSportsPreferences(sport, isChecked)
@@ -272,7 +272,7 @@ export const ManageProfile = ({
                     accept="image/x-png,image/gif,image/jpeg"
                     type="file"
                     onChange={(e) => handleFileChange(e)}
-                    className="mx-3 px-2 py-1 rounded bg-gray-300"
+                    className="mx-3 px-2 py-1 rounded bg-gray-300 text-black"
                   />
                 </div>
               </>
@@ -290,12 +290,13 @@ export const ManageProfile = ({
                 !userUsername ||
                 !isUsernameValid
               }
-              className="my-3 px-4 py-1 bg-green-300 rounded-full disabled:bg-gray-400 hover:bg-green-400"
+              className="my-3 px-5 py-2 bg-green-400 text-black rounded-full disabled:bg-gray-400 hover:bg-green-600"
               onClick={(e) => handleSubmit(e)}
             >
               {newProfile ? "Mint" : "Save"}
             </button>
-            <button
+              <button
+                className="hover:bg-red-600 px-4 py-2 rounded-full"
               onClick={async () => {
                 toggleModal(false);
                 setFormDefaults();

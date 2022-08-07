@@ -41,12 +41,12 @@ export default function Modal({ open, onClose, children }: Props) {
 
         {/* content */}
         <div
-          className={`fixed overflow-x-scroll right-0 h-full bg-white shadow-lg w-full max-w-screen-sm p-4 ${
+          className={`fixed overflow-x-scroll right-0 h-full modal-glassmorphism text-white shadow-lg w-full max-w-screen-sm p-4 ${
             open ? "opacity-100" : "pointer-events-none opacity-0"
           } transition-opacity duration-300 ease-in-out`}
         >
           <div>
-            <button className="font-bold" onClick={onClose}>
+            <button className="font-bold hover:text-red-600" onClick={onClose}>
               Close
             </button>
           </div>

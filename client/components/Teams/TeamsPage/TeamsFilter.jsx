@@ -51,7 +51,7 @@ export default function TeamsFilter({ filterTeams, isLoading }) {
   }, [filterBy, teamPOS, sport]);
 
   return (
-    <div className="flex flex-row items-center justify-around j w-[480px] lg:w-[600px]">
+    <div className="flex flex-row items-center justify-around j w-[480px] lg:w-[600px] text-white">
       <h1>Filter:</h1>
       <div>
         <input
@@ -109,7 +109,7 @@ export default function TeamsFilter({ filterTeams, isLoading }) {
       <button
         onClick={() => filterTeams(filterBy, filterValue)}
         disabled={isLoading}
-        className="px-4 py-2 mx-3 my-2 bg-green-200 hover:bg-green-500 rounded-full"
+        className="px-4 py-2 mx-3 my-2 bg-green-200 hover:bg-green-500 rounded-full  text-black"
       >
         Apply
       </button>

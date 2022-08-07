@@ -17,7 +17,7 @@ export default function ChallengesPage({
   const [activeTab, setActiveTab] = useState("against");
 
   return (
-    <div className="w-full flex flex-col justify-center items-center">
+    <div className="w-full flex flex-col justify-center items-center text-white">
       <h1 className="mb-3">Challenges Page</h1>
 
       <div className="flex flex-col w-full">
@@ -32,7 +32,7 @@ export default function ChallengesPage({
           </div>
           <div
             onClick={() => setActiveTab("against")}
-            className={`flex cursor-pointer flex-col w-1/2 items-center justify-center p-2 ${
+            className={`flex cursor-pointer text-black flex-col w-1/2 items-center justify-center p-2 ${
               activeTab == "against" && "bg-green-200"
             }`}
           >

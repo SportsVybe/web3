@@ -4,10 +4,11 @@ import { useWallet } from "../../context/WalletProvider";
 export default function InvitesPage() {
   const { wallet, user, isAuthenticating, connectWallet } = useWallet();
   return (
-    <div className="mb-auto">
+    <div className="mb-auto text-white">
       <div className="flex flex-col justify-center items-center">
         <div className="pb-4">
           <h1 className="md:text-xl md:mb-8">Invites Page</h1>
+          <p className="mb-8">View all invitations for different challenges!</p>
         </div>
         {wallet && user && !isAuthenticating ? (
           <InvitesController
