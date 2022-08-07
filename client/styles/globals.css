@@ -97,10 +97,10 @@ border: 1px solid rgba(0, 0, 0, 0.27);
   background-color: rgb(19, 160, 97);
   background-image: radial-gradient(
       at 4% 36%,
-      rgb(29, 182, 108) 0,
+      rgb(255, 255, 255) 0,
       transparent 53%
     ),
-    radial-gradient(at 100% 60%, rgb(234, 234, 234) 0, transparent 50%);
+    radial-gradient(at 100% 60%, rgb(23, 125, 78) 0, transparent 50%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
