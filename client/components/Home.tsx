@@ -30,7 +30,7 @@ export const Home = () => {
       </div>
 
       <div
-        className="md:pt-12 pt-8 md:flex-row justify-evenly flex "
+        className="md:pt-32 pt-8 md:flex-row justify-evenly flex "
         data-aos="fade-up"
         data-aos-easing="linear"
         data-aos-duration="1600"
