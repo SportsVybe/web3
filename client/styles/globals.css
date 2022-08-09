@@ -105,6 +105,30 @@ border: 1px solid rgba(0, 0, 0, 0.27);
   -webkit-text-fill-color: transparent;
 }
 
+.nav-item {
+  line-height: 40px;
+  margin-right: 1rem;
+}
+
+.nav-item:after {
+  content: "";
+  display: block;
+  height: 3px;
+  width: 0;
+  background: transparent;
+  transition: width 0.7s ease, background-color 0.5s ease;
+}
+
+.nav-item:hover:after {
+  width: 100%;
+  background: #158944;
+}
+
+.nav-item .active {
+  color: #158944;
+  /* border: 1px solid #ffdd40; */
+}
+
 .floater {
   transform: translatey(0px);
 	animation: float 6s ease-in-out infinite;
