@@ -63,6 +63,27 @@ const getInviteObjects = async (schema, field, searchString) => {
   return await query.find({ useMasterKey: true });
 };
 
+const getRewardObjects = async (schema, field, searchString) => {
+  if (!schema || !field || !searchString) return [];
+  const query = new Moralis.Query(schema);
+  query.select(
+    "id",
+    "action_id",
+    "amount",
+    "challenge_id",
+    "createdAt",
+    "confirmed",
+    "isClaimed",
+    "reward_id",
+    "transaction_hash",
+    "updatedAt",
+    "user",
+    "team_id"
+  );
+  query.equalTo(field, searchString);
+  return await query.find({ useMasterKey: true });
+};
+
 const getUserAction = async (actionId) => {
   if (!actionId) return null;
   const result = await getAllObjects("user_actions", "objectId", actionId);
@@ -70,7 +91,7 @@ const getUserAction = async (actionId) => {
   return result[0];
 };
 
-const getChallenge = async (challengeId) => {
+const getChallengeByActionId = async (challengeId) => {
   if (!challengeId) return null;
   const result = await getAllObjects(
     "challenges",
@@ -79,6 +100,16 @@ const getChallenge = async (challengeId) => {
   );
   if (result.length === 0) return null;
   return result[0];
+};
+
+const getContractActionName = async (contractActionId) => {
+  const contractAction = await contractActionId.get("contractAction");
+  const getContractAction = await getAllObjects(
+    "contractActions",
+    "objectId",
+    contractAction.id
+  );
+  return await getContractAction[0].get("actionName");
 };
 
 // ----------- SVT Contract Functions ------------ //
@@ -211,7 +242,7 @@ Moralis.Cloud.afterSave("contractChallengeClosed", async (request) => {
   logger.info(`contractChallengeClosed: ${confirmed} ${challengeId}`);
   try {
     if (confirmed) {
-      const challengeUpdate = await getChallenge(challengeId);
+      const challengeUpdate = await getChallengeByActionId(challengeId);
       const isAccepted = await challengeUpdate.isAcceptedOnChain;
       if (!isAccepted) {
         await challengeUpdate.save("isClosed", true);
@@ -249,7 +280,7 @@ Moralis.Cloud.afterSave("contractChallengeWins", async (request) => {
   logger.info(`contractChallengeWins: ${confirmed} ${teamId} ${challengeId}`);
   try {
     if (confirmed) {
-      const challengeUpdate = await getChallenge(challengeId);
+      const challengeUpdate = await getChallengeByActionId(challengeId);
       const isAccepted = await challengeUpdate.isAcceptedOnChain;
       if (!isAccepted) {
         await challengeUpdate.save("challengeWinnerTeamId", teamId);
@@ -269,7 +300,7 @@ Moralis.Cloud.afterSave("contractChallengeLosses", async (request) => {
 
   try {
     if (confirmed) {
-      const challengeUpdate = await getChallenge(challengeId);
+      const challengeUpdate = await getChallengeByActionId(challengeId);
       const isAccepted = await challengeUpdate.isAcceptedOnChain;
       if (!isAccepted) {
         await challengeUpdate.save("challengeLoserTeamId", teamId);
@@ -323,6 +354,8 @@ Moralis.Cloud.afterSave("contractTeamMembershipAccept", async (request) => {
         );
         await result[0].save("acceptOnChain", true);
         await result[0].save("status", "accepted");
+
+        // TODO: add user to the teamMembers array
       }
     }
   } catch (error) {
@@ -331,37 +364,6 @@ Moralis.Cloud.afterSave("contractTeamMembershipAccept", async (request) => {
 });
 
 // ----------- Cloud Functions ------------ //
-
-Moralis.Cloud.define(
-  "testFunction",
-  async (request) => {
-    const user = request.user;
-    if (!user) return { fromUser: null, toUser: null, success: false };
-    try {
-      const fromUser = await getAllObjects(
-        "db_TeamMembershipRequests",
-        "sentUser",
-        user
-      );
-      const toUser = await getAllObjects(
-        "db_TeamMembershipRequests",
-        "acceptUser",
-        user
-      );
-
-      return {
-        fromUser: fromUser,
-        toUser: toUser,
-        success: true,
-        error: null,
-      };
-    } catch (error) {
-      logger.info(`getUser: Error: ${error}`);
-      return { fromUser: null, toUser: null, success: false, error: error };
-    }
-  },
-  { requireUser: true }
-);
 
 // getUser: returns {user: object, success: bool, ethAddress?: string}
 Moralis.Cloud.define(
@@ -478,3 +480,89 @@ const formatInvites = async (invites) => {
   };
   return formattedInvites;
 };
+
+// getUserRewards:
+// requires user to be logged in
+// returns { available: [], claimed: [], success: bool, error: string }
+Moralis.Cloud.define(
+  "getUserRewards",
+  async (request) => {
+    const user = request.user;
+    if (!user)
+      return {
+        available: [],
+        claimed: [],
+        success: false,
+        error: "No user object",
+      };
+    try {
+      const userRewardObjs = await getRewardObjects(
+        "contractRewardCreated",
+        "user",
+        user.get("ethAddress")
+      );
+
+      // return userRewardObjs;
+      const { available, claimed } = await formatRewards(userRewardObjs);
+
+      return { available, claimed, success: true, error: null };
+    } catch (error) {
+      logger.info(`getUserRewards: Error: ${error}`);
+      return {
+        available: [],
+        claimed: [],
+        success: false,
+        error: error,
+      };
+    }
+  },
+  { requireUser: true }
+);
+
+const formatRewards = async (userRewards) => {
+  let available = [];
+  let claimed = [];
+  if (!userRewards || userRewards.length === 0) return { available, pending };
+
+  available = userRewards.filter((reward) => reward.get("isClaimed") === false);
+  claimed = userRewards.filter((reward) => reward.get("isClaimed") === true);
+
+  return { available, claimed };
+};
+
+Moralis.Cloud.define(
+  "testFunction",
+  async (request) => {
+    const user = request.user;
+    if (!user)
+      return {
+        available: [],
+        claimed: [],
+        success: false,
+        error: "No user object",
+      };
+    try {
+      const userRewardObjs = await getRewardObjects(
+        "contractRewardCreated",
+        "user",
+        user.get("ethAddress")
+      );
+
+      // return userRewardObjs;
+      const { available, claimed, challenges } = await formatRewards(
+        userRewardObjs
+      );
+
+      return { available, claimed, challenges, success: true, error: null };
+    } catch (error) {
+      logger.info(`getUserRewards: Error: ${error}`);
+      return {
+        available: [],
+        claimed: [],
+        success: false,
+        error: error,
+      };
+    }
+  },
+  { requireUser: true }
+);

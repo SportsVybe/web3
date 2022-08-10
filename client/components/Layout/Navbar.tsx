@@ -22,8 +22,8 @@ export default function Navbar() {
             <Image
               src="/header_logo.png"
               alt="SportsVybe Logo"
-              width={120}
-              height={40}
+              width={135}
+              height={35}
             />
           </ImageRef>
         </div>
@@ -84,6 +84,11 @@ export default function Navbar() {
               <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl">
                 <Link href="/invites" className="px-2">
                   Invites
+                </Link>
+              </div>
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl">
+                <Link href="/rewards" className="px-2">
+                  Rewards
                 </Link>
               </div>
               <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl">
