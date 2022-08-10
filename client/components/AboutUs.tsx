@@ -22,10 +22,10 @@ export default function AboutUs() {
           Future Plans after the Hackathon:
         </h1>
         <p className="mt-5">
-          The submission into Chainlink is only the beginning for the project.
-          We plan to build the concept into a mobile application using react
-          native. We are looking to partner with various local communities in
-          the Miami, Florida area to bring sports leagues to the platform.
+          The submission into Polygon Hackathon is only the beginning for the
+          project. We plan to build the concept into a mobile application using
+          react native. We are looking to partner with various local communities
+          in the Miami, Florida area to bring sports leagues to the platform.
         </p>
       </div>
 
