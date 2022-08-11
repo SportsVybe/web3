@@ -67,7 +67,6 @@ contract SportsVybe is Ownable {
     bool isClosed;
     bool isCompleted;
     uint256 createdAt;
-    uint256 interval;
     uint256 team_1_votes;
     uint256 team_2_votes;
     address[] team_1_members;
@@ -295,8 +294,6 @@ contract SportsVybe is Ownable {
     hasActionId(action_id)
     returns (uint256)
   {
-    // TODO: remove interval
-    uint256 _interval = 5;
     uint256 new_challenge_id = 900 + challenge_id_counter.current();
     if (amount == 0) {
       revert ChallengePoolInsufficientAmount(0, amount);
@@ -325,7 +322,6 @@ contract SportsVybe is Ownable {
       false,
       false,
       block.timestamp,
-      _interval,
       0,
       0,
       _team_1_members,
