@@ -299,7 +299,9 @@ contract SportsVybe is Ownable {
       revert ChallengePoolInsufficientAmount(0, amount);
     }
 
-    // TODO: Ensure that team cannot compete with a team that has a player on both teams.
+    // Ensure that team cannot compete with a team that has a player on both teams.
+    // Fixed: This checked while accpeting challenge
+
     uint256 senderBalance = sportsVybeToken.balanceOf(msg.sender);
 
     //Ensure that team owner has funds to create challenge
@@ -421,6 +423,11 @@ contract SportsVybe is Ownable {
     teamOwner(team_id)
     returns (bool)
   {
+    //Ensure that team id has been challenged to participate in the challenge pool
+    if (challengePools[challenge_id].team2 != team_id) {
+      revert TeamUnauthorized(team_id);
+    }
+
     challengePools[challenge_id].isAccepted = false;
     closeChallenge(challenge_id);
     return true;
@@ -429,7 +436,7 @@ contract SportsVybe is Ownable {
   // TODO: cancel challenge - if cancel after interval, then no POS reduction
   // TODO: cancel challenge - if cancel before interval, then POS reduction
   // TODO: cancel challenge --- reduce sportsmanship if within 48 hrs of challenge creation
-
+  
   function closeChallenge(uint256 challenge_id) internal {
     ChallengePool memory _challenge_pool = challengePools[challenge_id];
 
