@@ -7,9 +7,9 @@ type Props = {
 
 export default function Layout({ children }: Props) {
   return (
-    <div className="flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <div className="gradient-bg-welcome">
-      <Navbar />
+        <Navbar />
       </div>
       <main className={styles.main}>{children}</main>
       <footer className="text-center mt-10 mb-3 text-white">
