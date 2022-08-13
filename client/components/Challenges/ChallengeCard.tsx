@@ -7,7 +7,6 @@ import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
 import { Photo } from "../Layout/Photo";
 import { Toast } from "../Layout/Toast";
-import { ManageEvent } from "../Modals/ManageEvent";
 import { ManageVote } from "../Modals/ManageVote";
 // import { ManageChallenge } from "./ManageChallenge";
 
@@ -309,14 +308,14 @@ export const ChallengeCard = ({
         </Toast>
       )}
 
-      <ManageEvent
+      {/* <ManageEvent
         challenge={challenge}
         team1={team1}
         team2={team2}
         toggleModal={toggleManageEventModal}
         modalView={manageEventModal}
         createNewEvent={true}
-      />
+      /> */}
       <ManageVote
         challenge={challengeObject}
         challengeTeam1={team1}
