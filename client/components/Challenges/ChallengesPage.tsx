@@ -18,22 +18,22 @@ export default function ChallengesPage({
 
   return (
     <div className="w-full flex flex-col justify-center items-center text-white">
-      <h1 className="mb-3">Challenges Page</h1>
+      <h1 className="mb-12">View different Challenges created by you and from other individuals and teams!</h1>
 
       <div className="flex flex-col w-full">
         <div className="flex flex-row">
           <div
             onClick={() => setActiveTab("created")}
-            className={`flex cursor-pointer flex-col w-1/2 items-center justify-center p-2 ${
-              activeTab == "created" && "bg-green-200"
+            className={`flex cursor-pointer flex-col w-1/2 items-center justify-center p-2 rounded-lg hover:bg-green-700 mr-3 ${
+              activeTab == "created" && "bg-green-500 text-black"
             }`}
           >
             Challenges Created
           </div>
           <div
             onClick={() => setActiveTab("against")}
-            className={`flex cursor-pointer text-black flex-col w-1/2 items-center justify-center p-2 ${
-              activeTab == "against" && "bg-green-200"
+            className={`flex cursor-pointer  flex-col w-1/2 items-center justify-center p-2 rounded-lg hover:bg-green-700 ${
+              activeTab == "against" && "bg-green-500 text-black"
             }`}
           >
             Challenges Against

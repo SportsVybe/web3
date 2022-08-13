@@ -26,7 +26,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         <WalletProvider>
           <ContractProvider>
             <Layout>
-              <Component {...pageProps} />
+              <div className="flex-grow">
+                <Component {...pageProps} />
+              </div>
             </Layout>
           </ContractProvider>
         </WalletProvider>
