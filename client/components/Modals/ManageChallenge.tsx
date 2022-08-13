@@ -1,8 +1,9 @@
-import { ethers } from "ethers";
+import Moralis from "moralis/types";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { useMoralisQuery, useNewMoralisObject } from "react-moralis";
+import { useNewMoralisObject } from "react-moralis";
 import { contractActions } from "../../configs/constants";
+import { Challenge, Team } from "../../configs/types";
 import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
 import AuthorizeButton from "../Buttons/AuthorizeButton";
@@ -10,120 +11,129 @@ import Modal from "../Layout/Modal";
 import { Toast } from "../Layout/Toast";
 
 type Props = {
-  userTeamId?: string;
+  challengeTeam: Moralis.Object | null;
   challengeTeamId: string;
-  team: any;
   user: any;
+  userTeam?: Moralis.Object | null;
+  userTeamId?: string;
   challenge?: any | boolean;
+  createNewChallenge: boolean;
   toggleModal: Dispatch<SetStateAction<boolean>>;
   modalView: boolean;
-  createNewChallenge: boolean;
-  challengeObject?: any | null;
+};
+
+type Response = {
+  teamOwnerTeams: Team[] | [];
+  teamOwnerActiveTeams: Team[] | [];
+  teamMemberTeams: Team[] | [];
+  success: boolean;
+  error: string | null;
 };
 
 export const ManageChallenge = ({
-  userTeamId = "",
+  challengeTeam,
   challengeTeamId = "",
-  team,
   user,
+  userTeam = null,
+  userTeamId = "",
   challenge = false,
+  createNewChallenge = false,
   toggleModal,
   modalView,
-  createNewChallenge = false,
-  challengeObject = null,
 }: Props) => {
   const getChallengesDB = useNewMoralisObject("challenges");
-  const { createUserAction } = useCustomMoralis();
+  const { createUserAction, cloudFunction } = useCustomMoralis();
   const { createChallenge, isContractLoading, contractMessage } = useContract();
   const router = useRouter();
-  const [userTeams, setUserTeams] = useState([]);
+  const [userTeams, setUserTeams] = useState<Response>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [challengeSports, setChallengeSports] = useState(
-    challenge.challengeSports || ""
+    (challenge && challenge.get("challengeSports")) || ""
   );
   const [challengeAmount, setChallengeAmount] = useState(
-    challenge.challengeAmount || "0"
+    (challenge && challenge.get("challengeAmount")) || "0"
   );
   const [challengeMessage, setChallengeMessage] = useState(
-    challenge.challengeMessage || ""
+    (challenge && challenge.get("challengeMessage")) || ""
   );
-  const [challengeTeam1, setChallengeTeam1] = useState(userTeamId || "");
-  const [challengeTeam2, setChallengeTeam2] = useState(challengeTeamId || "");
+  const [challengeTeam1, setChallengeTeam1] = useState(userTeam);
+  const [challengeTeam1_chainId, setChallengeTeam1_chainId] = useState(
+    userTeamId || ""
+  );
+  const [challengeTeam2_chainId, setChallengeTeam2_chainId] = useState(
+    challengeTeamId || ""
+  );
   const [challengeTeam2Admin, setChallengeTeam2Admin] = useState(
-    team.teamAdmin || ""
+    (challengeTeam && challengeTeam.get("teamAdmin")) || ""
   );
 
-  const userApprovedAmount =
-    user &&
-    user.attributes &&
-    user.attributes.approvedSTVAmount &&
-    ethers.utils.formatEther(user.attributes.approvedSTVAmount);
-
-  const userHasApprovedSVT =
-    user && user.attributes && user.attributes.hasApprovedSVT;
-
-  const challengeFormData = {
+  const challengeFormData: Challenge = {
     id: challenge.id || "",
     challengeTeam1: challengeTeam1,
-    challengeTeam2: challengeTeam2,
+    challengeTeam2: challengeTeam,
+    challengeTeam1_chainId: challengeTeam1_chainId,
+    challengeTeam2_chainId: challengeTeamId || "",
     challengeAmount: challengeAmount,
     challengeMessage: challengeMessage,
     challengeSport: challengeSports,
     challengeTeam1Admin: user.get("username"),
     challengeTeam2Admin: challengeTeam2Admin,
-    challengeChainId: challenge.challengeChainId || "",
+    challengeChainId: (challenge && challenge.get("challengeChainId")) || "",
     challengeTeam1Count:
-      (team && team.teamMembers && team.teamMembers.length) || 0,
+      (challengeTeam &&
+        challengeTeam.get("teamMembers") &&
+        challengeTeam.get("teamMembers").length) ||
+      0,
     challengeTeam2Count: 0,
-    actionId: challenge.actionId || "",
+    actionId: (challenge && challenge.get("actionId")) || "",
   };
 
   const handleSubmit = async () => {
-    if (isFormValid()) {
-      try {
-        if (createNewChallenge) {
-          const action = await createUserAction(
-            contractActions.createChallenge
-          );
-          const actionId = action.id;
-          challengeFormData.actionId = action;
-          // create challenge on chain
-          const createChallengeOnChain = await createChallenge(
-            actionId,
-            challengeTeam1,
-            challengeTeam2,
-            challengeAmount
-          );
+    // if (isFormValid()) {
+    try {
+      if (createNewChallenge) {
+        const action = await createUserAction(contractActions.createChallenge);
+        const actionId = action.id;
+        challengeFormData.actionId = action;
+        // create challenge on chain
+        const createChallengeOnChain = false; //await createChallenge(
+        //   actionId,
+        //   challengeTeam1_chainId,
+        //   challengeTeamId,
+        //   challengeAmount
+        // );
 
-          console.log("createChallengeOnChain", createChallengeOnChain);
+        console.log("createChallengeOnChain", createChallengeOnChain);
+        console.log("challengeFormData", challengeFormData);
 
-          // create new challenge to database...
-          if (!isContractLoading && createChallengeOnChain) {
-            await getChallengesDB.save(challengeFormData);
-          } else if (!isContractLoading && !createChallengeOnChain) {
-            await action.save({ actionStatus: false });
-          }
-          if (getChallengesDB.error) console.log(getChallengesDB.error.message);
+        // create new challenge to database...
+        if (!isContractLoading && createChallengeOnChain) {
+          // await getChallengesDB.save(challengeFormData);
+        } else if (!isContractLoading && !createChallengeOnChain) {
+          await action.save({ actionStatus: false });
         }
-
-        // update challenge in database
-        if (challengeObject && !createNewChallenge) {
-          challengeFormData.id = challengeObject.id;
-          await challengeObject.save(challengeFormData);
-        }
-
-        // reload page after saving
-        if (
-          (!getChallengesDB.isSaving &&
-            !isContractLoading &&
-            !contractMessage) ||
-          (challengeObject && !challengeObject.isSaving)
-        )
-          router.push("/challenges");
-      } catch (error) {
-        console.error(error);
+        if (getChallengesDB.error) console.log(getChallengesDB.error.message);
       }
+
+      // update challenge in database
+      if (challenge && !createNewChallenge) {
+        challengeFormData.id = challenge.id;
+        await challenge.save(challengeFormData);
+      }
+
+      // reload page after saving
+      if (
+        (!getChallengesDB.isSaving && !isContractLoading && !contractMessage) ||
+        (challenge && !challenge.get("isSaving"))
+      ) {
+        // router.push("/challenges");
+      }
+    } catch (error) {
+      console.error(error);
     }
+    // }
   };
 
   const handleSports = (sport: string, isChecked: boolean) => {
@@ -134,41 +144,43 @@ export const ManageChallenge = ({
     }
   };
 
+  const handleSelectTeam = (teamChainId: string) => {
+    // setChallengeTeam1(team);
+    setChallengeTeam1_chainId(teamChainId);
+  };
+
   const isFormValid = () => {
-    if (
-      !challengeTeam1 ||
-      !challengeTeam2 ||
-      !challengeAmount ||
-      !challengeSports
-    ) {
+    if (!challengeTeam1 || !challengeAmount || !challengeSports) {
       alert("Please fill out required fields.");
       return false;
     }
     return true;
   };
 
-  const getTeamsByUsername = useMoralisQuery(
-    "teams",
-    (query) => query.equalTo("teamAdmin", user.get("username")),
-    [],
-    {
-      autoFetch: true,
-    }
-  );
+  const fetchUserTeams = async () => {
+    setIsLoading(true);
+    const userTeams = await cloudFunction("getUserTeams", {});
+    if (!userTeams.success) setError(error || "Error fetching user teams");
+    return userTeams;
+  };
 
   useEffect(() => {
-    const getTeams = getTeamsByUsername.fetch();
-    getTeams.then((teams: any) => {
-      setUserTeams(teams);
-    });
-  }, [user]);
+    if (modalView) {
+      fetchUserTeams()
+        .then(setUserTeams)
+        .then(() => setIsLoading(false))
+        .catch(setError);
+    }
+  }, [modalView]);
 
   return (
     <Modal open={modalView} onClose={async () => toggleModal(false)}>
       <div className="flex flex-col border-2 border-green-100 p-4 items-center">
         <div>
           {createNewChallenge
-            ? `Create Challenge Against ${team.teamName}`
+            ? `Create Challenge Against ${
+                challengeTeam && challengeTeam.get("teamName")
+              }`
             : `Manage Challenge`}
         </div>
         {isContractLoading ? (
@@ -196,21 +208,23 @@ export const ManageChallenge = ({
                 <span className="h-[60px] my-1 flex justify-start items-center">
                   <select
                     required
-                    onChange={(e) => setChallengeTeam1(e.target.value)}
+                    onChange={(e) => handleSelectTeam(e.target.value)}
                   >
                     <option value="">Select Team</option>
                     {userTeams &&
-                      userTeams.map((team: any, i: number) => (
-                        <option
-                          key={i}
-                          value={team.attributes.teamChainId}
-                          defaultChecked={
-                            challengeTeam1 == team.attributes.teamChainId
-                          }
-                        >
-                          {team.attributes.teamName}
-                        </option>
-                      ))}
+                      userTeams.teamOwnerActiveTeams.map(
+                        (team: any, i: number) => (
+                          <option
+                            key={i}
+                            value={team.get("teamChainId")}
+                            defaultChecked={
+                              challengeTeam1_chainId == team.get("teamChainId")
+                            }
+                          >
+                            {team.get("teamName")}
+                          </option>
+                        )
+                      )}
                   </select>
                 </span>
                 <span className="h-[60px] my-1 flex justify-start items-center">
@@ -234,8 +248,10 @@ export const ManageChallenge = ({
                   />
                 </span>
                 <span className="h-[120px] my-1 flex justify-start items-center flex-wrap">
-                  {team.teamSportsPreferences &&
-                    team.teamSportsPreferences
+                  {challengeTeam &&
+                    challengeTeam.get("teamSportsPreferences") &&
+                    challengeTeam
+                      .get("teamSportsPreferences")
                       .sort()
                       .map((sport: string, i: number) => {
                         const isChecked = challengeSports.includes(sport);
@@ -255,20 +271,10 @@ export const ManageChallenge = ({
               </div>
             </div>
 
-            <AuthorizeButton
-              amount={challengeAmount}
-              userHasApprovedSVT={userHasApprovedSVT}
-              userApprovedAmount={userApprovedAmount}
-            />
+            <AuthorizeButton amount={challengeAmount} />
 
             <button
-              disabled={
-                isContractLoading ||
-                Number(userApprovedAmount) < Number(challengeAmount) ||
-                !userApprovedAmount ||
-                userApprovedAmount == "0" ||
-                challengeAmount == "0"
-              }
+              disabled={isContractLoading || challengeAmount == "0"}
               className="my-3 px-2 py-1 bg-green-300 rounded-full disabled:bg-slate-300"
               onClick={() => handleSubmit()}
             >

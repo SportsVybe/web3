@@ -17,7 +17,7 @@ export const TeamCard = ({ team, teamObject = null }: Props) => {
   let isAdmin = false;
 
   if (user) {
-    const { username } = user.attributes ? user.attributes : "";
+    const { username } = user.attributes ? user.attributes : [];
     isTeamMember =
       (user && team.teamMembers.find((member: any) => member === username)) ||
       false;
@@ -98,11 +98,11 @@ export const TeamCard = ({ team, teamObject = null }: Props) => {
       {user && !isTeamMember && (
         <ManageChallenge
           user={user}
-          team={team}
+          challengeTeam={teamObject}
           challengeTeamId={team.teamChainId}
+          createNewChallenge={true}
           toggleModal={toggleManageChallengeModal}
           modalView={manageChallengeModal}
-          createNewChallenge={true}
         />
       )}
     </div>
