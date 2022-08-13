@@ -1,7 +1,7 @@
 import { ChallengesController } from "../../components/Challenges/ChallengesController";
 import { useWallet } from "../../context/WalletProvider";
 
-export default function Challenges() {
+export default function ChallengesPage() {
   const { wallet, user, isAuthenticating, connectWallet } = useWallet();
   return (
     <div className="mb-auto">

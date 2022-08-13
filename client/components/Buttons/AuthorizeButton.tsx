@@ -1,28 +1,36 @@
+import { ethers } from "ethers";
 import { useContract } from "../../context/ContractProvider";
+import { useWallet } from "../../context/WalletProvider";
 
 export interface IAuthorizeButtonProps {
   amount: number;
-  userHasApprovedSVT: boolean;
-  userApprovedAmount: number;
 }
 
 const defaultProps: IAuthorizeButtonProps = {
   amount: 0,
-  userApprovedAmount: 0,
-  userHasApprovedSVT: false,
 };
 
 AuthorizeButton.defaultProps = defaultProps;
 
-export default function AuthorizeButton({
-  amount,
-  userHasApprovedSVT,
-  userApprovedAmount,
-}: IAuthorizeButtonProps) {
+export default function AuthorizeButton({ amount }: IAuthorizeButtonProps) {
   const { approveAmount, isContractLoading } = useContract();
+  const { user, isAuthenticated } = useWallet();
   const handleTokenApproval = async () => {
     await approveAmount(String(amount));
   };
+
+  const userApprovedAmount =
+    isAuthenticated &&
+    user &&
+    user.attributes &&
+    user.attributes.approvedSTVAmount &&
+    ethers.utils.formatEther(user.attributes.approvedSTVAmount);
+
+  const userHasApprovedSVT =
+    isAuthenticated &&
+    user &&
+    user.attributes &&
+    user.attributes.hasApprovedSVT;
 
   return !userHasApprovedSVT ||
     Number(userApprovedAmount) < amount ||
