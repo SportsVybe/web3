@@ -452,8 +452,7 @@ contract SportsVybe is Ownable {
     uint256 hoursDiff = block.timestamp - challengePools[challenge_id].createdAt;
     if( hoursDiff >= 48 hours){
       //Reducing POS
-          uint256 _team_sportmanship = team_sportsmanship[challengePools[challenge_id].team1];
-          team_sportsmanship[challengePools[challenge_id].team1] = _team_sportmanship - 2; 
+      handleSportsmanship("cancel", challengePools[challenge_id].team1);
 
     }
 
