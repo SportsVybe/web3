@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { Invite } from "../../../configs/types";
 import { InviteCard } from "./InviteCard";
-import { Invite } from "./InvitesController";
 
 type Props = {
   pending: Invite[] | [];
