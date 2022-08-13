@@ -5,6 +5,8 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+
 
 /*
 @Description: SportsVybe 
@@ -158,6 +160,7 @@ contract SportsVybe is Ownable {
   mapping(uint256 => address payable) public team_owner; // mapped by team_id
   mapping(uint256 => uint256) private team_sportsmanship; // mapped by team_id
   mapping(uint256 => uint256) private teamCount; // mapped by team_id
+  mapping(uint256 => address) public challengePoolOwner;
 
   // new counter openzepplin
   using Counters for Counters.Counter;
@@ -330,6 +333,9 @@ contract SportsVybe is Ownable {
       new address[](0)
     );
 
+    //assign owner to challenge pool
+    challengePoolOwner[new_challenge_id] = msg.sender;
+
     pending_challenge_pool_ids.push(new_challenge_id);
 
     // complete: Add the members of the team to challenge pool
@@ -433,10 +439,30 @@ contract SportsVybe is Ownable {
     return true;
   }
 
-  // TODO: cancel challenge - if cancel after interval, then no POS reduction
-  // TODO: cancel challenge - if cancel before interval, then POS reduction
-  // TODO: cancel challenge --- reduce sportsmanship if within 48 hrs of challenge creation
-  
+  // cancel challenge - if cancel after interval, then no POS reduction
+  // cancel challenge - if cancel before interval, then POS reduction
+  // cancel challenge --- reduce sportsmanship if within 48 hrs of challenge creation
+  function cancelChallenge(uint256 challenge_id) public returns (bool) {
+
+    //Ensure user is the creator of the challenge
+    if (challengePoolOwner[challenge_id] != msg.sender) {
+      revert ChallengePoolUnauthorized(challenge_id);
+    }
+
+    uint256 hoursDiff = block.timestamp - challengePools[challenge_id].createdAt;
+    if( hoursDiff >= 48 hours){
+      //Reducing POS
+          uint256 _team_sportmanship = team_sportsmanship[challengePools[challenge_id].team1];
+          team_sportsmanship[challengePools[challenge_id].team1] = _team_sportmanship - 2; 
+
+    }
+
+    challengePools[challenge_id].isAccepted = false;
+    closeChallenge(challenge_id);
+    return true;
+
+
+  }
   function closeChallenge(uint256 challenge_id) internal {
     ChallengePool memory _challenge_pool = challengePools[challenge_id];
 
