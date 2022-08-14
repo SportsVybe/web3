@@ -59,6 +59,8 @@ export type Challenge = {
   challengeTeam2Admin: User;
   challengeTeam1Count: number;
   challengeTeam2Count: number;
+  challengeTeam1TeamMembers: string[];
+  challengeTeam2TeamMembers: string[];
   createdAt?: string;
   updatedAt?: string;
   get?: (key: string) => any;
@@ -96,4 +98,19 @@ export type Reward = {
   get?: (key: string) => any;
   save?: (key: {}) => any;
   isSaving?: boolean;
+};
+
+export type GetUserTeamsResponse = {
+  teamOwnerTeams: Team[] | [];
+  teamOwnerActiveTeams: Team[] | [];
+  teamMemberTeams: Team[] | [];
+  success: boolean;
+  error: string | null;
+};
+
+export type GetTeamResponse = {
+  team: Team | [];
+  teamMembers: User[] | [];
+  success: boolean;
+  error: string | null;
 };

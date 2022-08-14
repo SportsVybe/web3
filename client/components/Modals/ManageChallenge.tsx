@@ -1,9 +1,8 @@
-import Moralis from "moralis/types";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useNewMoralisObject } from "react-moralis";
 import { contractActions } from "../../configs/constants";
-import { Challenge, Team } from "../../configs/types";
+import { Challenge, GetUserTeamsResponse, Team } from "../../configs/types";
 import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
 import AuthorizeButton from "../Buttons/AuthorizeButton";
@@ -11,23 +10,15 @@ import Modal from "../Layout/Modal";
 import { Toast } from "../Layout/Toast";
 
 type Props = {
-  challengeTeam: Moralis.Object | null;
+  challengeTeam: Team | null;
   challengeTeamId: string;
   user: any;
-  userTeam?: Moralis.Object | null;
+  userTeam?: Team | null;
   userTeamId?: string;
   challenge?: any | boolean;
   createNewChallenge: boolean;
   toggleModal: Dispatch<SetStateAction<boolean>>;
   modalView: boolean;
-};
-
-type Response = {
-  teamOwnerTeams: Team[] | [];
-  teamOwnerActiveTeams: Team[] | [];
-  teamMemberTeams: Team[] | [];
-  success: boolean;
-  error: string | null;
 };
 
 export const ManageChallenge = ({
@@ -45,8 +36,7 @@ export const ManageChallenge = ({
   const { createUserAction, cloudFunction } = useCustomMoralis();
   const { createChallenge, isContractLoading, contractMessage } = useContract();
   const router = useRouter();
-  const [userTeams, setUserTeams] = useState<Response>();
-  const [isLoading, setIsLoading] = useState(true);
+  const [userTeams, setUserTeams] = useState<GetUserTeamsResponse>();
   const [error, setError] = useState("");
 
   const [challengeSports, setChallengeSports] = useState(
@@ -62,78 +52,82 @@ export const ManageChallenge = ({
   const [challengeTeam1_chainId, setChallengeTeam1_chainId] = useState(
     userTeamId || ""
   );
-  const [challengeTeam2_chainId, setChallengeTeam2_chainId] = useState(
-    challengeTeamId || ""
-  );
-  const [challengeTeam2Admin, setChallengeTeam2Admin] = useState(
-    (challengeTeam && challengeTeam.get("teamAdmin")) || ""
-  );
 
   const challengeFormData: Challenge = {
     id: challenge.id || "",
-    challengeTeam1: challengeTeam1,
-    challengeTeam2: challengeTeam,
-    challengeTeam1_chainId: challengeTeam1_chainId,
-    challengeTeam2_chainId: challengeTeamId || "",
+    challengeChainId: (challenge && challenge.get("challengeChainId")) || "",
+    actionId: (challenge && challenge.get("actionId")) || "",
     challengeAmount: challengeAmount,
     challengeMessage: challengeMessage,
     challengeSport: challengeSports,
+    challengeTeam1: challengeTeam1,
+    challengeTeam1_chainId: challengeTeam1_chainId,
     challengeTeam1Admin: user.get("username"),
-    challengeTeam2Admin: challengeTeam2Admin,
-    challengeChainId: (challenge && challenge.get("challengeChainId")) || "",
     challengeTeam1Count:
+      (challengeTeam1 &&
+        challengeTeam1.get("teamMembers") &&
+        challengeTeam1.get("teamMembers").length) ||
+      0,
+    challengeTeam1TeamMembers:
+      (challengeTeam1 && challengeTeam1.get("teamMembers")) || [],
+    challengeTeam2: challengeTeam,
+    challengeTeam2_chainId: challengeTeamId || "",
+    challengeTeam2Admin:
+      (challengeTeam && challengeTeam.get("teamAdmin")) || "",
+    challengeTeam2Count:
       (challengeTeam &&
         challengeTeam.get("teamMembers") &&
         challengeTeam.get("teamMembers").length) ||
       0,
-    challengeTeam2Count: 0,
-    actionId: (challenge && challenge.get("actionId")) || "",
+    challengeTeam2TeamMembers:
+      (challengeTeam && challengeTeam.get("teamMembers")) || [],
   };
 
   const handleSubmit = async () => {
-    // if (isFormValid()) {
-    try {
-      if (createNewChallenge) {
-        const action = await createUserAction(contractActions.createChallenge);
-        const actionId = action.id;
-        challengeFormData.actionId = action;
-        // create challenge on chain
-        const createChallengeOnChain = false; //await createChallenge(
-        //   actionId,
-        //   challengeTeam1_chainId,
-        //   challengeTeamId,
-        //   challengeAmount
-        // );
+    if (isFormValid()) {
+      try {
+        if (createNewChallenge) {
+          const action = await createUserAction(
+            contractActions.createChallenge
+          );
+          const actionId = action.id;
+          challengeFormData.actionId = action;
+          // create challenge on chain
+          const createChallengeOnChain = await createChallenge(
+            actionId,
+            challengeTeam1_chainId,
+            challengeTeamId,
+            challengeAmount
+          );
 
-        console.log("createChallengeOnChain", createChallengeOnChain);
-        console.log("challengeFormData", challengeFormData);
-
-        // create new challenge to database...
-        if (!isContractLoading && createChallengeOnChain) {
-          // await getChallengesDB.save(challengeFormData);
-        } else if (!isContractLoading && !createChallengeOnChain) {
-          await action.save({ actionStatus: false });
+          // create new challenge to database...
+          if (!isContractLoading && createChallengeOnChain) {
+            await getChallengesDB.save(challengeFormData);
+          } else if (!isContractLoading && !createChallengeOnChain) {
+            await action.save({ actionStatus: false });
+          }
+          if (getChallengesDB.error) console.log(getChallengesDB.error.message);
         }
-        if (getChallengesDB.error) console.log(getChallengesDB.error.message);
-      }
 
-      // update challenge in database
-      if (challenge && !createNewChallenge) {
-        challengeFormData.id = challenge.id;
-        await challenge.save(challengeFormData);
-      }
+        // update challenge in database
+        if (challenge && !createNewChallenge) {
+          challengeFormData.id = challenge.id;
+          await challenge.save(challengeFormData);
+        }
 
-      // reload page after saving
-      if (
-        (!getChallengesDB.isSaving && !isContractLoading && !contractMessage) ||
-        (challenge && !challenge.get("isSaving"))
-      ) {
-        // router.push("/challenges");
+        // reload page after saving
+        if (
+          (!getChallengesDB.isSaving &&
+            !isContractLoading &&
+            !contractMessage) ||
+          (challenge && !challenge.isSaving)
+        ) {
+          router.push("/challenges");
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
     }
-    // }
   };
 
   const handleSports = (sport: string, isChecked: boolean) => {
@@ -145,7 +139,14 @@ export const ManageChallenge = ({
   };
 
   const handleSelectTeam = (teamChainId: string) => {
-    // setChallengeTeam1(team);
+    if (!teamChainId) {
+      setChallengeTeam1(null);
+      return;
+    }
+    const selectedTeam = userTeams?.teamOwnerActiveTeams.find(
+      (team) => team.get("teamChainId") === teamChainId
+    );
+    setChallengeTeam1(selectedTeam || null);
     setChallengeTeam1_chainId(teamChainId);
   };
 
@@ -154,11 +155,19 @@ export const ManageChallenge = ({
       alert("Please fill out required fields.");
       return false;
     }
+    if (
+      challengeFormData.challengeTeam1Count !=
+      challengeFormData.challengeTeam2Count
+    ) {
+      alert(
+        `Teams must have the same number of members. \n Selected Team: ${challengeFormData.challengeTeam1Count} vs Challenged Team: ${challengeFormData.challengeTeam2Count}`
+      );
+      return false;
+    }
     return true;
   };
 
   const fetchUserTeams = async () => {
-    setIsLoading(true);
     const userTeams = await cloudFunction("getUserTeams", {});
     if (!userTeams.success) setError(error || "Error fetching user teams");
     return userTeams;
@@ -166,10 +175,7 @@ export const ManageChallenge = ({
 
   useEffect(() => {
     if (modalView) {
-      fetchUserTeams()
-        .then(setUserTeams)
-        .then(() => setIsLoading(false))
-        .catch(setError);
+      fetchUserTeams().then(setUserTeams).catch(setError);
     }
   }, [modalView]);
 
@@ -195,13 +201,11 @@ export const ManageChallenge = ({
                 <span className="h-[60px] my-1 flex justify-end items-center">
                   Amount*:
                 </span>
-
-                <span className="h-[60px] my-1 flex justify-end items-center">
-                  Message:
-                </span>
-
                 <span className="h-[120px] my-1 flex justify-end items-center">
                   Sports*:
+                </span>
+                <span className="h-[60px] my-1 flex justify-end items-center">
+                  Message:
                 </span>
               </div>
               <div className="w-1/2 p-2">
@@ -237,16 +241,6 @@ export const ManageChallenge = ({
                     min={0}
                   />
                 </span>
-                <span className="h-[60px] my-1 flex justify-start items-center">
-                  <textarea
-                    id="challengeMessage"
-                    className="m-2 px-2 py-1 rounded bg-gray-300"
-                    placeholder="Enter challenge description..."
-                    rows={3}
-                    value={challengeMessage}
-                    onChange={(e) => setChallengeMessage(e.target.value)}
-                  />
-                </span>
                 <span className="h-[120px] my-1 flex justify-start items-center flex-wrap">
                   {challengeTeam &&
                     challengeTeam.get("teamSportsPreferences") &&
@@ -267,6 +261,16 @@ export const ManageChallenge = ({
                           </button>
                         );
                       })}
+                </span>
+                <span className="h-[60px] my-1 flex justify-start items-center">
+                  <textarea
+                    id="challengeMessage"
+                    className="m-2 px-2 py-1 rounded bg-gray-300"
+                    placeholder="Enter challenge description..."
+                    rows={3}
+                    value={challengeMessage}
+                    onChange={(e) => setChallengeMessage(e.target.value)}
+                  />
                 </span>
               </div>
             </div>

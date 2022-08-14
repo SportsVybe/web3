@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useWallet } from "../../../context/WalletProvider";
 import { Photo } from "../../Layout/Photo";
+import { ManageChallenge } from "../../Modals/ManageChallenge";
 import { ManageTeam } from "../../Modals/ManageTeam";
 import { ManageTeamMembers } from "../../Modals/ManageTeamMembers";
 import { TeamMembersController } from "../TeamMembers/TeamMembersController";
@@ -162,16 +163,16 @@ export default function TeamPage({
         </div>
       </div>
 
-      {/* {user && !isTeamMember && !teamIsLoading && (
+      {user && !isTeamMember && !teamIsLoading && (
         <ManageChallenge
           user={user}
-          challengeTeam={team && team}
+          challengeTeam={teamObject}
           challengeTeamId={team.teamChainId}
           toggleModal={toggleManageChallengeModal}
           modalView={manageChallengeModal}
           createNewChallenge={true}
         />
-      )} */}
+      )}
       {user && isAdmin && !teamIsLoading && (
         <>
           <ManageTeam
