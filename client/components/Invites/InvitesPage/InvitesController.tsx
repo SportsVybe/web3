@@ -1,6 +1,6 @@
 import Moralis from "moralis/types";
 import { useEffect, useState } from "react";
-import { Invite } from "../../../configs/types";
+import { GetUserInvites } from "../../../configs/types";
 import { useCustomMoralis } from "../../../context/CustomMoralisProvider";
 import { InvitesView } from "./InvitesView";
 
@@ -10,17 +10,9 @@ type Props = {
   wallet: string;
 };
 
-type Response = {
-  accepted: Invite[] | [];
-  pending: Invite[] | [];
-  sent: Invite[] | [];
-  success: boolean;
-  error: string | null;
-};
-
 export const InvitesController = (props: Props) => {
   const { cloudFunction } = useCustomMoralis();
-  const [invites, setInvites] = useState<Response>();
+  const [invites, setInvites] = useState<GetUserInvites>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 

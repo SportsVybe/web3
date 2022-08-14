@@ -44,6 +44,8 @@ export default function AuthorizeButton({ amount }: IAuthorizeButtonProps) {
       Increase SVT Approval
     </button>
   ) : (
-    <div>You have approved {userApprovedAmount} SVT</div>
+    <div className="my-3 px-2 py-1">
+      You have approved {userApprovedAmount} SVT
+    </div>
   );
 }
