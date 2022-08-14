@@ -25,6 +25,13 @@ const getAllObjectsData = async (schema, field, searchString) => {
   return result[0];
 };
 
+const getAllPossibleObjects = async (schema, field, searchString) => {
+  if (!schema || !field || !searchString) return [];
+  const query = new Moralis.Query(schema);
+  query.contains(field, searchString);
+  return await query.find();
+};
+
 const getInviteObjects = async (schema, field, searchString) => {
   if (!schema || !field || !searchString) return [];
   const query = new Moralis.Query(schema);
@@ -60,6 +67,58 @@ const getInviteObjects = async (schema, field, searchString) => {
     "team.teamChainId"
   );
   query.equalTo(field, searchString);
+  return await query.find({ useMasterKey: true });
+};
+
+const getTeamObjects = async (
+  schema,
+  field,
+  searchString,
+  activeStatus = true
+) => {
+  if (!schema || !field || !searchString) return [];
+  const query = new Moralis.Query(schema);
+  query.select(
+    "id",
+    "teamChainId",
+    "teamName",
+    "teamUserName",
+    "teamDescription",
+    "teamPhoto",
+    "teamPOS",
+    "teamWinnings",
+    "teamWins",
+    "teamLosses",
+    "teamMembers",
+    "teamInvitesPending",
+    "teamSportsPreferences",
+    "teamAdmin",
+    "isTeamActive",
+    "createdAt",
+    "updatedAt",
+    "teamOwner.id",
+    "teamOwner.username",
+    "teamOwner.userDisplayName",
+    "teamOwner.userPhoto",
+    "teamOwner.userPOS",
+    "teamOwner.userWins",
+    "teamOwner.userLosses",
+    "teamMembersList.id",
+    "teamMembersList.username",
+    "teamMembersList.userDisplayName",
+    "teamMembersList.userPhoto",
+    "teamMembersList.userPOS",
+    "teamMembersList.userWins",
+    "teamMembersList.userLosses"
+  );
+  if (field === "teamOwner") {
+    query.equalTo(field, searchString);
+  } else {
+    query.contains(field, searchString);
+  }
+  if (activeStatus !== "all") {
+    query.equalTo("isTeamActive", activeStatus);
+  }
   return await query.find({ useMasterKey: true });
 };
 
@@ -277,7 +336,9 @@ Moralis.Cloud.afterSave("contractChallengeWins", async (request) => {
   const confirmed = request.object.get("confirmed");
   const teamId = request.object.get("team_id");
   const challengeId = request.object.get("challenge_id");
-  logger.info(`contractChallengeWins: ${confirmed} ${teamId} ${challengeId}`);
+  logger.info(
+    `contractChallengeWins: Received ${confirmed} ${teamId} ${challengeId}`
+  );
   try {
     if (confirmed) {
       const challengeUpdate = await getChallengeByActionId(challengeId);
@@ -286,6 +347,14 @@ Moralis.Cloud.afterSave("contractChallengeWins", async (request) => {
         await challengeUpdate.save("challengeWinnerTeamId", teamId);
         await challengeUpdate.save("isCompleted", true);
       }
+      const teamUpdate = await getAllObjects("teams", "teamChainId", teamId);
+      const wins = await teamUpdate[0].get("teamWins");
+      await teamUpdate[0].save("teamWins", Number(wins) + 1);
+      logger.info(
+        `contractChallengeWins: Processed ${confirmed} ${teamId} ${challengeId} ${
+          Number(wins) + 1
+        }`
+      );
     }
   } catch (error) {
     logger.error(`contractChallengeWins: Error: ${error}`);
@@ -296,8 +365,9 @@ Moralis.Cloud.afterSave("contractChallengeLosses", async (request) => {
   const confirmed = request.object.get("confirmed");
   const teamId = request.object.get("team_id");
   const challengeId = request.object.get("challenge_id");
-  logger.info(`contractChallengeLosses: ${confirmed} ${teamId} ${challengeId}`);
-
+  logger.info(
+    `contractChallengeLosses: Received ${confirmed} ${teamId} ${challengeId}`
+  );
   try {
     if (confirmed) {
       const challengeUpdate = await getChallengeByActionId(challengeId);
@@ -306,6 +376,14 @@ Moralis.Cloud.afterSave("contractChallengeLosses", async (request) => {
         await challengeUpdate.save("challengeLoserTeamId", teamId);
         await challengeUpdate.save("isCompleted", true);
       }
+      const teamUpdate = await getAllObjects("teams", "teamChainId", teamId);
+      const losses = await teamUpdate[0].get("teamLosses");
+      await teamUpdate[0].save("teamLosses", Number(losses) + 1);
+      logger.info(
+        `contractChallengeLosses: Processed ${confirmed} ${teamId} ${challengeId} ${
+          Number(losses) + 1
+        }`
+      );
     }
   } catch (error) {
     logger.error(`contractChallengeLosses: Error: ${error}`);
@@ -360,6 +438,30 @@ Moralis.Cloud.afterSave("contractTeamMembershipAccept", async (request) => {
     }
   } catch (error) {
     logger.error(`contractTeamMembershipAccept: Error: ${error}`);
+  }
+});
+
+Moralis.Cloud.afterSave("contractRewardClaimed", async (request) => {
+  const confirmed = request.object.get("confirmed");
+  const rewardId = request.object.get("reward_id");
+  logger.info(`contractRewardClaimed: ${confirmed} ${rewardId}`);
+
+  try {
+    if (confirmed) {
+      const userAction = await getUserAction(actionId);
+      const actionStatus = await userAction.get("actionStatus");
+      if (!actionStatus) {
+        await userAction.save("actionStatus", true);
+        const result = await getAllObjects(
+          "contractRewardCreated",
+          "reward_id",
+          rewardId
+        );
+        await result[0].save("isClaimed", true);
+      }
+    }
+  } catch (error) {
+    logger.error(`contractRewardClaimed: Error: ${error}`);
   }
 });
 
@@ -457,7 +559,7 @@ Moralis.Cloud.define(
         accepted: [],
         pending: [],
         success: false,
-        error: error,
+        error: error.toString(),
       };
     }
   },
@@ -512,7 +614,7 @@ Moralis.Cloud.define(
         available: [],
         claimed: [],
         success: false,
-        error: error,
+        error: error.toString(),
       };
     }
   },
@@ -530,39 +632,85 @@ const formatRewards = async (userRewards) => {
   return { available, claimed };
 };
 
+// getUserTeams:
+// requires user to be logged in
+// returns { teamOwnerTeams: [], teamMemberTeams: [], success: bool, error: string }
 Moralis.Cloud.define(
-  "testFunction",
+  "getUserTeams",
   async (request) => {
     const user = request.user;
     if (!user)
       return {
-        available: [],
-        claimed: [],
+        teamOwnerTeams: [],
+        teamMemberTeams: [],
         success: false,
         error: "No user object",
       };
     try {
-      const userRewardObjs = await getRewardObjects(
-        "contractRewardCreated",
-        "user",
-        user.get("ethAddress")
+      const teamOwnerObjs = await getTeamObjects(
+        "teams",
+        "teamOwner",
+        user,
+        "all"
+      );
+
+      const teamOwnerActiveObjs = await getTeamObjects(
+        "teams",
+        "teamOwner",
+        user,
+        true
+      );
+
+      const teamMemberObjs = await getTeamObjects(
+        "teams",
+        "teamMembers",
+        user.get("username")
       );
 
       // return userRewardObjs;
-      const { available, claimed, challenges } = await formatRewards(
-        userRewardObjs
+      const teamOwnerTeams = teamOwnerObjs;
+      const teamOwnerActiveTeams = await formatTeams(
+        teamOwnerObjs,
+        user,
+        "active"
+      );
+      const teamMemberTeams = await formatTeams(
+        teamMemberObjs,
+        user,
+        "notOwner"
       );
 
-      return { available, claimed, challenges, success: true, error: null };
-    } catch (error) {
-      logger.info(`getUserRewards: Error: ${error}`);
       return {
-        available: [],
-        claimed: [],
+        teamOwnerTeams,
+        teamOwnerActiveTeams,
+        teamMemberTeams,
+        success: true,
+        error: null,
+      };
+    } catch (error) {
+      logger.info(`getUserTeams: Error: ${error}`);
+      return {
+        teamOwnerTeams: [],
+        teamMemberTeams: [],
         success: false,
-        error: error,
+        error: error.toString(),
       };
     }
   },
   { requireUser: true }
 );
+
+const formatTeams = async (teams, user, format) => {
+  let formattedTeams = [];
+  if (!teams || teams.length === 0) return formattedTeams;
+  if (format === "active") {
+    formattedTeams = teams.filter((team) => team.get("isTeamActive") === true);
+  } else if (format === "notOwner") {
+    formattedTeams = teams.filter(
+      (team) => team.get("teamOwner").get("username") !== user.get("username")
+    );
+  } else {
+    formattedTeams = teams;
+  }
+  return formattedTeams;
+};
