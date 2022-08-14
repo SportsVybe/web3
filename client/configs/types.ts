@@ -114,3 +114,19 @@ export type GetTeamResponse = {
   success: boolean;
   error: string | null;
 };
+
+export type GetUserInvites = {
+  accepted: Invite[] | [];
+  pending: Invite[] | [];
+  sent: Invite[] | [];
+  success: boolean;
+  error: string | null;
+};
+
+export type GetUserChallenges = {
+  active: Challenge[] | [];
+  created: Challenge[] | [];
+  complete: Challenge[] | [];
+  success: boolean;
+  error: string | null;
+};

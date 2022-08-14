@@ -171,6 +171,102 @@ const getContractActionName = async (contractActionId) => {
   return await getContractAction[0].get("actionName");
 };
 
+const getChallengeObjects = async (
+  schema,
+  field,
+  searchString,
+  status = null
+) => {
+  if (!schema || !field || !searchString) return [];
+  const query = new Moralis.Query(schema);
+  query.select(
+    "id",
+    "createdAt",
+    "updatedAt",
+    "challengeChainId",
+    "isClosed",
+    "isCompleted",
+    "isAcceptedOnChain",
+    "challengeMessage",
+    "challengeSport",
+    "challengeAmount",
+    "actionId",
+    "challengerActionId",
+    "challengeTeam1_chainId",
+    "challengeTeam2_chainId",
+    "challengeTeam1Admin",
+    "challengeTeam2Admin",
+    "challengeTeam1Count",
+    "challengeTeam2Count",
+    "challengeTeam1TeamMembers",
+    "challengeTeam2TeamMembers",
+    "challengeTeam1.teamChainId",
+    "challengeTeam1.teamName",
+    "challengeTeam1.teamUserName",
+    "challengeTeam1.teamDescription",
+    "challengeTeam1.teamPhoto",
+    "challengeTeam1.teamPOS",
+    "challengeTeam1.teamWinnings",
+    "challengeTeam1.teamWins",
+    "challengeTeam1.teamLosses",
+    "challengeTeam1.teamMembers",
+    "challengeTeam1.teamInvitesPending",
+    "challengeTeam1.teamSportsPreferences",
+    "challengeTeam1.teamAdmin",
+    "challengeTeam1.isTeamActive",
+    "challengeTeam1.teamOwner.id",
+    "challengeTeam1.teamOwner.username",
+    "challengeTeam1.teamOwner.userDisplayName",
+    "challengeTeam1.teamOwner.userPhoto",
+    "challengeTeam1.teamOwner.userPOS",
+    "challengeTeam1.teamOwner.userWins",
+    "challengeTeam1.teamOwner.userLosses",
+    "challengeTeam1.teamMembersList.id",
+    "challengeTeam1.teamMembersList.username",
+    "challengeTeam1.teamMembersList.userDisplayName",
+    "challengeTeam1.teamMembersList.userPhoto",
+    "challengeTeam1.teamMembersList.userPOS",
+    "challengeTeam1.teamMembersList.userWins",
+    "challengeTeam1.teamMembersList.userLosses",
+    "challengeTeam2.teamChainId",
+    "challengeTeam2.teamName",
+    "challengeTeam2.teamUserName",
+    "challengeTeam2.teamDescription",
+    "challengeTeam2.teamPhoto",
+    "challengeTeam2.teamPOS",
+    "challengeTeam2.teamWinnings",
+    "challengeTeam2.teamWins",
+    "challengeTeam2.teamLosses",
+    "challengeTeam2.teamMembers",
+    "challengeTeam2.teamInvitesPending",
+    "challengeTeam2.teamSportsPreferences",
+    "challengeTeam2.teamAdmin",
+    "challengeTeam2.isTeamActive",
+    "challengeTeam2.teamOwner.id",
+    "challengeTeam2.teamOwner.username",
+    "challengeTeam2.teamOwner.userDisplayName",
+    "challengeTeam2.teamOwner.userPhoto",
+    "challengeTeam2.teamOwner.userPOS",
+    "challengeTeam2.teamOwner.userWins",
+    "challengeTeam2.teamOwner.userLosses",
+    "challengeTeam2.teamMembersList.id",
+    "challengeTeam2.teamMembersList.username",
+    "challengeTeam2.teamMembersList.userDisplayName",
+    "challengeTeam2.teamMembersList.userPhoto",
+    "challengeTeam2.teamMembersList.userPOS",
+    "challengeTeam2.teamMembersList.userWins",
+    "challengeTeam2.teamMembersList.userLosses"
+  );
+
+  if (status === "admin") {
+    query.equalTo(field, searchString);
+  } else {
+    query.contains(field, searchString);
+  }
+
+  return await query.find({ useMasterKey: true });
+};
+
 // ----------- SVT Contract Functions ------------ //
 
 Moralis.Cloud.afterSave("tokenApprovals", async (request) => {
@@ -315,7 +411,11 @@ Moralis.Cloud.afterSave("contractChallengeClosed", async (request) => {
 Moralis.Cloud.afterSave("contractVoteSubmit", async (request) => {
   const confirmed = request.object.get("confirmed");
   const actionId = request.object.get("action_id");
-  logger.info(`contractVoteSubmit: ${confirmed} ${actionId}`);
+  const challengeId = request.object.get("challenge_id");
+  const teamId = request.object.get("team_id");
+  logger.info(
+    `contractVoteSubmit: ${confirmed} ${actionId} ${challengeId} ${teamId}`
+  );
 
   try {
     if (confirmed) {
@@ -325,6 +425,22 @@ Moralis.Cloud.afterSave("contractVoteSubmit", async (request) => {
         await userAction.save("actionStatus", true);
         const voteUpdate = await getAllObjects("votes", "actionId", userAction);
         await voteUpdate[0].save("confirmedOnChain", true);
+        const challengeUpdate = await getAllObjects(
+          "challenges",
+          "challengeChainId",
+          challengeId
+        );
+        const voter = await voteUpdate[0].get("voter");
+        const confirmedVotes = await challengeUpdate[0].get("confirmedVotes");
+        await challengeUpdate[0].save("confirmedVotes", [
+          ...confirmedVotes,
+          await voter.get("username"),
+        ]);
+        logger.info(
+          `contractVoteSubmit: ${confirmed} ${actionId} ${challengeId} ${voter.get(
+            "username"
+          )}`
+        );
       }
     }
   } catch (error) {
@@ -342,7 +458,7 @@ Moralis.Cloud.afterSave("contractChallengeWins", async (request) => {
   try {
     if (confirmed) {
       const challengeUpdate = await getChallengeByActionId(challengeId);
-      const isAccepted = await challengeUpdate.isAcceptedOnChain;
+      const isAccepted = await challengeUpdate.get("isAcceptedOnChain");
       if (!isAccepted) {
         await challengeUpdate.save("challengeWinnerTeamId", teamId);
         await challengeUpdate.save("isCompleted", true);
@@ -371,7 +487,7 @@ Moralis.Cloud.afterSave("contractChallengeLosses", async (request) => {
   try {
     if (confirmed) {
       const challengeUpdate = await getChallengeByActionId(challengeId);
-      const isAccepted = await challengeUpdate.isAcceptedOnChain;
+      const isAccepted = await challengeUpdate.get("isAcceptedOnChain");
       if (!isAccepted) {
         await challengeUpdate.save("challengeLoserTeamId", teamId);
         await challengeUpdate.save("isCompleted", true);
@@ -467,7 +583,7 @@ Moralis.Cloud.afterSave("contractRewardClaimed", async (request) => {
 
 // ----------- Cloud Functions ------------ //
 
-// getUser: returns {user: object, success: bool, ethAddress?: string}
+// getUser: returns {user: object, success: bool, ethAddress: string | null}
 Moralis.Cloud.define(
   "getUser",
   async (request) => {
@@ -713,4 +829,186 @@ const formatTeams = async (teams, user, format) => {
     formattedTeams = teams;
   }
   return formattedTeams;
+};
+
+// getTeamByUsername:
+// requires user to be logged in
+// returns { team: [], teamMembers: [], success: bool, error: string }
+Moralis.Cloud.define(
+  "getTeamByUsername",
+  async (request) => {
+    const objectId = request.params.objectId;
+    if (!objectId) {
+      return {
+        team: [],
+        teamMembers: [],
+        success: false,
+        error: "No team id provided",
+      };
+    }
+    try {
+      const teamObjs = await getTeamObjects(
+        "teams",
+        "objectId",
+        objectId,
+        true
+      );
+      const team = teamObjs;
+      const teamMembers = [];
+      return {
+        team,
+        teamMembers,
+        success: true,
+        error: null,
+      };
+    } catch (error) {
+      logger.info(`getTeamByUsername: Error: ${error}`);
+      return {
+        team: [],
+        teamMembers: [],
+        success: false,
+        error: error.toString(),
+      };
+    }
+  },
+  {
+    fields: {
+      objectId: {
+        type: String,
+        required: true,
+      },
+    },
+  }
+);
+
+// getUserChallenges:
+// requires user to be logged in
+// returns {  created: [], active: [], complete: [], success: bool, error: string }
+Moralis.Cloud.define(
+  "getUserChallenges",
+  async (request) => {
+    const user = request.user;
+    if (!user)
+      return {
+        created: [],
+        active: [],
+        complete: [],
+        pendingVote: [],
+        success: false,
+        error: "No user object",
+      };
+    try {
+      const adminTeam1Challenges = await getChallengeObjects(
+        "challenges",
+        "challengeTeam1Admin",
+        user.get("username"),
+        "admin"
+      );
+
+      const team1Challenges = await getChallengeObjects(
+        "challenges",
+        "challengeTeam1TeamMembers",
+        user.get("username"),
+        "teamMember"
+      );
+
+      const team2Challenges = await getChallengeObjects(
+        "challenges",
+        "challengeTeam2TeamMembers",
+        user.get("username"),
+        "teamMember"
+      );
+
+      const { created, active, complete, pendingVote } = await formatChallenges(
+        adminTeam1Challenges,
+        team1Challenges,
+        team2Challenges
+      );
+
+      return {
+        created,
+        active,
+        complete,
+        pendingVote,
+        success: true,
+        error: null,
+      };
+    } catch (error) {
+      logger.info(`getUserChallenges: Error: ${error}`);
+      return {
+        created: [],
+        active: [],
+        complete: [],
+        pendingVote: [],
+        success: false,
+        error: error.toString(),
+      };
+    }
+  },
+  { requireUser: true }
+);
+
+const formatChallenges = async (
+  adminTeam1Challenges,
+  team1Challenges,
+  team2Challenges
+) => {
+  let created = [];
+  let active = [];
+  let pendingVote = [];
+  let complete = [];
+
+  created = adminTeam1Challenges;
+
+  const activeTeam1Challenges = team1Challenges.filter(
+    (challenge) =>
+      challenge.get("isCompleted") === false &&
+      challenge.get("isClosed") === false
+  );
+  const activeTeam2Challenges = team2Challenges.filter(
+    (challenge) =>
+      challenge.get("isCompleted") === false &&
+      challenge.get("isClosed") === false
+  );
+
+  const completeTeam1Challenges = team1Challenges.filter(
+    (challenge) =>
+      challenge.get("isAcceptedOnChain") === true &&
+      challenge.get("isClosed") === true
+  );
+  const completeTeam2Challenges = team2Challenges.filter(
+    (challenge) =>
+      challenge.get("isAcceptedOnChain") === true &&
+      challenge.get("isClosed") === true
+  );
+
+  const pendingTeam1Challenges = team1Challenges.filter(
+    (challenge) =>
+      challenge.get("isCompleted") === false &&
+      challenge.get("isAcceptedOnChain") === true &&
+      challenge.get("isClosed") === false
+  );
+  const pendingTeam2Challenges = team2Challenges.filter(
+    (challenge) =>
+      challenge.get("isCompleted") === false &&
+      challenge.get("isAcceptedOnChain") === true &&
+      challenge.get("isClosed") === false
+  );
+
+  const activeChallenges = [...activeTeam1Challenges, ...activeTeam2Challenges];
+
+  const completeChallenges = [
+    ...completeTeam1Challenges,
+    ...completeTeam2Challenges,
+  ];
+
+  const pendingVoteChallenges = [
+    ...pendingTeam1Challenges,
+    ...pendingTeam2Challenges,
+  ];
+
+  active = activeChallenges;
+  complete = completeChallenges;
+  pendingVote = pendingVoteChallenges;
+  return { created, active, pendingVote, complete };
 };
