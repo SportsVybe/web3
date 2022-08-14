@@ -174,14 +174,14 @@ export const ManageProfile = ({
         setFormDefaults();
       }}
     >
-      <div className="flex flex-col border-2 border-green-100 p-4 items-center w-full">
+      <div className="flex flex-col  p-4 items-center w-full ">
         <div className="p-2">
           {user && newProfile ? (
             <span className="py-2 text-red-400">
               Profile Required to Earn SVT:
             </span>
           ) : (
-            <div>User Profile</div>
+            <div>USER PROFILE:</div>
           )}
           <span className="py-2"> {error && `Upload Error: ${error}`} </span>
         </div>
@@ -230,7 +230,7 @@ export const ManageProfile = ({
             {user && !newProfile && (
               <>
                 <div className="h-[60px] my-1 flex flex-row justify-center items-center">
-                  <span className="h-[60px] my-1 flex justify-end items-center">
+                  <span className="h-[60px] my-1 flex justify-end items-center -ml-12">
                     Display Name:
                   </span>
                   <input
@@ -295,8 +295,8 @@ export const ManageProfile = ({
             >
               {newProfile ? "Mint" : "Save"}
             </button>
-              <button
-                className="hover:bg-red-600 px-4 py-2 rounded-full"
+            <button
+              className="hover:bg-red-600 px-4 py-2 rounded-full"
               onClick={async () => {
                 toggleModal(false);
                 setFormDefaults();
