@@ -51,6 +51,15 @@ const defaultState = {
   acceptTeamMembershipRequest: async (actionId: string, teamId: string) => {
     return false;
   },
+
+  claimReward: async (
+    claimActionId: string,
+    rewardActionId: string,
+    rewardId: number,
+    challengeId: number
+  ) => {
+    return false;
+  },
 };
 
 const ContractContext = createContext(defaultState);
@@ -288,6 +297,43 @@ const ContractProvider = ({ children }: { children: any }) => {
     }
   };
 
+  const claimReward = async (
+    claimActionId: string,
+    rewardActionId: string,
+    rewardId: number,
+    challengeId: number
+  ) => {
+    setIsContractLoading(true);
+    try {
+      // claim reward transaction
+      const contract = await getContract();
+      await contract.functions.claimReward(
+        claimActionId,
+        rewardActionId,
+        rewardId,
+        challengeId,
+        {
+          gasLimit: 3500000,
+        }
+      );
+      setContractMessage({
+        status: "info",
+        message: "Reward is being processed on chain.",
+      });
+      setIsContractLoading(false);
+      return true;
+    } catch (error) {
+      setIsContractLoading(false);
+      if (error instanceof Error) {
+        setContractMessage({ status: "error", message: error.message });
+      } else {
+        setContractMessage({ status: "error", message: "Unknown" });
+      }
+      console.error(error);
+      return false;
+    }
+  };
+
   return (
     <ContractContext.Provider
       value={{
@@ -302,6 +348,7 @@ const ContractProvider = ({ children }: { children: any }) => {
         submitVote,
         sendTeamMembershipRequest,
         acceptTeamMembershipRequest,
+        claimReward,
       }}
     >
       {children}

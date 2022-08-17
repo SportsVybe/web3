@@ -1,8 +1,8 @@
-import { ethers } from "ethers";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { useMoralisQuery, useNewMoralisObject } from "react-moralis";
+import { useNewMoralisObject } from "react-moralis";
 import { contractActions } from "../../configs/constants";
+import { Challenge, GetUserTeamsResponse, Team } from "../../configs/types";
 import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
 import AuthorizeButton from "../Buttons/AuthorizeButton";
@@ -10,72 +10,77 @@ import Modal from "../Layout/Modal";
 import { Toast } from "../Layout/Toast";
 
 type Props = {
-  userTeamId?: string;
+  challengeTeam: Team | null;
   challengeTeamId: string;
-  team: any;
   user: any;
+  userTeam?: Team | null;
+  userTeamId?: string;
   challenge?: any | boolean;
+  createNewChallenge: boolean;
   toggleModal: Dispatch<SetStateAction<boolean>>;
   modalView: boolean;
-  createNewChallenge: boolean;
-  challengeObject?: any | null;
 };
 
 export const ManageChallenge = ({
-  userTeamId = "",
+  challengeTeam,
   challengeTeamId = "",
-  team,
   user,
+  userTeam = null,
+  userTeamId = "",
   challenge = false,
+  createNewChallenge = false,
   toggleModal,
   modalView,
-  createNewChallenge = false,
-  challengeObject = null,
 }: Props) => {
   const getChallengesDB = useNewMoralisObject("challenges");
-  const { createUserAction } = useCustomMoralis();
+  const { createUserAction, cloudFunction } = useCustomMoralis();
   const { createChallenge, isContractLoading, contractMessage } = useContract();
   const router = useRouter();
-  const [userTeams, setUserTeams] = useState([]);
+  const [userTeams, setUserTeams] = useState<GetUserTeamsResponse>();
+  const [error, setError] = useState("");
 
   const [challengeSports, setChallengeSports] = useState(
-    challenge.challengeSports || ""
+    (challenge && challenge.get("challengeSports")) || ""
   );
   const [challengeAmount, setChallengeAmount] = useState(
-    challenge.challengeAmount || "0"
+    (challenge && challenge.get("challengeAmount")) || "0"
   );
   const [challengeMessage, setChallengeMessage] = useState(
-    challenge.challengeMessage || ""
+    (challenge && challenge.get("challengeMessage")) || ""
   );
-  const [challengeTeam1, setChallengeTeam1] = useState(userTeamId || "");
-  const [challengeTeam2, setChallengeTeam2] = useState(challengeTeamId || "");
-  const [challengeTeam2Admin, setChallengeTeam2Admin] = useState(
-    team.teamAdmin || ""
+  const [challengeTeam1, setChallengeTeam1] = useState(userTeam);
+  const [challengeTeam1_chainId, setChallengeTeam1_chainId] = useState(
+    userTeamId || ""
   );
 
-  const userApprovedAmount =
-    user &&
-    user.attributes &&
-    user.attributes.approvedSTVAmount &&
-    ethers.utils.formatEther(user.attributes.approvedSTVAmount);
-
-  const userHasApprovedSVT =
-    user && user.attributes && user.attributes.hasApprovedSVT;
-
-  const challengeFormData = {
+  const challengeFormData: Challenge = {
     id: challenge.id || "",
-    challengeTeam1: challengeTeam1,
-    challengeTeam2: challengeTeam2,
+    challengeChainId: (challenge && challenge.get("challengeChainId")) || "",
+    actionId: (challenge && challenge.get("actionId")) || "",
     challengeAmount: challengeAmount,
     challengeMessage: challengeMessage,
     challengeSport: challengeSports,
+    challengeTeam1: challengeTeam1,
+    challengeTeam1_chainId: challengeTeam1_chainId,
     challengeTeam1Admin: user.get("username"),
-    challengeTeam2Admin: challengeTeam2Admin,
-    challengeChainId: challenge.challengeChainId || "",
     challengeTeam1Count:
-      (team && team.teamMembers && team.teamMembers.length) || 0,
-    challengeTeam2Count: 0,
-    actionId: challenge.actionId || "",
+      (challengeTeam1 &&
+        challengeTeam1.get("teamMembers") &&
+        challengeTeam1.get("teamMembers").length) ||
+      0,
+    challengeTeam1TeamMembers:
+      (challengeTeam1 && challengeTeam1.get("teamMembers")) || [],
+    challengeTeam2: challengeTeam,
+    challengeTeam2_chainId: challengeTeamId || "",
+    challengeTeam2Admin:
+      (challengeTeam && challengeTeam.get("teamAdmin")) || "",
+    challengeTeam2Count:
+      (challengeTeam &&
+        challengeTeam.get("teamMembers") &&
+        challengeTeam.get("teamMembers").length) ||
+      0,
+    challengeTeam2TeamMembers:
+      (challengeTeam && challengeTeam.get("teamMembers")) || [],
   };
 
   const handleSubmit = async () => {
@@ -90,12 +95,10 @@ export const ManageChallenge = ({
           // create challenge on chain
           const createChallengeOnChain = await createChallenge(
             actionId,
-            challengeTeam1,
-            challengeTeam2,
+            challengeTeam1_chainId,
+            challengeTeamId,
             challengeAmount
           );
-
-          console.log("createChallengeOnChain", createChallengeOnChain);
 
           // create new challenge to database...
           if (!isContractLoading && createChallengeOnChain) {
@@ -107,9 +110,9 @@ export const ManageChallenge = ({
         }
 
         // update challenge in database
-        if (challengeObject && !createNewChallenge) {
-          challengeFormData.id = challengeObject.id;
-          await challengeObject.save(challengeFormData);
+        if (challenge && !createNewChallenge) {
+          challengeFormData.id = challenge.id;
+          await challenge.save(challengeFormData);
         }
 
         // reload page after saving
@@ -117,9 +120,10 @@ export const ManageChallenge = ({
           (!getChallengesDB.isSaving &&
             !isContractLoading &&
             !contractMessage) ||
-          (challengeObject && !challengeObject.isSaving)
-        )
+          (challenge && !challenge.isSaving)
+        ) {
           router.push("/challenges");
+        }
       } catch (error) {
         console.error(error);
       }
@@ -134,41 +138,55 @@ export const ManageChallenge = ({
     }
   };
 
+  const handleSelectTeam = (teamChainId: string) => {
+    if (!teamChainId) {
+      setChallengeTeam1(null);
+      return;
+    }
+    const selectedTeam = userTeams?.teamOwnerActiveTeams.find(
+      (team) => team.get("teamChainId") === teamChainId
+    );
+    setChallengeTeam1(selectedTeam || null);
+    setChallengeTeam1_chainId(teamChainId);
+  };
+
   const isFormValid = () => {
-    if (
-      !challengeTeam1 ||
-      !challengeTeam2 ||
-      !challengeAmount ||
-      !challengeSports
-    ) {
+    if (!challengeTeam1 || !challengeAmount || !challengeSports) {
       alert("Please fill out required fields.");
+      return false;
+    }
+    if (
+      challengeFormData.challengeTeam1Count !=
+      challengeFormData.challengeTeam2Count
+    ) {
+      alert(
+        `Teams must have the same number of members. \n Selected Team: ${challengeFormData.challengeTeam1Count} vs Challenged Team: ${challengeFormData.challengeTeam2Count}`
+      );
       return false;
     }
     return true;
   };
 
-  const getTeamsByUsername = useMoralisQuery(
-    "teams",
-    (query) => query.equalTo("teamAdmin", user.get("username")),
-    [],
-    {
-      autoFetch: true,
-    }
-  );
+  const fetchUserTeams = async () => {
+    const userTeams = await cloudFunction("getUserTeams", {});
+    if (!userTeams.success) setError(error || "Error fetching user teams");
+    return userTeams;
+  };
 
   useEffect(() => {
-    const getTeams = getTeamsByUsername.fetch();
-    getTeams.then((teams: any) => {
-      setUserTeams(teams);
-    });
-  }, [user]);
+    if (modalView) {
+      fetchUserTeams().then(setUserTeams).catch(setError);
+    }
+  }, [modalView]);
 
   return (
     <Modal open={modalView} onClose={async () => toggleModal(false)}>
       <div className="flex flex-col border-2 border-green-100 p-4 items-center">
         <div>
           {createNewChallenge
-            ? `Create Challenge Against ${team.teamName}`
+            ? `Create Challenge Against ${
+                challengeTeam && challengeTeam.get("teamName")
+              }`
             : `Manage Challenge`}
         </div>
         {isContractLoading ? (
@@ -183,34 +201,34 @@ export const ManageChallenge = ({
                 <span className="h-[60px] my-1 flex justify-end items-center">
                   Amount*:
                 </span>
-
-                <span className="h-[60px] my-1 flex justify-end items-center">
-                  Message:
-                </span>
-
                 <span className="h-[120px] my-1 flex justify-end items-center">
                   Sports*:
+                </span>
+                <span className="h-[60px] my-1 flex justify-end items-center">
+                  Message:
                 </span>
               </div>
               <div className="w-1/2 p-2">
                 <span className="h-[60px] my-1 flex justify-start items-center">
                   <select
                     required
-                    onChange={(e) => setChallengeTeam1(e.target.value)}
+                    onChange={(e) => handleSelectTeam(e.target.value)}
                   >
                     <option value="">Select Team</option>
                     {userTeams &&
-                      userTeams.map((team: any, i: number) => (
-                        <option
-                          key={i}
-                          value={team.attributes.teamChainId}
-                          defaultChecked={
-                            challengeTeam1 == team.attributes.teamChainId
-                          }
-                        >
-                          {team.attributes.teamName}
-                        </option>
-                      ))}
+                      userTeams.teamOwnerActiveTeams.map(
+                        (team: any, i: number) => (
+                          <option
+                            key={i}
+                            value={team.get("teamChainId")}
+                            defaultChecked={
+                              challengeTeam1_chainId == team.get("teamChainId")
+                            }
+                          >
+                            {team.get("teamName")}
+                          </option>
+                        )
+                      )}
                   </select>
                 </span>
                 <span className="h-[60px] my-1 flex justify-start items-center">
@@ -223,19 +241,11 @@ export const ManageChallenge = ({
                     min={0}
                   />
                 </span>
-                <span className="h-[60px] my-1 flex justify-start items-center">
-                  <textarea
-                    id="challengeMessage"
-                    className="m-2 px-2 py-1 rounded bg-gray-300"
-                    placeholder="Enter challenge description..."
-                    rows={3}
-                    value={challengeMessage}
-                    onChange={(e) => setChallengeMessage(e.target.value)}
-                  />
-                </span>
                 <span className="h-[120px] my-1 flex justify-start items-center flex-wrap">
-                  {team.teamSportsPreferences &&
-                    team.teamSportsPreferences
+                  {challengeTeam &&
+                    challengeTeam.get("teamSportsPreferences") &&
+                    challengeTeam
+                      .get("teamSportsPreferences")
                       .sort()
                       .map((sport: string, i: number) => {
                         const isChecked = challengeSports.includes(sport);
@@ -252,23 +262,23 @@ export const ManageChallenge = ({
                         );
                       })}
                 </span>
+                <span className="h-[60px] my-1 flex justify-start items-center">
+                  <textarea
+                    id="challengeMessage"
+                    className="m-2 px-2 py-1 rounded bg-gray-300"
+                    placeholder="Enter challenge description..."
+                    rows={3}
+                    value={challengeMessage}
+                    onChange={(e) => setChallengeMessage(e.target.value)}
+                  />
+                </span>
               </div>
             </div>
 
-            <AuthorizeButton
-              amount={challengeAmount}
-              userHasApprovedSVT={userHasApprovedSVT}
-              userApprovedAmount={userApprovedAmount}
-            />
+            <AuthorizeButton amount={challengeAmount} />
 
             <button
-              disabled={
-                isContractLoading ||
-                Number(userApprovedAmount) < Number(challengeAmount) ||
-                !userApprovedAmount ||
-                userApprovedAmount == "0" ||
-                challengeAmount == "0"
-              }
+              disabled={isContractLoading || challengeAmount == "0"}
               className="my-3 px-2 py-1 bg-green-300 rounded-full disabled:bg-slate-300"
               onClick={() => handleSubmit()}
             >

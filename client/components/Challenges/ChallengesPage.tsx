@@ -1,69 +1,107 @@
 import { useState } from "react";
+import { Challenge } from "../../configs/types";
 import { ChallengeCard } from "./ChallengeCard";
 
 type Props = {
-  createdChallenges: any[];
-  againstChallenges: any[];
-  isLoading: boolean;
-  isAuthenticated: boolean;
+  active: Challenge[] | [];
+  created: Challenge[] | [];
+  complete: Challenge[] | [];
 };
 
-export default function ChallengesPage({
-  isAuthenticated = false,
-  createdChallenges,
-  againstChallenges,
-  isLoading = false,
-}: Props) {
-  const [activeTab, setActiveTab] = useState("against");
-
+export default function ChallengesPage(props: Props) {
+  const { active, complete, created } = props;
+  const [activeTab, setActiveTab] = useState("active");
   return (
-    <div className="w-full flex flex-col justify-center items-center text-white">
-      <h1 className="mb-12">View different Challenges created by you and from other individuals and teams!</h1>
-
-      <div className="flex flex-col w-full">
-        <div className="flex flex-row">
-          <div
-            onClick={() => setActiveTab("created")}
-            className={`flex cursor-pointer flex-col w-1/2 items-center justify-center p-2 rounded-lg hover:bg-green-700 mr-3 ${
-              activeTab == "created" && "bg-green-500 text-black"
-            }`}
-          >
-            Challenges Created
-          </div>
-          <div
-            onClick={() => setActiveTab("against")}
-            className={`flex cursor-pointer  flex-col w-1/2 items-center justify-center p-2 rounded-lg hover:bg-green-700 ${
-              activeTab == "against" && "bg-green-500 text-black"
-            }`}
-          >
-            Challenges Against
-          </div>
+    <div>
+      <div className="flex flex-row justify-center items-center mb-5 pb-4 border-b-2 border-gray-600">
+        <div
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 rounded-lg p-2 ${
+            activeTab == "active" && "bg-green-500 hover:bg-green-700"
+          }`}
+          onClick={() => setActiveTab("active")}
+        >
+          {active && active.length} Active
         </div>
-        <div className="flex flex-wrap justify-center">
-          {activeTab === "created" &&
-            createdChallenges &&
-            createdChallenges.map((challenge, i) => (
-              <ChallengeCard
-                isAuthenticated={isAuthenticated}
-                type="created"
-                key={i}
-                challengeObject={challenge}
-                challenge={challenge.attributes}
-              />
-            ))}
-          {activeTab === "against" &&
-            againstChallenges &&
-            againstChallenges.map((challenge, i) => (
-              <ChallengeCard
-                isAuthenticated={isAuthenticated}
-                type="against"
-                key={i}
-                challengeObject={challenge}
-                challenge={challenge.attributes}
-              />
-            ))}
+        <div
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 rounded-lg p-2 mx-4 ${
+            activeTab == "complete" && "bg-green-500 hover:bg-green-700"
+          }`}
+          onClick={() => setActiveTab("complete")}
+        >
+          {complete && complete.length} Complete
+        </div>
+        <div
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 rounded-lg p-2 ${
+            activeTab == "created" && "bg-green-500 hover:bg-green-700"
+          }`}
+          onClick={() => setActiveTab("created")}
+        >
+          {created && created.length} Created
         </div>
       </div>
+      {activeTab === "active" && (
+        <div className="flex flex-col justify-center items-center">
+          {active.length > 0 && activeTab === "active" ? (
+            <div className="flex flex-col justify-center items-center">
+              <div className="flex flex-wrap justify-center items-center">
+                {active.map((challenge) => (
+                  <ChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    type="active"
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col justify-center items-center">
+              <h1 className="text-xl">No active challenges</h1>
+            </div>
+          )}
+        </div>
+      )}
+      {activeTab === "complete" && (
+        <div className="flex flex-col justify-center items-center">
+          {complete.length > 0 && activeTab === "complete" ? (
+            <div className="flex flex-col justify-center items-center">
+              <div className="flex flex-wrap justify-center items-center">
+                {complete.map((challenge) => (
+                  <ChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    type="complete"
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col justify-center items-center">
+              <h1 className="text-xl">No complete challenges</h1>
+            </div>
+          )}
+        </div>
+      )}
+      {activeTab === "created" && (
+        <div className="flex flex-col justify-center items-center">
+          {created.length > 0 && activeTab === "created" ? (
+            <div className="flex flex-col justify-center items-center">
+              <div className="flex flex-wrap justify-center items-center">
+                {created.map((challenge) => (
+                  <ChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    type="created"
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col justify-center items-center">
+              <h1 className="text-xl">No created challenges</h1>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

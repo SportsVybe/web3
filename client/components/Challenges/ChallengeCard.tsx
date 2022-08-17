@@ -1,8 +1,8 @@
-import Moralis from "moralis/types";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useMoralisQuery } from "react-moralis";
+import { useMoralis } from "react-moralis";
 import { contractActions } from "../../configs/constants";
+import { Team } from "../../configs/types";
 import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
 import { Photo } from "../Layout/Photo";
@@ -13,37 +13,50 @@ import { ManageVote } from "../Modals/ManageVote";
 
 type Props = {
   challenge: any;
-  type: "created" | "against";
-  isAuthenticated: boolean;
-  challengeObject?: any | null;
+  type: "active" | "complete" | "created";
+  isLoading?: boolean;
 };
 
 export const ChallengeCard = ({
   challenge,
   type,
-  isAuthenticated,
-  challengeObject = null,
+  isLoading = false,
 }: Props) => {
   const router = useRouter();
+  const { user } = useMoralis();
   const { createUserAction } = useCustomMoralis();
   const { acceptChallenge, isContractLoading, contractMessage } = useContract();
-  const [team1, setTeam1] = useState<Moralis.Object<Moralis.Attributes>>();
-  const [team2, setTeam2] = useState<Moralis.Object<Moralis.Attributes>>();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
   const [manageEventModal, toggleManageEventModal] = useState(false);
   const [manageVoteModal, toggleManageVoteModal] = useState(false);
 
+  const [team1, setTeam1] = useState<Team>(challenge.get("challengeTeam1"));
+  const [team2, setTeam2] = useState<Team>(challenge.get("challengeTeam2"));
+
+  const [status, setStatus] = useState<string>("...");
+
+  let isChallengeTeam1Admin = false;
+  let isChallengeTeam2Admin = false;
+  let isChallengeTeamMember = false;
+
   const challengeFormData = {
-    challengerActionId: challenge.challengerActionId || "",
+    challengerActionId: challenge.get("challengerActionId") || "",
     challengeTeam2count:
-      (team2 &&
-        team2.attributes &&
-        team2.attributes.teamMembers &&
-        team2.attributes.teamMembers.count) ||
+      (team2 && team2.get("teamMembers") && team2.get("teamMembers").count) ||
       0,
+    challengeTeam2TeamMembers: (team2 && team2.get("teamMembers")) || [],
   };
 
+  if (user) {
+    isChallengeTeam1Admin =
+      user.get("username") === challenge.get("challengeTeam1Admin");
+    isChallengeTeam2Admin =
+      user.get("username") === challenge.get("challengeTeam2Admin");
+    isChallengeTeamMember =
+      challenge
+        .get("challengeTeam1TeamMembers")
+        .includes(user.get("username")) ||
+      challenge.get("challengeTeam2TeamMembers").includes(user.get("username"));
+  }
   const handleAccept = async () => {
     try {
       const action = await createUserAction(contractActions.acceptChallenge);
@@ -53,21 +66,21 @@ export const ChallengeCard = ({
       // accept challenge on chain
       const acceptChallengeOnChain = await acceptChallenge(
         actionId,
-        challenge.challengeChainId,
-        challenge.challengeTeam2,
-        challenge.challengeAmount
+        challenge.get("challengeChainId"),
+        challenge.get("challengeTeam2_chainId"),
+        challenge.get("challengeAmount")
       );
       console.log("acceptChallengeOnChain", acceptChallengeOnChain);
 
       // update challenge in database
-      if (!isContractLoading && challengeObject && acceptChallengeOnChain) {
-        await challengeObject.save(challengeFormData);
-        if (challengeObject.error) console.log(challengeObject.error.message);
+      if (!isContractLoading && challenge && acceptChallengeOnChain) {
+        await challenge.save(challengeFormData);
+        if (challenge.error) console.log(challenge.error.message);
       } else if (!isContractLoading && !acceptChallengeOnChain) {
         await action.save({ actionStatus: false });
       }
       // reload page after saving
-      if (!challengeObject.isSaving && !isContractLoading && !contractMessage) {
+      if (!challenge.isSaving && !isContractLoading && !contractMessage) {
         router.push("/challenges");
       }
     } catch (error) {
@@ -75,232 +88,152 @@ export const ChallengeCard = ({
     }
   };
 
-  const getChallengesTeam1 = useMoralisQuery(
-    "teams",
-    (query) => query.equalTo("teamChainId", challenge.challengeTeam1),
-    [],
-    {
-      autoFetch: false,
-    }
-  );
-
-  const getChallengesTeam2 = useMoralisQuery(
-    "teams",
-    (query) => query.equalTo("teamChainId", challenge.challengeTeam2),
-    [],
-    {
-      autoFetch: false,
-    }
-  );
-
   const getChallengeStatus = () => {
-    let status = "Minting on chain...";
     if (
-      challenge.isCompleted &&
-      challenge.isClosed &&
-      challenge.isAcceptedOnChain
+      challenge.get("challengeChainId") == "" &&
+      !challenge.get("isCompleted") &&
+      !challenge.get("isClosed") &&
+      !challenge.get("isAcceptedOnChain") &&
+      challenge.get("challengerActionId") == undefined
     ) {
-      status = "Completed";
-    }
-    if (
-      !challenge.isCompleted &&
-      !challenge.isClosed &&
-      !challenge.isAcceptedOnChain &&
-      challenge.challengeChainId &&
-      !challenge.challengerActionId
+      setStatus("Minting on chain...");
+    } else if (
+      challenge.get("challengeChainId") != "" &&
+      !challenge.get("isCompleted") &&
+      !challenge.get("isClosed") &&
+      !challenge.get("isAcceptedOnChain") &&
+      challenge.get("challengerActionId") == undefined
     ) {
-      status = "Pending challenger approval";
-    }
-    if (
-      !challenge.isCompleted &&
-      !challenge.isClosed &&
-      !challenge.isAcceptedOnChain &&
-      challenge.challengeChainId &&
-      challenge.challengerActionId
+      setStatus("Pending Challenger");
+    } else if (
+      challenge.get("isCompleted") &&
+      challenge.get("isClosed") &&
+      challenge.get("isAcceptedOnChain")
     ) {
-      status = "Minting challenger approval...";
-    }
-    if (challenge.isClosed && !challenge.isCompleted) {
-      status = "Closed";
-    }
-    if (
-      !challenge.isClosed &&
-      !challenge.isCompleted &&
-      challenge.isAcceptedOnChain
+      setStatus("Completed");
+    } else if (
+      !challenge.get("isCompleted") &&
+      !challenge.get("isClosed") &&
+      !challenge.get("isAcceptedOnChain") &&
+      challenge.get("challengeChainId") &&
+      challenge.get("challengerActionId")
     ) {
-      status = "Accepted";
+      setStatus("Minting Challenger Action...");
+    } else if (challenge.get("isClosed") && !challenge.get("isCompleted")) {
+      setStatus("Closed");
+    } else if (
+      !challenge.get("isClosed") &&
+      !challenge.get("isCompleted") &&
+      challenge.get("isAcceptedOnChain")
+    ) {
+      setStatus("Accepted");
+    } else {
+      setStatus("Error");
     }
-    return status;
   };
 
   useEffect(() => {
-    const createdLoading = getChallengesTeam1.isLoading;
-    const againstLoading = getChallengesTeam2.isLoading;
-    setIsLoading(createdLoading || againstLoading);
-  }, [getChallengesTeam1, getChallengesTeam2]);
-
-  useEffect(() => {
-    getChallengesTeam1.fetch();
-    setTeam1(getChallengesTeam1.data[0]);
-    getChallengesTeam2.fetch();
-    setTeam2(getChallengesTeam2.data[0]);
-  }, [isLoading]);
+    getChallengeStatus();
+  }),
+    [challenge];
 
   return (
     <div className="flex flex-col my-4 w-full md:w-[420px] md:ml-0 justify-center items-start border-2 border-gray-200 p-2 m-1 rounded-lg shadow-lg bg-white hover:shadow-2xl transition ease-in-out delay-100 hover:ease-in-out">
       <div className="flex flex-row w-full">
-        {isLoading && team1 == undefined && team2 == undefined ? (
-          <>Loading...</>
-        ) : (
-          <div className="flex flex-row w-full items-center">
-            <div className="flex flex-col w-1/2 items-center justify-center p-2">
-              <Photo
-                src={team1 && team1.attributes && team1.attributes.teamPhoto}
-                alt={team1 && team1.attributes && team1.attributes.teamName}
-                size="sm"
-                type="team"
-                isLoading={isLoading}
-              />
-              <span>
-                {team1 && team1.attributes && team1.attributes.teamName}-
-                {challenge && challenge.challengeChainId}
-              </span>
-              <span>
-                {team1 && team1.attributes && team1.attributes.teamPOS
-                  ? `${team1.attributes.teamPOS}%`
-                  : "100%"}
-                POS
-              </span>
-              <span>
-                {team1 &&
-                  team1.attributes &&
-                  `${team1.attributes.teamWins} Wins - ${team1.attributes.teamLosses} Losses`}
-              </span>
-            </div>
-            <span>VS</span>
-            <div className="flex flex-col w-1/2 items-center p-2">
-              <Photo
-                src={team2 && team2.attributes && team2.attributes.teamPhoto}
-                alt={team2 && team2.attributes && team2.attributes.teamName}
-                size="sm"
-                type="team"
-                isLoading={isLoading}
-              />
-              <span>
-                {team2 && team2.attributes && team2.attributes.teamName}
-              </span>
-              <span>
-                {team2 && team2.attributes && team2.attributes.teamPOS
-                  ? `${team2.attributes.teamPOS}%`
-                  : "100%"}
-                POS
-              </span>
-              <span>
-                {team2 &&
-                  team2.attributes &&
-                  `${team2.attributes.teamWins} Wins - ${team2.attributes.teamLosses} Losses`}
-              </span>
-            </div>
+        <div className="flex flex-row w-full items-center">
+          <div className="w-1/2 items-center justify-center p-2">
+            <a
+              href={`/teams/${team1 && team1.id}`}
+              className=" transition ease-in-out delay-100  hover:ease-in-out"
+            >
+              <div className="flex flex-col items-center justify-center ">
+                <Photo
+                  src={team1 && team1.get("teamPhoto")}
+                  alt={team1 && team1.get("teamName")}
+                  size="sm"
+                  type="team"
+                  isLoading={isLoading}
+                />
+                <span>{team1 && team1.get("teamName")}</span>
+                <span>
+                  {team1 && team1.get("teamPOS")
+                    ? `${team1.get("teamPOS")}%`
+                    : "100%"}
+                  POS
+                </span>
+                <span>
+                  {team1 &&
+                    `${team1.get("teamWins")} Wins - ${team1.get(
+                      "teamLosses"
+                    )} Losses`}
+                </span>
+              </div>
+            </a>
           </div>
-        )}
+          <span>VS</span>
+          <div className="w-1/2 items-center justify-center p-2">
+            <a
+              href={`/teams/${team2 && team2.id}`}
+              className=" transition ease-in-out delay-100  hover:ease-in-out"
+            >
+              <div className="flex flex-col items-center justify-center ">
+                <Photo
+                  src={team2 && team2.get("teamPhoto")}
+                  alt={team2 && team2.get("teamName")}
+                  size="sm"
+                  type="team"
+                  isLoading={isLoading}
+                />
+                <span>{team2 && team2.get("teamName")}</span>
+                <span>
+                  {team2 && team2.get("teamPOS")
+                    ? `${team2.get("teamPOS")}%`
+                    : "100%"}
+                  POS
+                </span>
+                <span>
+                  {team2 &&
+                    `${team2.get("teamWins")} Wins - ${team2.get(
+                      "teamLosses"
+                    )} Losses`}
+                </span>
+              </div>
+            </a>
+          </div>
+        </div>
       </div>
       <div className="m-auto">
         <div className="flex flex-col w-full p-2">
-          <span> Status: {getChallengeStatus()}</span>
+          <span> Status: {status}</span>
           <span>
-            Prize Pool: {challenge.challengeAmount} SVT
+            Prize Pool: {challenge.get("challengeAmount")} SVT
             <span className="ml-2 text-gray-400 italic text-xs">
               Est. $10(?)
             </span>
           </span>
           <span>
-            {challenge.challengeMessage && (
-              <>Message: {challenge.challengeMessage}</>
+            {challenge.get("challengeMessage") && (
+              <>Message: {challenge.get("challengeMessage")}</>
             )}
           </span>
         </div>
       </div>
       <div className="flex flex-row w-full items-center justify-around p-2">
-        {type == "against" && (
-          <>
-            {isContractLoading ? (
-              <>Minting...</>
-            ) : isAuthenticated && challenge.isAcceptedOnChain ? (
-              <>
-                <button
-                  className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
-                  onClick={() => toggleManageEventModal(!manageEventModal)}
-                >
-                  Create Event
-                </button>
-                <button
-                  className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
-                  onClick={() => toggleManageVoteModal(!manageVoteModal)}
-                >
-                  Vote
-                </button>
-              </>
-            ) : (
-              challenge.challengeChainId &&
-              !challenge.challengerActionId && (
-                <>
-                  <button
-                    onClick={handleAccept}
-                    className="px-2 py-1 w-[120px] m-4 bg-green-200 rounded-full hover:bg-green-400 "
-                  >
-                    Accept
-                  </button>
-                  <button className="px-2 py-1 w-[120px] m-4 bg-red-200 rounded-full">
-                    Deny (pending)
-                  </button>
-                </>
-              )
-            )}
-
-            <a
-              href={`/teams/${team1 && team1.id}`}
-              className="px-2 py-1 w-[120px] m-4 text-white bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100  hover:ease-in-out"
-            >
-              View Challenger
-            </a>
-          </>
-        )}
-        {type == "created" && (
-          <>
-            {isContractLoading ? (
-              <>Minting...</>
-            ) : isAuthenticated && challenge.isAcceptedOnChain ? (
-              <>
-                <button
-                  className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
-                  onClick={() => toggleManageEventModal(!manageEventModal)}
-                >
-                  Create Event
-                </button>
-                <button
-                  className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
-                  onClick={() => toggleManageVoteModal(!manageVoteModal)}
-                >
-                  Vote
-                </button>
-              </>
-            ) : (
-              challenge.challengeChainId &&
-              !challenge.challengerActionId && (
-                <>
-                  <button className="px-2 py-1 w-[120px] m-4 bg-red-200 rounded-full">
-                    Cancel (pending)
-                  </button>
-                </>
-              )
-            )}
-            <a
-              href={`/teams/${team2 && team2.id}`}
-              className="px-2 py-1 w-[120px] m-4 text-center text-white bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100 hover:ease-in-out"
-            >
-              View Opponent
-            </a>
-          </>
+        {isContractLoading ? (
+          <>Minting...</>
+        ) : (
+          <ChallengeButtons
+            type={type}
+            status={status}
+            isChallengeTeam1Admin={isChallengeTeam1Admin}
+            isChallengeTeam2Admin={isChallengeTeam2Admin}
+            isChallengeTeamMember={isChallengeTeamMember}
+            toggleManageEventModal={toggleManageEventModal}
+            toggleManageVoteModal={toggleManageVoteModal}
+            manageEventModal={manageEventModal}
+            manageVoteModal={manageVoteModal}
+            handleAccept={handleAccept}
+          />
         )}
       </div>
       {contractMessage && !isContractLoading && (
@@ -318,7 +251,7 @@ export const ChallengeCard = ({
         createNewEvent={true}
       />
       <ManageVote
-        challenge={challengeObject}
+        challenge={challenge}
         challengeTeam1={team1}
         challengeTeam2={team2}
         isLoading={isLoading}
@@ -326,5 +259,81 @@ export const ChallengeCard = ({
         modalView={manageVoteModal}
       />
     </div>
+  );
+};
+
+type ChallengeButtonsProps = {
+  type: "active" | "complete" | "created";
+  status: string;
+  isChallengeTeam1Admin: boolean;
+  isChallengeTeam2Admin: boolean;
+  isChallengeTeamMember: boolean;
+  toggleManageEventModal: any;
+  manageEventModal: boolean;
+  toggleManageVoteModal: any;
+  manageVoteModal: boolean;
+  handleAccept: any;
+};
+const ChallengeButtons = ({
+  type,
+  status,
+  isChallengeTeam1Admin,
+  isChallengeTeam2Admin,
+  isChallengeTeamMember,
+  toggleManageEventModal,
+  manageEventModal,
+  toggleManageVoteModal,
+  manageVoteModal,
+  handleAccept,
+}: ChallengeButtonsProps) => {
+  return (
+    <>
+      {/* Create event if admin and challenge accepted */}
+      {type === "active" &&
+        status === "Accepted" &&
+        (isChallengeTeam1Admin || isChallengeTeam2Admin) && (
+          <button
+            className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
+            onClick={() => toggleManageEventModal(!manageEventModal)}
+          >
+            Create Event
+          </button>
+        )}
+      {/* Allow vote if a challenge team member and challenge accepted */}
+      {type === "active" && status === "Accepted" && isChallengeTeamMember && (
+        <button
+          className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
+          onClick={() => toggleManageVoteModal(!manageVoteModal)}
+        >
+          Vote
+        </button>
+      )}
+      {/* allow challenge team 2 admin to accept or deny if the challenge is on chain */}
+      {type === "active" &&
+        status === "Pending Challenger" &&
+        isChallengeTeam2Admin && (
+          <>
+            <button
+              onClick={handleAccept}
+              className="px-2 py-1 w-[120px] m-4 bg-green-200 rounded-full hover:bg-green-400 "
+            >
+              Accept
+            </button>
+            <button className="px-2 py-1 w-[120px] m-4 bg-red-200 rounded-full">
+              Deny (pending)
+            </button>
+          </>
+        )}
+
+      {/* allow challenge 1 admin to cancel if the challenge has not been accepted*/}
+
+      {(type === "active" || type === "created") &&
+        status === "Pending Challenger" &&
+        isChallengeTeam1Admin && (
+          <button className="px-2 py-1 w-[120px] m-4 bg-red-200 rounded-full">
+            Cancel (pending)
+          </button>
+        )}
+    </>
   );
 };

@@ -1,10 +1,10 @@
 import { useRouter } from "next/router";
 import { contractActions } from "../../../configs/constants";
+import { Invite } from "../../../configs/types";
 import { useContract } from "../../../context/ContractProvider";
 import { useCustomMoralis } from "../../../context/CustomMoralisProvider";
 import { Photo } from "../../Layout/Photo";
 import { Toast } from "../../Layout/Toast";
-import { Invite } from "./InvitesController";
 
 type Props = {
   invite: Invite;

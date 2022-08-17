@@ -45,6 +45,7 @@ export default function TeamPage({
       <div className="py-4">
         <h1>Team Profiles</h1>
       </div>
+
       <div className="flex flex-col w-[480px] lg:w-[600px]">
         <div className="flex flex-col w-full justify-center items-center border-2 border-gray-200 rounded-lg shadow-lg bg-white hover:shadow-2xl transition ease-in-out delay-100  hover:ease-in-out p-5">
           <div className="flex flex-row my-4 w-full justify-center items-center">
@@ -161,22 +162,22 @@ export default function TeamPage({
           </div>
         </div>
       </div>
-      {user && !isTeamMember && (
+
+      {user && !isTeamMember && !teamIsLoading && (
         <ManageChallenge
           user={user}
-          team={team}
+          challengeTeam={teamObject}
           challengeTeamId={team.teamChainId}
           toggleModal={toggleManageChallengeModal}
           modalView={manageChallengeModal}
           createNewChallenge={true}
         />
       )}
-      {user && isAdmin && (
+      {user && isAdmin && !teamIsLoading && (
         <>
           <ManageTeam
             user={user}
             team={team}
-            teamIsLoading={teamIsLoading}
             teamObject={teamObject}
             toggleModal={toggleManageTeamModal}
             modalView={manageTeamModal}

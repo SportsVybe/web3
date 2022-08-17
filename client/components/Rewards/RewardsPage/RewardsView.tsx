@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { Reward } from "../../../configs/types";
 import { RewardCard } from "../RewardsCard";
-import { Reward } from "./RewardsController";
 
 type Props = {
   available: Reward[] | [];

@@ -1,8 +1,8 @@
-import MoralisTypes from "moralis/types";
 import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useState } from "react";
 import { useMoralis, useNewMoralisObject } from "react-moralis";
 import { contractActions } from "../../configs/constants";
+import { Challenge, Team } from "../../configs/types";
 import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
 import Modal from "../Layout/Modal";
@@ -10,9 +10,9 @@ import { Photo } from "../Layout/Photo";
 import { Toast } from "../Layout/Toast";
 
 type Props = {
-  challengeTeam1?: MoralisTypes.Object<MoralisTypes.Attributes>;
-  challengeTeam2?: MoralisTypes.Object<MoralisTypes.Attributes>;
-  challenge: any;
+  challengeTeam1: Team;
+  challengeTeam2: Team;
+  challenge: Challenge | any;
   toggleModal: Dispatch<SetStateAction<boolean>>;
   modalView: boolean;
   isLoading: boolean;
@@ -32,8 +32,7 @@ export const ManageVote = ({
   const { createUserAction } = useCustomMoralis();
   const { submitVote, isContractLoading, contractMessage } = useContract();
 
-  const [selectedTeam, setVoteTeamId] =
-    useState<MoralisTypes.Object<MoralisTypes.Attributes>>();
+  const [selectedTeam, setVoteTeamId] = useState<Team>();
 
   const selectedTeamCSS = "border-2 border-green-100";
 
@@ -51,29 +50,40 @@ export const ManageVote = ({
         voteFormData.actionId = action;
         const actionId = action.id;
 
-        const challengeId = challenge.attributes.challengeChainId;
-        const selectedTeamChainId = selectedTeam?.attributes.teamChainId;
+        const challengeId = challenge.get("challengeChainId");
+        const selectedTeamChainId = selectedTeam?.get("teamChainId");
 
         // create challenge on chain
-        const submitVoteOnChain = await submitVote(
-          actionId,
-          challengeId,
-          selectedTeamChainId
-        );
+        const submitVoteOnChain = true; //await submitVote(
+        //   actionId,
+        //   challengeId,
+        //   selectedTeamChainId
+        // );
 
         console.log("submitVoteOnChain", submitVoteOnChain);
 
         // submit vote to database...
         if (!isContractLoading && submitVoteOnChain) {
           await getVotesDB.save(voteFormData);
+          await challenge.save({
+            submittedVotes: [
+              ...challenge.get("submittedVotes"),
+              user?.get("username"),
+            ],
+          });
         } else if (!isContractLoading && !submitVoteOnChain) {
           await action.save({ actionStatus: false });
         }
         if (getVotesDB.error) console.log(getVotesDB.error.message);
 
         // reload page after saving
-        if (!getVotesDB.isSaving && !isContractLoading && !contractMessage) {
-          router.push("/challenges");
+        if (
+          !getVotesDB.isSaving &&
+          !challenge.isSaving &&
+          !isContractLoading &&
+          !contractMessage
+        ) {
+          router.reload();
         }
       } catch (error) {
         console.error(error);
@@ -100,7 +110,7 @@ export const ManageVote = ({
           Submit Vote for Challenge #
           {challenge &&
             challenge.attributes &&
-            challenge.attributes.challengeChainId}
+            challenge.get("challengeChainId")}
         </div>
 
         {isContractLoading ? (
@@ -126,24 +136,14 @@ export const ManageVote = ({
                       onClick={() => setVoteTeamId(challengeTeam1)}
                     >
                       <Photo
-                        src={
-                          challengeTeam1 &&
-                          challengeTeam1.attributes &&
-                          challengeTeam1.attributes.teamPhoto
-                        }
-                        alt={
-                          challengeTeam1 &&
-                          challengeTeam1.attributes &&
-                          challengeTeam1.attributes.teamName
-                        }
+                        src={challengeTeam1 && challengeTeam1.get("teamPhoto")}
+                        alt={challengeTeam1 && challengeTeam1.get("teamName")}
                         size="sm"
                         type="team"
                         isLoading={isLoading}
                       />
                       <span className="p-2">
-                        {challengeTeam1 &&
-                          challengeTeam1.attributes &&
-                          challengeTeam1.attributes.teamName}
+                        {challengeTeam1 && challengeTeam1.get("teamName")}
                       </span>
                     </div>
                     <div
@@ -154,24 +154,14 @@ export const ManageVote = ({
                       onClick={() => setVoteTeamId(challengeTeam2)}
                     >
                       <Photo
-                        src={
-                          challengeTeam2 &&
-                          challengeTeam2.attributes &&
-                          challengeTeam2.attributes.teamPhoto
-                        }
-                        alt={
-                          challengeTeam2 &&
-                          challengeTeam2.attributes &&
-                          challengeTeam2.attributes.teamName
-                        }
+                        src={challengeTeam2 && challengeTeam2.get("teamPhoto")}
+                        alt={challengeTeam2 && challengeTeam2.get("teamName")}
                         size="sm"
                         type="team"
                         isLoading={isLoading}
                       />
                       <span className="p-2">
-                        {challengeTeam2 &&
-                          challengeTeam2.attributes &&
-                          challengeTeam2.attributes.teamName}
+                        {challengeTeam2 && challengeTeam2.get("teamName")}
                       </span>
                     </div>
                   </>

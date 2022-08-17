@@ -1,5 +1,6 @@
 import Moralis from "moralis/types";
 import { useEffect, useState } from "react";
+import { Reward } from "../../../configs/types";
 import { useCustomMoralis } from "../../../context/CustomMoralisProvider";
 import { RewardsView } from "./RewardsView";
 
@@ -14,24 +15,6 @@ type Response = {
   claimed: Reward[] | [];
   success: boolean;
   error: string | null;
-};
-
-export type Reward = {
-  id: string;
-  action_id: string;
-  amount: string;
-  challenge_id: string;
-  createdAt: string;
-  confirmed: boolean;
-  isClaimed: boolean;
-  reward_id: string;
-  transaction_hash: string;
-  updatedAt: string;
-  user: string;
-  team_id: string;
-  get?: (key: string) => any;
-  save?: (key: {}) => any;
-  isSaving?: boolean;
 };
 
 const sampleData: Response = {
@@ -119,11 +102,8 @@ export const RewardsController = (props: Props) => {
       .catch(setError);
   }, []);
 
-  return sampleData && sampleData.success ? (
-    <RewardsView
-      available={sampleData.available}
-      claimed={sampleData.claimed}
-    />
+  return rewards && rewards.success ? (
+    <RewardsView available={rewards.available} claimed={rewards.claimed} />
   ) : (
     <div>
       <span className="text-1xl text-white">Loading...</span>

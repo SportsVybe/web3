@@ -1,66 +1,37 @@
 import { useEffect, useState } from "react";
-import { useMoralisQuery } from "react-moralis";
-import { useWallet } from "../../context/WalletProvider";
+import { GetUserChallenges } from "../../configs/types";
+import { useCustomMoralis } from "../../context/CustomMoralisProvider";
 import ChallengesPage from "./ChallengesPage";
 
 export const ChallengesController = () => {
-  const { user, isAuthenticating, connectWallet, isAuthenticated } =
-    useWallet();
+  const { cloudFunction } = useCustomMoralis();
+  const [challenges, setChallenges] = useState<GetUserChallenges>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [createdChallenges, setCreatedChallenges] = useState([]);
-  const [againstChallenges, setAgainstChallenges] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const getChallengesCreated = useMoralisQuery(
-    "challenges",
-    (query) => query.equalTo("challengeTeam1Admin", user.get("username")),
-    [],
-    {
-      autoFetch: true,
-    }
-  );
-
-  const getChallengesAgainst = useMoralisQuery(
-    "challenges",
-    (query) => query.equalTo("challengeTeam2Admin", user.get("username")),
-    [],
-    {
-      autoFetch: true,
-    }
-  );
+  const fetchChallenges = async () => {
+    setIsLoading(true);
+    const challenges = await cloudFunction("getUserChallenges", {});
+    if (!challenges.success) setError(error || "Error fetching challenges");
+    return challenges;
+  };
 
   useEffect(() => {
-    const createdLoading = getChallengesCreated.isLoading;
-    const againstLoading = getChallengesAgainst.isLoading;
-    setIsLoading(createdLoading || againstLoading);
-  }, [getChallengesCreated, getChallengesAgainst]);
-
-  useEffect(() => {
-    const getCreated = getChallengesCreated.fetch();
-    getCreated
-      .then((challenges: any) => {
-        setCreatedChallenges(challenges);
-      })
-      .catch((err) => {
-        console.error("err", err);
-      });
-
-    const getAgainst = getChallengesAgainst.fetch();
-    getAgainst
-      .then((challenges: any) => {
-        setAgainstChallenges(challenges);
-      })
-      .catch((err) => {
-        console.error("err", err);
-      });
+    fetchChallenges()
+      .then(setChallenges)
+      .then(() => setIsLoading(false))
+      .catch(setError);
   }, []);
 
-  return (
+  return challenges && challenges.success ? (
     <ChallengesPage
-      isAuthenticated={isAuthenticated}
-      createdChallenges={createdChallenges}
-      againstChallenges={againstChallenges}
-      isLoading={isLoading}
+      active={challenges?.active}
+      created={challenges?.created}
+      complete={challenges?.complete}
     />
+  ) : (
+    <div>
+      <span className="text-1xl text-white">Loading...</span>
+    </div>
   );
 };

@@ -35,6 +35,9 @@ const defaultState = {
   ) => {
     return [];
   },
+  fetchUserTeams: async () => {
+    return [];
+  },
 };
 
 const CustomMoralisContext = createContext(defaultState);
@@ -136,6 +139,19 @@ const CustomMoralisProvider = ({ children }: { children: any }) => {
     }
   };
 
+  const fetchUserTeams = async (): Promise<any> => {
+    try {
+      const results = await cloudFunction("getUserTeams", {});
+      if (results != null && results.success) {
+        return results;
+      }
+      return null;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
   return (
     <CustomMoralisContext.Provider
       value={{
@@ -145,6 +161,7 @@ const CustomMoralisProvider = ({ children }: { children: any }) => {
         objectExists,
         cloudFunction,
         fetchUser,
+        fetchUserTeams,
         getAllPossibleObjects,
       }}
     >

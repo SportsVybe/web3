@@ -9,7 +9,7 @@ type Props = {
 
 export const TeamPageController = ({ username, wallet = false }: Props) => {
   const [teamData, setTeamData] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [teamObject, setTeamObject] = useState({});
 
   const getTeamByUsername = useMoralisQuery(
@@ -22,18 +22,13 @@ export const TeamPageController = ({ username, wallet = false }: Props) => {
   );
 
   useEffect(() => {
-    const teamIsLoading = getTeamByUsername.isLoading;
-    setIsLoading(teamIsLoading);
-  }, [getTeamByUsername]);
-
-  useEffect(() => {
     const getTeam = getTeamByUsername.fetch();
     getTeam
       .then((team: any) => {
         setTeamData(team[0].attributes);
         setTeamObject(team[0]);
-        setIsLoading(getTeamByUsername.isFetching);
       })
+      .then(() => setIsLoading(false))
       .catch((err) => {
         console.log("err", err);
       });
