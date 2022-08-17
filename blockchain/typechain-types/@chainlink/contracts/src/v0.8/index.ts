@@ -5,3 +5,4 @@ import type * as interfaces from "./interfaces";
 export type { interfaces };
 export type { KeeperBase } from "./KeeperBase";
 export type { KeeperCompatible } from "./KeeperCompatible";
+export type { VRFConsumerBaseV2 } from "./VRFConsumerBaseV2";

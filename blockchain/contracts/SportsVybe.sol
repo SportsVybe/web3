@@ -201,7 +201,7 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
 
   // new counter openzepplin
   using Counters for Counters.Counter;
-  Counters.Counter private team_id_counter;
+  Counters.Counter private id_counter;
   // TODO: use chainlink VRF for unique Identifier -> team_id
 
   Counters.Counter private challenge_id_counter;
@@ -246,22 +246,24 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
   // }
 
    //Call Function to USE UNQUIUE ID WHERE NEEDED for only team, challenge, reward
-  function getUnquiueID (string memory _for) public view returns (uint256){
-    uint256 new_id;
-    if(compareStrings(_for, "team")){
-      //calculate
-      new_id = challenge_id_counter.current() + reward_id_counter.current();
-    }else if(compareStrings(_for, "reward")){
+  function getUnquiueID () public view returns (uint256){
+    uint256 new_id = id_counter.current();
+    
+    // //id_counter.current();
+    // if(compareStrings(_for, "team")){
+    //   //calculate
+    //   new_id = challenge_id_counter.current() + reward_id_counter.current() + team_id_counter.current();
+    // }else if(compareStrings(_for, "reward")){
 
-      new_id = challenge_id_counter.current() + team_id_counter.current();
+    //   new_id = challenge_id_counter.current() + team_id_counter.current();
 
-    }else if(compareStrings(_for, "challenge")){
+    // }else if(compareStrings(_for, "challenge")){
 
-      new_id = team_id_counter.current() + reward_id_counter.current();
+    //   new_id = team_id_counter.current() + reward_id_counter.current();
 
-    }else{
-      revert InvalidModel(_for);
-    }
+    // }else{
+    //   revert InvalidModel(_for);
+    // }
 
     return vrf_generated_ids[new_id];
   }
@@ -307,7 +309,7 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
     hasActionId(action_id)
     returns (uint256)
   {
-    uint256 new_team_id = getUnquiueID("team");
+    uint256 new_team_id = getUnquiueID();
 
     team_owner[new_team_id] = payable(msg.sender);
 
@@ -320,7 +322,7 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
     emit TeamCreated(action_id, new_team_id);
 
     //increment the team id
-    team_id_counter.increment();
+    id_counter.increment();
     return new_team_id;
   }
 
@@ -413,7 +415,7 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
     hasActionId(action_id)
     returns (uint256)
   {
-    uint256 new_challenge_id = getUnquiueID("challenge");
+    uint256 new_challenge_id = getUnquiueID();
     if (amount == 0) {
       revert ChallengePoolInsufficientAmount(0, amount);
     }
@@ -460,7 +462,7 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
     }
 
     // increment challenge_id_counter
-    challenge_id_counter.increment();
+    id_counter.increment();
 
     emit ChallengePoolCreated(
       action_id,
