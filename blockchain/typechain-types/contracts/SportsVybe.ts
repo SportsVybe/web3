@@ -59,6 +59,9 @@ export interface SportsVybeInterface extends utils.Interface {
   functions: {
     "acceptChallengePool(string,uint256,uint256,uint256)": FunctionFragment;
     "acceptTeamMembershipRequest(string,uint256)": FunctionFragment;
+    "all_vrf_generated_ids(uint256)": FunctionFragment;
+    "cancelChallenge(uint256)": FunctionFragment;
+    "challengePoolOwner(uint256)": FunctionFragment;
     "challengePools(uint256)": FunctionFragment;
     "challengeRewards(address,uint256)": FunctionFragment;
     "claimReward(string,string,uint256,uint256)": FunctionFragment;
@@ -73,9 +76,13 @@ export interface SportsVybeInterface extends utils.Interface {
     "getTeamCount(uint256)": FunctionFragment;
     "getTeamMates(uint256)": FunctionFragment;
     "getTeamSportsmanship(uint256)": FunctionFragment;
+    "getUnquiueID(string)": FunctionFragment;
     "owner()": FunctionFragment;
     "pending_challenge_pool_ids(uint256)": FunctionFragment;
+    "rawFulfillRandomWords(uint256,uint256[])": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "requestRandomWords()": FunctionFragment;
+    "s_requestId()": FunctionFragment;
     "sendTeamMembershipRequest(string,uint256,address)": FunctionFragment;
     "sportsVybeToken()": FunctionFragment;
     "sportsmanship(address)": FunctionFragment;
@@ -85,12 +92,16 @@ export interface SportsVybeInterface extends utils.Interface {
     "team_owner(uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "votes(address,uint256)": FunctionFragment;
+    "vrf_generated_ids(uint256)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "acceptChallengePool"
       | "acceptTeamMembershipRequest"
+      | "all_vrf_generated_ids"
+      | "cancelChallenge"
+      | "challengePoolOwner"
       | "challengePools"
       | "challengeRewards"
       | "claimReward"
@@ -105,9 +116,13 @@ export interface SportsVybeInterface extends utils.Interface {
       | "getTeamCount"
       | "getTeamMates"
       | "getTeamSportsmanship"
+      | "getUnquiueID"
       | "owner"
       | "pending_challenge_pool_ids"
+      | "rawFulfillRandomWords"
       | "renounceOwnership"
+      | "requestRandomWords"
+      | "s_requestId"
       | "sendTeamMembershipRequest"
       | "sportsVybeToken"
       | "sportsmanship"
@@ -117,6 +132,7 @@ export interface SportsVybeInterface extends utils.Interface {
       | "team_owner"
       | "transferOwnership"
       | "votes"
+      | "vrf_generated_ids"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -131,6 +147,18 @@ export interface SportsVybeInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "acceptTeamMembershipRequest",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "all_vrf_generated_ids",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "cancelChallenge",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "challengePoolOwner",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "challengePools",
@@ -198,13 +226,29 @@ export interface SportsVybeInterface extends utils.Interface {
     functionFragment: "getTeamSportsmanship",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "getUnquiueID",
+    values: [PromiseOrValue<string>]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "pending_challenge_pool_ids",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "rawFulfillRandomWords",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>[]]
+  ): string;
+  encodeFunctionData(
     functionFragment: "renounceOwnership",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requestRandomWords",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "s_requestId",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -251,6 +295,10 @@ export interface SportsVybeInterface extends utils.Interface {
     functionFragment: "votes",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "vrf_generated_ids",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "acceptChallengePool",
@@ -258,6 +306,18 @@ export interface SportsVybeInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "acceptTeamMembershipRequest",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "all_vrf_generated_ids",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "cancelChallenge",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "challengePoolOwner",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -313,13 +373,29 @@ export interface SportsVybeInterface extends utils.Interface {
     functionFragment: "getTeamSportsmanship",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getUnquiueID",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "pending_challenge_pool_ids",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "rawFulfillRandomWords",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "requestRandomWords",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "s_requestId",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -349,6 +425,10 @@ export interface SportsVybeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "votes", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "vrf_generated_ids",
+    data: BytesLike
+  ): Result;
 
   events: {
     "ChallengePoolAccepted(string,uint256,uint256,uint256)": EventFragment;
@@ -588,6 +668,21 @@ export interface SportsVybe extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    all_vrf_generated_ids(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    cancelChallenge(
+      challenge_id: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    challengePoolOwner(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     challengePools(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -602,7 +697,6 @@ export interface SportsVybe extends BaseContract {
         boolean,
         BigNumber,
         BigNumber,
-        BigNumber,
         BigNumber
       ] & {
         action_id: string;
@@ -613,7 +707,6 @@ export interface SportsVybe extends BaseContract {
         isClosed: boolean;
         isCompleted: boolean;
         createdAt: BigNumber;
-        interval: BigNumber;
         team_1_votes: BigNumber;
         team_2_votes: BigNumber;
       }
@@ -696,6 +789,11 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    getUnquiueID(
+      _for: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     pending_challenge_pool_ids(
@@ -703,9 +801,21 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    rawFulfillRandomWords(
+      requestId: PromiseOrValue<BigNumberish>,
+      randomWords: PromiseOrValue<BigNumberish>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    requestRandomWords(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    s_requestId(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     sendTeamMembershipRequest(
       action_id: PromiseOrValue<string>,
@@ -755,6 +865,11 @@ export interface SportsVybe extends BaseContract {
       arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { challenge_id: BigNumber }>;
+
+    vrf_generated_ids(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
   };
 
   acceptChallengePool(
@@ -771,6 +886,21 @@ export interface SportsVybe extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  all_vrf_generated_ids(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  cancelChallenge(
+    challenge_id: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  challengePoolOwner(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   challengePools(
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
@@ -785,7 +915,6 @@ export interface SportsVybe extends BaseContract {
       boolean,
       BigNumber,
       BigNumber,
-      BigNumber,
       BigNumber
     ] & {
       action_id: string;
@@ -796,7 +925,6 @@ export interface SportsVybe extends BaseContract {
       isClosed: boolean;
       isCompleted: boolean;
       createdAt: BigNumber;
-      interval: BigNumber;
       team_1_votes: BigNumber;
       team_2_votes: BigNumber;
     }
@@ -879,6 +1007,11 @@ export interface SportsVybe extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getUnquiueID(
+    _for: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   pending_challenge_pool_ids(
@@ -886,9 +1019,21 @@ export interface SportsVybe extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  rawFulfillRandomWords(
+    requestId: PromiseOrValue<BigNumberish>,
+    randomWords: PromiseOrValue<BigNumberish>[],
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   renounceOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  requestRandomWords(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  s_requestId(overrides?: CallOverrides): Promise<BigNumber>;
 
   sendTeamMembershipRequest(
     action_id: PromiseOrValue<string>,
@@ -939,6 +1084,11 @@ export interface SportsVybe extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  vrf_generated_ids(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   callStatic: {
     acceptChallengePool(
       action_id: PromiseOrValue<string>,
@@ -954,6 +1104,21 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    all_vrf_generated_ids(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    cancelChallenge(
+      challenge_id: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    challengePoolOwner(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     challengePools(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -968,7 +1133,6 @@ export interface SportsVybe extends BaseContract {
         boolean,
         BigNumber,
         BigNumber,
-        BigNumber,
         BigNumber
       ] & {
         action_id: string;
@@ -979,7 +1143,6 @@ export interface SportsVybe extends BaseContract {
         isClosed: boolean;
         isCompleted: boolean;
         createdAt: BigNumber;
-        interval: BigNumber;
         team_1_votes: BigNumber;
         team_2_votes: BigNumber;
       }
@@ -1062,6 +1225,11 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getUnquiueID(
+      _for: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<string>;
 
     pending_challenge_pool_ids(
@@ -1069,7 +1237,17 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    rawFulfillRandomWords(
+      requestId: PromiseOrValue<BigNumberish>,
+      randomWords: PromiseOrValue<BigNumberish>[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
+    requestRandomWords(overrides?: CallOverrides): Promise<void>;
+
+    s_requestId(overrides?: CallOverrides): Promise<BigNumber>;
 
     sendTeamMembershipRequest(
       action_id: PromiseOrValue<string>,
@@ -1117,6 +1295,11 @@ export interface SportsVybe extends BaseContract {
     votes(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    vrf_generated_ids(
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
@@ -1279,6 +1462,21 @@ export interface SportsVybe extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    all_vrf_generated_ids(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    cancelChallenge(
+      challenge_id: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    challengePoolOwner(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     challengePools(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1352,6 +1550,11 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getUnquiueID(
+      _for: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     pending_challenge_pool_ids(
@@ -1359,9 +1562,21 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    rawFulfillRandomWords(
+      requestId: PromiseOrValue<BigNumberish>,
+      randomWords: PromiseOrValue<BigNumberish>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
+
+    requestRandomWords(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    s_requestId(overrides?: CallOverrides): Promise<BigNumber>;
 
     sendTeamMembershipRequest(
       action_id: PromiseOrValue<string>,
@@ -1411,6 +1626,11 @@ export interface SportsVybe extends BaseContract {
       arg1: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    vrf_generated_ids(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1426,6 +1646,21 @@ export interface SportsVybe extends BaseContract {
       action_id: PromiseOrValue<string>,
       team_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    all_vrf_generated_ids(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    cancelChallenge(
+      challenge_id: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    challengePoolOwner(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     challengePools(
@@ -1501,6 +1736,11 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getUnquiueID(
+      _for: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     pending_challenge_pool_ids(
@@ -1508,9 +1748,21 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    rawFulfillRandomWords(
+      requestId: PromiseOrValue<BigNumberish>,
+      randomWords: PromiseOrValue<BigNumberish>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
+
+    requestRandomWords(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    s_requestId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     sendTeamMembershipRequest(
       action_id: PromiseOrValue<string>,
@@ -1558,6 +1810,11 @@ export interface SportsVybe extends BaseContract {
     votes(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    vrf_generated_ids(
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

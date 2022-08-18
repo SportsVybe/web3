@@ -4,3 +4,4 @@
 export * as interfaces from "./interfaces";
 export { KeeperBase__factory } from "./KeeperBase__factory";
 export { KeeperCompatible__factory } from "./KeeperCompatible__factory";
+export { VRFConsumerBaseV2__factory } from "./VRFConsumerBaseV2__factory";

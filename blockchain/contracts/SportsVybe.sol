@@ -6,12 +6,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
 
-/*
+/*============================================================
 @Description: SportsVybe 
 Main contract for the SportsVybe platform.
-*/
+===============================================================*/
 
 // ----- Contract errors -------- //
 error NotFound(string);
@@ -42,13 +45,44 @@ error RewardInvalid(string, uint256);
 error RewardInsufficientAmount(string, uint256, uint256);
 error RewardAlreadyClaimed(string, uint256, uint256);
 error RewardsNotFound(address);
+error InvalidModel(string);
 
-contract SportsVybe is Ownable {
+
+
+
+contract SportsVybe is Ownable, VRFConsumerBaseV2 {
   IERC20 public sportsVybeToken;
 
-  constructor(address payable _sportsVybeToken) {
-    sportsVybeToken = IERC20(_sportsVybeToken);
-  }
+  VRFCoordinatorV2Interface COORDINATOR;
+
+    // Your subscription ID.
+  uint64 s_subscriptionId = 1399;
+
+    // Goerli coordinator. For other networks,
+  // see https://docs.chain.link/docs/vrf-contracts/#configurations
+  address vrfCoordinator = 0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed;
+
+  // The gas lane to use, which specifies the maximum gas price to bump to.
+  // For a list of available gas lanes on each network,
+  // see https://docs.chain.link/docs/vrf-contracts/#configurations
+  bytes32 keyHash = 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f;
+   
+    // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+  // so 100,000 is a safe default for this example contract. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 callbackGasLimit = 200000;
+
+  // The default is 3, but you can set this higher.
+  uint16 requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
+  uint32 numWords =  2; //coordinator MAX_NUM_WORDS = 500;
+  uint256 public s_requestId;
+
 
   // ----- Team structs -------- //
   struct TeamMate {
@@ -76,7 +110,6 @@ contract SportsVybe is Ownable {
   }
 
   // ----- Reward struts -------- //
-
   struct Reward {
     string action_id;
     uint256 reward_id;
@@ -88,11 +121,13 @@ contract SportsVybe is Ownable {
 
   // ----- Team events -------- //
   event TeamCreated(string action_id, uint256 team_id);
+
   event TeamMembershipRequestAccept(
     string action_id,
     uint256 team_id,
     address user
   );
+
   event TeamMembershipRequestSent(
     string action_id,
     uint256 team_id,
@@ -162,9 +197,11 @@ contract SportsVybe is Ownable {
   mapping(uint256 => uint256) private teamCount; // mapped by team_id
   mapping(uint256 => address) public challengePoolOwner;
 
+  
+
   // new counter openzepplin
   using Counters for Counters.Counter;
-  Counters.Counter private team_id_counter;
+  Counters.Counter private id_counter;
   // TODO: use chainlink VRF for unique Identifier -> team_id
 
   Counters.Counter private challenge_id_counter;
@@ -184,6 +221,87 @@ contract SportsVybe is Ownable {
   // ----- Reward variables -------- //
   mapping(address => Reward[]) public challengeRewards;
 
+  //VRF generated Ids
+  uint256[] public vrf_generated_ids;
+  mapping(uint256 => bool) public all_vrf_generated_ids;
+  
+
+  constructor(address payable _sportsVybeToken) VRFConsumerBaseV2(vrfCoordinator)  {
+    sportsVybeToken = IERC20(_sportsVybeToken);
+
+    COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
+
+    //TODO: programatically add consumer and call function here
+    //requestRandomWords();
+    
+  }
+
+  // function  test(uint256 ui) public returns(bool){
+  //     if(all_vrf_generated_ids[ui]){
+  //        return true;
+  //     }else{
+  //        return false;
+  //     }
+      
+  // }
+
+   //Call Function to USE UNQUIUE ID WHERE NEEDED for only team, challenge, reward
+  function getUnquiueID () public view returns (uint256){
+    uint256 new_id = id_counter.current();
+    
+    // //id_counter.current();
+    // if(compareStrings(_for, "team")){
+    //   //calculate
+    //   new_id = challenge_id_counter.current() + reward_id_counter.current() + team_id_counter.current();
+    // }else if(compareStrings(_for, "reward")){
+
+    //   new_id = challenge_id_counter.current() + team_id_counter.current();
+
+    // }else if(compareStrings(_for, "challenge")){
+
+    //   new_id = team_id_counter.current() + reward_id_counter.current();
+
+    // }else{
+    //   revert InvalidModel(_for);
+    // }
+
+    return vrf_generated_ids[new_id];
+  }
+
+
+  function fulfillRandomWords(
+    uint256, /* requestId */
+    uint256[] memory randomWords
+  ) internal override {
+    //push array of non existing/ unused randomWords
+    uint256 randomWordsLength = randomWords.length;
+
+    for(uint256 i = 0; i < randomWordsLength; i++){
+      
+      uint256 randomWord = randomWords[i];
+
+      //check if id exist
+      if(all_vrf_generated_ids[randomWord] != true){
+         vrf_generated_ids.push(randomWord);
+         all_vrf_generated_ids[randomWord] = true;
+      }
+
+    }
+  }
+
+    // Assumes the subscription is funded sufficiently.
+  function requestRandomWords() public onlyOwner {
+    // Will revert if subscription is not set and funded.
+    s_requestId = COORDINATOR.requestRandomWords(
+      keyHash,
+      s_subscriptionId,
+      requestConfirmations,
+      callbackGasLimit,
+      numWords
+    );
+  }
+
+
   // ----- Team functions -------- //
   function createTeam(string memory action_id)
     external
@@ -191,7 +309,7 @@ contract SportsVybe is Ownable {
     hasActionId(action_id)
     returns (uint256)
   {
-    uint256 new_team_id = team_id_counter.current();
+    uint256 new_team_id = getUnquiueID();
 
     team_owner[new_team_id] = payable(msg.sender);
 
@@ -204,7 +322,7 @@ contract SportsVybe is Ownable {
     emit TeamCreated(action_id, new_team_id);
 
     //increment the team id
-    team_id_counter.increment();
+    id_counter.increment();
     return new_team_id;
   }
 
@@ -297,7 +415,7 @@ contract SportsVybe is Ownable {
     hasActionId(action_id)
     returns (uint256)
   {
-    uint256 new_challenge_id = 900 + challenge_id_counter.current();
+    uint256 new_challenge_id = getUnquiueID();
     if (amount == 0) {
       revert ChallengePoolInsufficientAmount(0, amount);
     }
@@ -344,7 +462,7 @@ contract SportsVybe is Ownable {
     }
 
     // increment challenge_id_counter
-    challenge_id_counter.increment();
+    id_counter.increment();
 
     emit ChallengePoolCreated(
       action_id,
@@ -452,8 +570,7 @@ contract SportsVybe is Ownable {
     uint256 hoursDiff = block.timestamp - challengePools[challenge_id].createdAt;
     if( hoursDiff >= 48 hours){
       //Reducing POS
-          uint256 _team_sportmanship = team_sportsmanship[challengePools[challenge_id].team1];
-          team_sportsmanship[challengePools[challenge_id].team1] = _team_sportmanship - 2; 
+      handleSportsmanship("cancel", challengePools[challenge_id].team1);
 
     }
 
