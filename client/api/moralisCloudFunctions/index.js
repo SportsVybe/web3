@@ -135,6 +135,7 @@ const getRewardObjects = async (schema, field, searchString) => {
     "isClaimed",
     "reward_id",
     "transaction_hash",
+    "claimConfirmed",
     "updatedAt",
     "user",
     "team_id"
@@ -560,11 +561,14 @@ Moralis.Cloud.afterSave("contractTeamMembershipAccept", async (request) => {
 Moralis.Cloud.afterSave("contractRewardClaimed", async (request) => {
   const confirmed = request.object.get("confirmed");
   const rewardId = request.object.get("reward_id");
-  logger.info(`contractRewardClaimed: ${confirmed} ${rewardId}`);
+  const claimActionId = request.object.get("claim_action_id");
+  logger.info(
+    `contractRewardClaimed: confirmed: ${confirmed} reward_id: ${rewardId} claim_id: ${claimActionId}`
+  );
 
   try {
     if (confirmed) {
-      const userAction = await getUserAction(actionId);
+      const userAction = await getUserAction(claimActionId);
       const actionStatus = await userAction.get("actionStatus");
       if (!actionStatus) {
         await userAction.save("actionStatus", true);
@@ -573,7 +577,10 @@ Moralis.Cloud.afterSave("contractRewardClaimed", async (request) => {
           "reward_id",
           rewardId
         );
-        await result[0].save("isClaimed", true);
+        await result[0].save("claimConfirmed", true);
+        logger.info(
+          `contractRewardClaimed: Processed reward_id: ${rewardId} claim_id: ${claimActionId}`
+        );
       }
     }
   } catch (error) {

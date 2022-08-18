@@ -1,4 +1,6 @@
 import { ethers } from "ethers";
+import Router from "next/router";
+import { BiCheck, BiCheckDouble } from "react-icons/bi";
 import { FaMoneyBillWave } from "react-icons/fa";
 import { contractActions } from "../../configs/constants";
 import { Reward } from "../../configs/types";
@@ -25,7 +27,10 @@ export const RewardCard = ({ reward }: RewardCardProps) => {
     );
     console.log("claimRewardOnChain", claimRewardOnChain);
     if (claimRewardOnChain) {
-      console.log("success");
+      reward.save({ isClaimed: true, claimConfirmed: false });
+      Router.reload();
+    } else {
+      action.save({ actionStatus: false });
     }
   };
 
@@ -42,27 +47,35 @@ export const RewardCard = ({ reward }: RewardCardProps) => {
               `${ethers.utils.formatEther(reward.get("amount"))} SVT`}
           </span>
           <span className="text-sm">
-            Status:{" "}
+            Status:
             {reward.get("confirmed")
               ? !reward.get("isClaimed")
-                ? "Confirmed"
-                : reward.get("isClaimed") && "Claimed"
-              : "Processing"}
+                ? "Ready to Claim"
+                : reward.get("isClaimed") && reward.get("claimConfirmed")
+                ? "Claimed"
+                : "Processing Claim..."
+              : "Processing..."}
           </span>
         </div>
       </div>
       <div className="w-[100px] flex flex-wrap justify-center">
-        {!reward.get("isClaimed") && reward.get("confirmed") && (
+        {!reward.get("isClaimed") && reward.get("confirmed") ? (
           <button
+            disabled={
+              isContractLoading ||
+              !reward.get("confirmed") ||
+              reward.get("isClaimed")
+            }
             className="px-2 py-1 bg-green-300 rounded-full m-1"
             onClick={() => claimRewardHandler()}
           >
             Claim
           </button>
+        ) : reward.get("isClaimed") && reward.get("claimConfirmed") ? (
+          <BiCheckDouble size={36} />
+        ) : (
+          <BiCheck size={36} />
         )}
-        <button className="px-2 border-green-300 border rounded-md m-1">
-          View
-        </button>
       </div>
 
       {contractMessage && !isContractLoading && (
