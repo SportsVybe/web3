@@ -33,7 +33,7 @@ const WalletProvider = (props: any) => {
     try {
       if (!isAuthenticated) {
         const account = await authenticate({
-          provider: "walletconnect",
+          // provider: "walletconnect",
           chainId: 80001,
           signingMessage: "Welcome to SportsVybe, please sign in to continue",
           mobileLinks: [

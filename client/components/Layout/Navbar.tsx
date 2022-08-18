@@ -16,7 +16,7 @@ export default function Navbar() {
 
   return (
     <nav className="md:px-8 md:flex md:justify-between md:items-center md:pt-4 ">
-      <div className="flex items-center justify-between px-4">
+      <div className="flex justify-between px-4">
         <div className="p-2 cursor-pointer">
           <ImageRef href="/">
             <Image

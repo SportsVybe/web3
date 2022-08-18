@@ -39,7 +39,7 @@ const ProcessSection = () => {
         </div>
       </div>
       <div className="flex-1 flex flex-col justify-start items-center">
-        <div data-aos="zoom-in" data-aos-duration="1000">
+        <div data-aos="zoom-in">
           <ProcessCard
             color="bg-[#2952e3]"
             title="Connect Your Wallet and create an account"
@@ -47,7 +47,7 @@ const ProcessSection = () => {
             subtitle="Locate people that love the sports just as much as you do. Be a part of your local community!!"
           />
         </div>
-        <div data-aos="zoom-in" data-aos-duration="1400">
+        <div data-aos="zoom-in">
           <ProcessCard
             color="bg-[#8984F8]"
             title="Set up preferences"
@@ -55,7 +55,7 @@ const ProcessSection = () => {
             subtitle="10+ Sports: Football, Basketball, Baseball, Ultimate Frisbee, Tennis, Hockey and many more!"
           />
         </div>
-        <div data-aos="zoom-in" data-aos-duration="1600">
+        <div data-aos="zoom-in">
           <ProcessCard
             color="bg-[#f84550]"
             title="Get active and win Challenges!"

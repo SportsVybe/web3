@@ -10,6 +10,7 @@ body {
   margin: 0;
   font-family: "Open Sans", sans-serif;
   background-color: #000000;
+  /* overflow-x: scroll; */
 }
 
 .button {

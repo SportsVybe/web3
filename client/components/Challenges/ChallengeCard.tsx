@@ -138,7 +138,7 @@ export const ChallengeCard = ({
     [challenge];
 
   return (
-    <div className="flex flex-col my-4 w-full md:w-[420px] md:ml-0 justify-center items-start border-2 border-gray-200 p-2 m-1 rounded-lg shadow-lg bg-white hover:shadow-2xl transition ease-in-out delay-100 hover:ease-in-out">
+    <div className="flex flex-col my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out">
       <div className="flex flex-row w-full">
         <div className="flex flex-row w-full items-center">
           <div className="w-1/2 items-center justify-center p-2">

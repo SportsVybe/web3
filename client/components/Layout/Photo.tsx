@@ -31,7 +31,14 @@ export const Photo = ({
   return (
     <div className={styleSize}>
       {!isLoading && src !== undefined && src !== "" ? (
-        <Image src={src} alt={alt} layout="fill" objectFit="cover" priority />
+        <Image
+          src={src}
+          alt={alt}
+          layout="fill"
+          objectFit="cover"
+          priority
+          className="rounded-full"
+        />
       ) : (
         <Image
           src={placeholderImg}
@@ -39,6 +46,7 @@ export const Photo = ({
           layout="fill"
           objectFit="cover"
           priority
+          className="rounded-full"
         />
       )}
     </div>

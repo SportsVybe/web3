@@ -6,7 +6,7 @@ export default function ProfilePage() {
   const { wallet, user, isAuthenticating, connectWallet } = useWallet();
 
   return (
-    <div className="mb-auto">
+    <div className="mb-auto" id="overflow">
       <Head>
         <title>Player Profile</title>
         <meta name="description" content="Player Profile" />

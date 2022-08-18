@@ -28,14 +28,17 @@ export default function Profile({
   const [manageTeamModal, toggleManageTeamModal] = useState(false);
 
   return (
-    <div className="flex flex-col justify-center items-center text-white">
+    <div
+      className="flex flex-col justify-center items-center text-white "
+      id="overflow"
+    >
       <div className="py-4">
         <h1 className="text-bold text-xl ">PLAYER PROFILE:</h1>
       </div>
       <div className="flex flex-col w-[480px] lg:w-[600px]">
         <div className="flex flex-col my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out">
           <div className="flex flex-row my-4 w-full justify-center items-center">
-            <div className="flex flex-col w-1/2 items-center justify-center">
+            <div className="flex flex-col w-1/2 items-center justify-center ml-2">
               <Photo
                 isLoading={isLoading}
                 src={userData.userPhoto}
@@ -44,7 +47,7 @@ export default function Profile({
                 type="profile"
               />
             </div>
-            <div className="flex flex-col w-1/2">
+            <div className="flex flex-col w-1/2 ml-4 md:ml-0">
               <span className="py-3">
                 Username: {userData.username ? userData.username : "--"}
               </span>
@@ -62,13 +65,15 @@ export default function Profile({
               </span>
             </div>
           </div>
-          {wallet && <p className="py-3 font-bold"> Wallet: {wallet}</p>}
+          <div className="md:ml-14">
+            {wallet && <p className="py-3 font-bold"> Wallet: {wallet}</p>}
+          </div>
         </div>
-        <div className="w-full">
+        <div className="flex">
           {wallet ? (
             <button
               onClick={() => toggleEditProfileModal(true)}
-              className="px-4 py-3 my-4 w-full rounded-full bg-green-400 hover:bg-green-700"
+              className="px-4 py-3 my-4 md:w-full rounded-full bg-green-400 hover:bg-green-700 w-72 justify-self-center ml-24 md:ml-0"
             >
               {userData.newUser ? "Complete Profile" : "Edit Profile"}
             </button>
@@ -77,7 +82,7 @@ export default function Profile({
               {isAuthenticated && (
                 <button
                   onClick={() => alert("Challenge")}
-                  className="px-4 py-3 my-4  w-full rounded-full bg-green-500 hover:bg-green-700 "
+                  className="px-4 py-3 my-4  w-full rounded-full bg-green-500 hover:bg-green-700 justify-self-center ml-24 md:ml-0"
                 >
                   Challenge Player
                 </button>
@@ -85,7 +90,7 @@ export default function Profile({
               {!isAuthenticated && (
                 <button
                   disabled={isAuthenticating}
-                  className="rounded-full  px-4 py-3 my-4  w-full disabled:bg-gray-400 bg-green-500 hover:bg-green-700 "
+                  className="rounded-full  px-4 py-3 my-4  w-full disabled:bg-gray-400 bg-green-500 hover:bg-green-700 justify-self-center ml-24 md:ml-0"
                   onClick={() => connectWallet(false)}
                 >
                   Connect Wallet to Challenge
