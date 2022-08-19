@@ -3,7 +3,8 @@
     "sportsvybeFunctions": {
       "build": true,
       "providerPlugin": "awscloudformation",
-      "service": "Lambda"
+      "service": "Lambda",
+      "dependsOn": []
     }
   },
   "api": {
@@ -20,6 +21,12 @@
           ]
         }
       ]
+    }
+  },
+  "storage": {
+    "sportsvybeDB": {
+      "service": "DynamoDB",
+      "providerPlugin": "awscloudformation"
     }
   }
 }

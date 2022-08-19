@@ -15,7 +15,7 @@
       "function": {
         "sportsvybeFunctions": {
           "deploymentBucketName": "amplify-awsfunctions-dev-212625-deployment",
-          "s3Key": "amplify-builds/sportsvybeFunctions-462b7a6539573867614a-build.zip"
+          "s3Key": "amplify-builds/sportsvybeFunctions-4342735678336e437374-build.zip"
         }
       }
     }
