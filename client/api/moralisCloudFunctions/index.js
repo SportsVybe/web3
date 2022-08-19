@@ -415,7 +415,7 @@ Moralis.Cloud.afterSave("contractChallengeClosed", async (request) => {
         challengeId
       );
       const isAccepted = await challengeUpdate.get("isAcceptedOnChain");
-      if (!isAccepted) {
+      if (isAccepted) {
         await challengeUpdate.save("isClosed", true);
       }
     }
@@ -447,10 +447,11 @@ Moralis.Cloud.afterSave("contractVoteSubmit", async (request) => {
           challengeId
         );
         const voter = await voteUpdate[0].get("voter");
+        const voterUsername = await voter.get("username");
         const confirmedVotes =
           (await challengeUpdate[0].get("confirmedVotes")) || [];
         await challengeUpdate[0].save("confirmedVotes", [
-          await voter.get("username"),
+          voterUsername,
           ...confirmedVotes,
         ]);
         logger.info(
