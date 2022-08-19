@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useMoralis } from "react-moralis";
 import { contractActions } from "../../configs/constants";
-import { Team } from "../../configs/types";
+import { Event, Team } from "../../configs/types";
 import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
 import { Photo } from "../Layout/Photo";
@@ -34,10 +34,14 @@ export const ChallengeCard = ({
 
   const [status, setStatus] = useState<string>("...");
 
+  const [event, setEvent] = useState<Event>(
+    challenge.get("challengeEvent") || undefined
+  );
+
   let isChallengeTeam1Admin = false;
   let isChallengeTeam2Admin = false;
   let isChallengeTeamMember = false;
-
+  let hasUserVote = false;
   const challengeFormData = {
     challengerActionId: challenge.get("challengerActionId") || "",
     challengeTeam2count:
@@ -56,7 +60,12 @@ export const ChallengeCard = ({
         .get("challengeTeam1TeamMembers")
         .includes(user.get("username")) ||
       challenge.get("challengeTeam2TeamMembers").includes(user.get("username"));
+    hasUserVote =
+      (challenge.get("submittedVotes") &&
+        challenge.get("submittedVotes").includes(user.get("username"))) ||
+      false;
   }
+
   const handleAccept = async () => {
     try {
       const action = await createUserAction(contractActions.acceptChallenge);
@@ -75,13 +84,10 @@ export const ChallengeCard = ({
       // update challenge in database
       if (!isContractLoading && challenge && acceptChallengeOnChain) {
         await challenge.save(challengeFormData);
+        router.push("/challenges");
         if (challenge.error) console.log(challenge.error.message);
       } else if (!isContractLoading && !acceptChallengeOnChain) {
         await action.save({ actionStatus: false });
-      }
-      // reload page after saving
-      if (!challenge.isSaving && !isContractLoading && !contractMessage) {
-        router.push("/challenges");
       }
     } catch (error) {
       console.error(error);
@@ -204,6 +210,9 @@ export const ChallengeCard = ({
       </div>
       <div className="m-auto">
         <div className="flex flex-col w-full p-2">
+          <span>
+            Challenge ID: {challenge.get("challengeChainId") || "Pending"}
+          </span>
           <span> Status: {status}</span>
           <span>
             Prize Pool: {challenge.get("challengeAmount")} SVT
@@ -228,11 +237,13 @@ export const ChallengeCard = ({
             isChallengeTeam1Admin={isChallengeTeam1Admin}
             isChallengeTeam2Admin={isChallengeTeam2Admin}
             isChallengeTeamMember={isChallengeTeamMember}
+            hasUserVote={hasUserVote}
             toggleManageEventModal={toggleManageEventModal}
             toggleManageVoteModal={toggleManageVoteModal}
             manageEventModal={manageEventModal}
             manageVoteModal={manageVoteModal}
             handleAccept={handleAccept}
+            event={event}
           />
         )}
       </div>
@@ -268,11 +279,13 @@ type ChallengeButtonsProps = {
   isChallengeTeam1Admin: boolean;
   isChallengeTeam2Admin: boolean;
   isChallengeTeamMember: boolean;
+  hasUserVote: boolean;
   toggleManageEventModal: any;
   manageEventModal: boolean;
   toggleManageVoteModal: any;
   manageVoteModal: boolean;
   handleAccept: any;
+  event: Event | any;
 };
 const ChallengeButtons = ({
   type,
@@ -280,18 +293,21 @@ const ChallengeButtons = ({
   isChallengeTeam1Admin,
   isChallengeTeam2Admin,
   isChallengeTeamMember,
+  hasUserVote,
   toggleManageEventModal,
   manageEventModal,
   toggleManageVoteModal,
   manageVoteModal,
   handleAccept,
+  event,
 }: ChallengeButtonsProps) => {
   return (
     <>
       {/* Create event if admin and challenge accepted */}
       {type === "active" &&
         status === "Accepted" &&
-        (isChallengeTeam1Admin || isChallengeTeam2Admin) && (
+        (isChallengeTeam1Admin || isChallengeTeam2Admin) &&
+        !event && (
           <button
             className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
             onClick={() => toggleManageEventModal(!manageEventModal)}
@@ -299,15 +315,26 @@ const ChallengeButtons = ({
             Create Event
           </button>
         )}
+      {type === "active" &&
+        status === "Accepted" &&
+        (isChallengeTeam1Admin || isChallengeTeam2Admin) &&
+        event && (
+          <a href={`/events/${event.id}`} className="px-2 py-1">
+            View Event
+          </a>
+        )}
       {/* Allow vote if a challenge team member and challenge accepted */}
-      {type === "active" && status === "Accepted" && isChallengeTeamMember && (
-        <button
-          className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
-          onClick={() => toggleManageVoteModal(!manageVoteModal)}
-        >
-          Vote
-        </button>
-      )}
+      {type === "active" &&
+        status === "Accepted" &&
+        isChallengeTeamMember &&
+        !hasUserVote && (
+          <button
+            className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
+            onClick={() => toggleManageVoteModal(!manageVoteModal)}
+          >
+            Vote
+          </button>
+        )}
       {/* allow challenge team 2 admin to accept or deny if the challenge is on chain */}
       {type === "active" &&
         status === "Pending Challenger" &&

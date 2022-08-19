@@ -68,6 +68,24 @@ export type Challenge = {
   isSaving?: boolean;
 };
 
+export type Event = {
+  id: string;
+  eventName: string;
+  eventDate: Date;
+  eventPrizePool: string;
+  eventSport: string;
+  eventLocation: string;
+  eventTeam1: Team;
+  eventTeam2: Team;
+  challenge: Challenge;
+  status: 0 | 1 | 2 | 3; // 0 - pending, 1 - confirmed, 2 - canceled, 3 - ended
+  createdAt?: string;
+  updatedAt?: string;
+  get?: (key: string) => any;
+  save?: (key: {}) => any;
+  isSaving?: boolean;
+};
+
 export type Invite = {
   id: string;
   acceptOnChain: boolean;
