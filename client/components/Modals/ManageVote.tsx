@@ -43,6 +43,10 @@ export const ManageVote = ({
     actionId: {},
   };
 
+  const [submittedVotes, setSubmittedVotes] = useState<any>(
+    challenge.get("submittedVotes") || []
+  );
+
   const handleSubmit = async () => {
     if (isFormValid()) {
       try {
@@ -54,11 +58,11 @@ export const ManageVote = ({
         const selectedTeamChainId = selectedTeam?.get("teamChainId");
 
         // create challenge on chain
-        const submitVoteOnChain = true; //await submitVote(
-        //   actionId,
-        //   challengeId,
-        //   selectedTeamChainId
-        // );
+        const submitVoteOnChain = await submitVote(
+          actionId,
+          challengeId,
+          selectedTeamChainId
+        );
 
         console.log("submitVoteOnChain", submitVoteOnChain);
 
@@ -66,25 +70,14 @@ export const ManageVote = ({
         if (!isContractLoading && submitVoteOnChain) {
           await getVotesDB.save(voteFormData);
           await challenge.save({
-            submittedVotes: [
-              ...challenge.get("submittedVotes"),
-              user?.get("username"),
-            ],
+            submittedVotes: [user?.get("username"), ...submittedVotes],
           });
+          // reload page after saving
+          router.reload();
         } else if (!isContractLoading && !submitVoteOnChain) {
           await action.save({ actionStatus: false });
         }
         if (getVotesDB.error) console.log(getVotesDB.error.message);
-
-        // reload page after saving
-        if (
-          !getVotesDB.isSaving &&
-          !challenge.isSaving &&
-          !isContractLoading &&
-          !contractMessage
-        ) {
-          router.reload();
-        }
       } catch (error) {
         console.error(error);
       }
@@ -97,7 +90,7 @@ export const ManageVote = ({
       !voteFormData.challengeId ||
       !selectedTeam
     ) {
-      alert("Please fill out required fields.");
+      alert("Please select a team to vote!");
       return false;
     }
     return true;
