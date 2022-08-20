@@ -1,5 +1,9 @@
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
+const { constants } = require("ethers");
+
+const MOCK_SUBSCRIPTION_ID = 0;
+//const MOCK_LINK = constants.AddressZero;
 
 function generateActionId() {
   return Math.random().toString(36).substring(2, 15);
@@ -7,15 +11,21 @@ function generateActionId() {
 
 describe("SportsVybe Contract - Test Cases", function () {
   async function deployFixture() {
-    const [owner, addr1, addr2, addr3, addr4, addr5, addr6] =
-      await ethers.getSigners();
+    const [owner, addr1, addr2, addr3, addr4, addr5, addr6] = await ethers.getSigners();
+
+
     const SportsVybeToken = await ethers.getContractFactory("SportsVybeToken");
     const Token = await SportsVybeToken.deploy();
     await Token.deployed();
 
+    const vrfCoordFactory = await ethers.getContractFactory( "MockVRFCoordinator" );
+    const mockVrfCoordinator = await vrfCoordFactory.deploy();
+
     const SportsVybeContract = await ethers.getContractFactory("SportsVybe");
-    const Contract = await SportsVybeContract.deploy(Token.address);
+    const Contract = await SportsVybeContract.deploy(Token.address, mockVrfCoordinator.address, MOCK_SUBSCRIPTION_ID);
     await Contract.deployed();
+
+    //await Contract.connect(owner).initVRF();
 
     // Fixtures can return anything you consider useful for your tests
     return {
@@ -249,6 +259,16 @@ describe("SportsVybe Contract - Test Cases", function () {
       const { Contract } = await loadFixture(deployFixture);
       expect(Contract).to.include(Contract);
     });
+
+    // it("Should generate unquie IDs", async function () {
+    //     const { Contract, owner } = await loadFixture(deployFixture);
+
+    //     const initVRF = await Contract.connect(owner).requestRandomWords();
+
+    //     const numWords = 50; //Contract.numWords;
+    //     expect(await Contract.getVrfLength()).to.equal(numWords);
+    // });
+
 
     it("Should match signers to team.from addresses", async function () {
       const { owner, addr1, addr2, addr3, addr4, addr5 } = await loadFixture(

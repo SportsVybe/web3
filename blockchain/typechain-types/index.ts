@@ -28,6 +28,8 @@ export type { IERC20Metadata } from "./@openzeppelin/contracts/token/ERC20/exten
 export { IERC20Metadata__factory } from "./factories/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata__factory";
 export type { IERC20 } from "./@openzeppelin/contracts/token/ERC20/IERC20";
 export { IERC20__factory } from "./factories/@openzeppelin/contracts/token/ERC20/IERC20__factory";
+export type { MockVRFCoordinator } from "./contracts/MockVRFCoordinator";
+export { MockVRFCoordinator__factory } from "./factories/contracts/MockVRFCoordinator__factory";
 export type { SportsVybe } from "./contracts/SportsVybe";
 export { SportsVybe__factory } from "./factories/contracts/SportsVybe__factory";
 export type { SportsVybeToken } from "./contracts/SportsVybeToken";

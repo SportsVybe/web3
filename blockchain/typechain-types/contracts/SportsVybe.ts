@@ -76,7 +76,9 @@ export interface SportsVybeInterface extends utils.Interface {
     "getTeamCount(uint256)": FunctionFragment;
     "getTeamMates(uint256)": FunctionFragment;
     "getTeamSportsmanship(uint256)": FunctionFragment;
-    "getUnquiueID(string)": FunctionFragment;
+    "getUnquiueID()": FunctionFragment;
+    "getVrfLength()": FunctionFragment;
+    "initVRF()": FunctionFragment;
     "owner()": FunctionFragment;
     "pending_challenge_pool_ids(uint256)": FunctionFragment;
     "rawFulfillRandomWords(uint256,uint256[])": FunctionFragment;
@@ -117,6 +119,8 @@ export interface SportsVybeInterface extends utils.Interface {
       | "getTeamMates"
       | "getTeamSportsmanship"
       | "getUnquiueID"
+      | "getVrfLength"
+      | "initVRF"
       | "owner"
       | "pending_challenge_pool_ids"
       | "rawFulfillRandomWords"
@@ -228,8 +232,13 @@ export interface SportsVybeInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getUnquiueID",
-    values: [PromiseOrValue<string>]
+    values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "getVrfLength",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "initVRF", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "pending_challenge_pool_ids",
@@ -377,6 +386,11 @@ export interface SportsVybeInterface extends utils.Interface {
     functionFragment: "getUnquiueID",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getVrfLength",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "initVRF", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "pending_challenge_pool_ids",
@@ -789,10 +803,15 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    getUnquiueID(
-      _for: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    getUnquiueID(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getVrfLength(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    initVRF(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -1007,10 +1026,15 @@ export interface SportsVybe extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  getUnquiueID(
-    _for: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  getUnquiueID(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getVrfLength(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  initVRF(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1225,10 +1249,11 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getUnquiueID(
-      _for: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    getUnquiueID(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getVrfLength(overrides?: CallOverrides): Promise<BigNumber>;
+
+    initVRF(overrides?: CallOverrides): Promise<void>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -1550,9 +1575,14 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getUnquiueID(
-      _for: PromiseOrValue<string>,
-      overrides?: CallOverrides
+    getUnquiueID(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getVrfLength(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    initVRF(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1736,9 +1766,14 @@ export interface SportsVybe extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getUnquiueID(
-      _for: PromiseOrValue<string>,
-      overrides?: CallOverrides
+    getUnquiueID(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getVrfLength(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    initVRF(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;

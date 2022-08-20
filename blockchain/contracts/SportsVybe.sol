@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+//import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 
 /*============================================================
@@ -56,11 +57,14 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
   VRFCoordinatorV2Interface COORDINATOR;
 
     // Your subscription ID.
-  uint64 s_subscriptionId = 1399;
+  uint64 s_subscriptionId;
 
     // Goerli coordinator. For other networks,
   // see https://docs.chain.link/docs/vrf-contracts/#configurations
-  address vrfCoordinator = 0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed;
+  address vrfCoordinator; 
+
+  //link 
+  //LinkTokenInterface internal LINKTOKEN;
 
   // The gas lane to use, which specifies the maximum gas price to bump to.
   // For a list of available gas lanes on each network,
@@ -73,14 +77,14 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
   // this limit based on the network that you select, the size of the request,
   // and the processing of the callback request in the fulfillRandomWords()
   // function.
-  uint32 callbackGasLimit = 200000;
+  uint32 callbackGasLimit = 2500000;
 
   // The default is 3, but you can set this higher.
   uint16 requestConfirmations = 3;
 
   // For this example, retrieve 2 random values in one request.
   // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
-  uint32 numWords =  2; //coordinator MAX_NUM_WORDS = 500;
+  uint32 numWords =  500; //coordinator MAX_NUM_WORDS = 500;
   uint256 public s_requestId;
 
 
@@ -201,11 +205,10 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
 
   // new counter openzepplin
   using Counters for Counters.Counter;
-  Counters.Counter private id_counter;
-  // TODO: use chainlink VRF for unique Identifier -> team_id
 
-  Counters.Counter private challenge_id_counter;
-  // TODO: use chainlink VRF for unique Identifier -> challenge_id
+  //use chainlink VRF for unique Identifier -> team_id, challenge_id
+  Counters.Counter private id_counter;
+
 
   Counters.Counter private reward_id_counter;
   // TODO: use chainlink VRF for unique Identifier -> reward_id
@@ -226,13 +229,20 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
   mapping(uint256 => bool) public all_vrf_generated_ids;
   
 
-  constructor(address payable _sportsVybeToken) VRFConsumerBaseV2(vrfCoordinator)  {
+  constructor(
+    address payable _sportsVybeToken,
+    address _vrfCoordinator,
+    uint64 _chainlinkSubscriptionId 
+  ) VRFConsumerBaseV2(_vrfCoordinator)  {
     sportsVybeToken = IERC20(_sportsVybeToken);
 
-    COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
+    s_subscriptionId = _chainlinkSubscriptionId;
+
+    COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
+    //LINKTOKEN = LinkTokenInterface(link);
 
     //TODO: programatically add consumer and call function here
-    //requestRandomWords();
+   // requestRandomWords();
     
   }
 
@@ -244,8 +254,18 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
   //     }
       
   // }
+  
+  //
+  function initVRF() public onlyOwner{
+   requestRandomWords(); 
+  }
 
-   //Call Function to USE UNQUIUE ID WHERE NEEDED for only team, challenge, reward
+  function getVrfLength () public returns(uint256) {
+     uint256 pp = vrf_generated_ids.length;
+     return pp;
+  }
+
+  //Call Function to USE UNQUIUE ID WHERE NEEDED for only team, challenge, reward
   function getUnquiueID () public view returns (uint256){
     uint256 new_id = id_counter.current();
     
@@ -290,7 +310,7 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
   }
 
     // Assumes the subscription is funded sufficiently.
-  function requestRandomWords() public onlyOwner {
+  function requestRandomWords() public {
     // Will revert if subscription is not set and funded.
     s_requestId = COORDINATOR.requestRandomWords(
       keyHash,
@@ -323,6 +343,7 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
 
     //increment the team id
     id_counter.increment();
+    requestRandomWords();
     return new_team_id;
   }
 
@@ -463,6 +484,7 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
 
     // increment challenge_id_counter
     id_counter.increment();
+    requestRandomWords();
 
     emit ChallengePoolCreated(
       action_id,
@@ -471,6 +493,7 @@ contract SportsVybe is Ownable, VRFConsumerBaseV2 {
       team_id,
       challenged_team_id
     );
+
     return new_challenge_id;
   }
 
