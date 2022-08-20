@@ -23,7 +23,6 @@ export const VenuesController = () => {
       console.log(error);
     }
   };
-  console.log(error);
 
   const fetchSearchVenues = async (
     attribute: string,
@@ -43,7 +42,7 @@ export const VenuesController = () => {
       .then(() => setIsLoading(false))
       .catch((error) => {
         setIsLoading(false);
-        setError(error);
+        setError(true);
       });
   }, []);
 
@@ -58,9 +57,9 @@ export const VenuesController = () => {
     </>
   ) : (
     <div>
-      {error
+      {!error
         ? "Loading...."
-        : "Error! Please try another search or refresh the page"}
+        : "Error! Please try another search or      refresh the page"}
     </div>
   );
 };
