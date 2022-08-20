@@ -1,0 +1,87 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-awsfunctions-dev-212625-authRole",
+      "UnauthRoleArn": "arn:aws:iam::992292230584:role/amplify-awsfunctions-dev-212625-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::992292230584:role/amplify-awsfunctions-dev-212625-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-awsfunctions-dev-212625-deployment",
+      "UnauthRoleName": "amplify-awsfunctions-dev-212625-unauthRole",
+      "StackName": "amplify-awsfunctions-dev-212625",
+      "StackId": "arn:aws:cloudformation:us-east-1:992292230584:stack/amplify-awsfunctions-dev-212625/f40d10f0-1f5d-11ed-8c32-0ec0912b7293",
+      "AmplifyAppId": "d3qm0hduasbu8n"
+    }
+  },
+  "function": {
+    "sportsvybeFunctions": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "lastBuildTimeStamp": "2022-08-20T15:43:37.519Z",
+      "lastBuildType": "PROD",
+      "lastPackageTimeStamp": "2022-08-20T15:43:39.230Z",
+      "distZipFilename": "sportsvybeFunctions-41673277384c714f3964-build.zip",
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-awsfunctions-dev-212625-deployment",
+        "s3Key": "amplify-builds/sportsvybeFunctions-41673277384c714f3964-build.zip"
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-awsfunctions-dev-212625-deployment/amplify-cfn-templates/function/sportsvybeFunctions-cloudformation-template.json",
+        "logicalId": "functionsportsvybeFunctions"
+      },
+      "lastPushTimeStamp": "2022-08-20T18:13:17.355Z",
+      "output": {
+        "Region": "us-east-1",
+        "Arn": "arn:aws:lambda:us-east-1:992292230584:function:sportsvybeFunctions-dev",
+        "Name": "sportsvybeFunctions-dev",
+        "LambdaExecutionRole": "awsfunctionsLambdaRole10e0289c-dev"
+      },
+      "lastPushDirHash": "puVQpJDJ/aUFxCqAXuMEpln9H4A=",
+      "dependsOn": []
+    }
+  },
+  "api": {
+    "api": {
+      "service": "API Gateway",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "sportsvybeFunctions",
+          "attributes": ["Name", "Arn"]
+        }
+      ],
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-awsfunctions-dev-212625-deployment/amplify-cfn-templates/api/api-cloudformation-template.json",
+        "logicalId": "apiapi"
+      },
+      "lastPushTimeStamp": "2022-08-20T18:13:17.362Z",
+      "output": {
+        "ApiName": "api",
+        "RootUrl": "https://onnvsigt47.execute-api.us-east-1.amazonaws.com/dev",
+        "ApiId": "onnvsigt47"
+      },
+      "lastPushDirHash": "RG5wDd6GztbmvYJRgpq5x39JBaM="
+    }
+  },
+  "storage": {
+    "sportsvybeDB": {
+      "service": "DynamoDB",
+      "providerPlugin": "awscloudformation",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-awsfunctions-dev-212625-deployment/amplify-cfn-templates/storage/sportsvybeDB-cloudformation-template.json",
+        "logicalId": "storagesportsvybeDB"
+      },
+      "lastPushTimeStamp": "2022-08-20T18:13:17.367Z",
+      "output": {
+        "PartitionKeyName": "id",
+        "Region": "us-east-1",
+        "Arn": "arn:aws:dynamodb:us-east-1:992292230584:table/venues-dev",
+        "StreamArn": "arn:aws:dynamodb:us-east-1:992292230584:table/venues-dev/stream/2022-08-19T02:41:13.416",
+        "PartitionKeyType": "S",
+        "Name": "venues-dev"
+      },
+      "lastPushDirHash": "NGELTMt7X1N8Mg5a6gqkoCieRUc="
+    }
+  }
+}
