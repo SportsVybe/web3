@@ -69,7 +69,7 @@ export type Challenge = {
 };
 
 export type Event = {
-  id: string;
+  eventId: string;
   eventName: string;
   eventDate: Date;
   eventPrizePool: string;
@@ -78,6 +78,12 @@ export type Event = {
   eventTeam1: Team;
   eventTeam2: Team;
   challenge: Challenge;
+  venueId: string;
+  venue: Venue;
+  activity: string;
+  eventInfo: { name: string; description: string };
+  host: { id: string; name: string };
+  start: { date: Date; time: string };
   status: 0 | 1 | 2 | 3; // 0 - pending, 1 - confirmed, 2 - canceled, 3 - ended
   createdAt?: string;
   updatedAt?: string;
@@ -148,3 +154,53 @@ export type GetUserChallenges = {
   success: boolean;
   error: string | null;
 };
+
+export type GetAllVenuesResponse = {
+  data: Venue[] | [];
+  statusCode: number;
+  url: string | null;
+  error?: string | null;
+};
+
+export interface Venue {
+  id: string;
+  name: string;
+  coordinates: {
+    longitude: number;
+    latitude: number;
+  };
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zip?: string;
+  };
+  phone?: string;
+  website?: string;
+  availableActivities: string[];
+  claimed: boolean;
+  photo: string;
+  claimedBy?: string;
+  dadeParkObjectId?: string | number;
+  status: number; // status: 0 - inactive, 1 - active, 2 - pending, 3 - deleted, 4 - featured, 5 - claimed
+}
+
+export interface MapData {
+  type: string;
+  geometry: {
+    type: string;
+    coordinates: [number, number];
+  };
+  properties: {
+    name: string;
+    availableActivities?: string[];
+    sport?: string;
+    eventTitle?: string;
+  };
+}
+
+export interface VenueSearchParams {
+  attribute: string;
+  value: string | number;
+}

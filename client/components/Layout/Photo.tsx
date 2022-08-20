@@ -5,7 +5,7 @@ type Props = {
   src: string;
   alt: string;
   size: "sm" | "md" | "lg";
-  type: "profile" | "event" | "team";
+  type: "profile" | "event" | "team" | "venue" | "park";
   isLoading: boolean;
   h?: number;
   w?: number;
@@ -23,10 +23,11 @@ export const Photo = ({
   const styleSize =
     size == "sm" ? styles.imageContainerSmall : styles.imageContainerLarge;
 
-  const placeholderImg =
-    type == "profile"
-      ? "/images/profile_placeholder.png"
-      : "/images/team_placeholder.png";
+  const setPlaceholder = (type: string) => {
+    return `/images/${type}_placeholder.png`;
+  };
+
+  const placeholderImg = setPlaceholder(type);
 
   return (
     <div className={styleSize}>
@@ -46,7 +47,7 @@ export const Photo = ({
           layout="fill"
           objectFit="cover"
           priority
-          className="rounded-full"
+          className={`rounded-full ${type == "venue" && "bg-slate-50"}`}
         />
       )}
     </div>

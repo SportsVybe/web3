@@ -23,10 +23,13 @@ app.use(function (req, res, next) {
   next();
 });
 
-// Read all venues
+// Read all active venues
 app.get("/venues", function (req, res) {
   const params = {
     TableName: tableName,
+    FilterExpression: "#active_status = :status",
+    ExpressionAttributeValues: { ":status": 1 },
+    ExpressionAttributeNames: { "#active_status": "status" },
   };
   db.scan(params, (error, result) => {
     if (error) {
@@ -41,6 +44,58 @@ app.get("/venues", function (req, res) {
   });
 });
 
+// Read all featured venues
+app.get("/venues/featured", function (req, res) {
+  const params = {
+    TableName: tableName,
+    FilterExpression: "#active_status = :status",
+    ExpressionAttributeValues: { ":status": 4 },
+    ExpressionAttributeNames: { "#active_status": "status" },
+  };
+
+  db.scan(params, (error, result) => {
+    if (error) {
+      res.json({ statusCode: 500, error: error.message, url: req.url });
+    } else {
+      res.json({
+        statusCode: 200,
+        url: req.url,
+        data: result.Items,
+      });
+    }
+  });
+});
+
+// get all venues from search query
+app.post("/venues/search", function (req, res) {
+  const params = {
+    TableName: tableName,
+    FilterExpression:
+      "(contains(#attribute, :value) AND (#active_status = :active) ) OR ( #attribute = :value)",
+    ExpressionAttributeValues: {
+      ":value": req.body.value,
+      ":active": 1,
+    },
+    ExpressionAttributeNames: {
+      "#attribute": req.body.attribute,
+      "#active_status": "status",
+    },
+  };
+
+  db.scan(params, (error, result) => {
+    if (error) {
+      res.json({ statusCode: 500, error: error.message, url: req.url });
+    } else {
+      res.json({
+        statusCode: 200,
+        url: req.url,
+        data: result.Items,
+      });
+    }
+  });
+});
+
+// create a venue
 app.post("/venues", function (req, res) {
   const params = {
     TableName: tableName,
@@ -60,6 +115,7 @@ app.post("/venues", function (req, res) {
   });
 });
 
+// get a venue by id
 app.get("/venues/:id", function (req, res) {
   let params = {
     TableName: tableName,
@@ -68,6 +124,27 @@ app.get("/venues/:id", function (req, res) {
     },
   };
   db.get(params, (error, result) => {
+    if (error) {
+      res.json({ statusCode: 500, error: error.message, url: req.url });
+    } else {
+      res.json({
+        statusCode: 200,
+        url: req.url,
+        data: result.Item,
+      });
+    }
+  });
+});
+
+// update a venue by id
+app.put("/venues/:id", function (req, res) {
+  let params = {
+    TableName: tableName,
+    Key: {
+      id: req.params.id,
+    },
+  };
+  db.update(params, (error, result) => {
     if (error) {
       res.json({ statusCode: 500, error: error.message, url: req.url });
     } else {

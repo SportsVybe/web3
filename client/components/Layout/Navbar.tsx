@@ -70,6 +70,11 @@ export default function Navbar() {
             </Link>
           </div>
           <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
+            <Link href="/venues" className="px-2">
+              Venues
+            </Link>
+          </div>
+          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
             <Link href="/teams" className="px-2">
               Teams
             </Link>
@@ -81,19 +86,20 @@ export default function Navbar() {
           </div>
           {isAuthenticated && (
             <>
+              <hr className="md:w-[20px] w-full" />
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
+                <Link href="/profile" className="px-2">
+                  My Profile
+                </Link>
+              </div>
               <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
                 <Link href="/invites" className="px-2">
-                  Invites
+                  My Invites
                 </Link>
               </div>
               <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
                 <Link href="/rewards" className="px-2">
-                  Rewards
-                </Link>
-              </div>
-              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
-                <Link href="/profile" className="px-2">
-                  My Profile
+                  My Rewards
                 </Link>
               </div>
               <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">

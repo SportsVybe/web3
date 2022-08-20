@@ -29,7 +29,7 @@ export const sports = [
   "Basketball",
   "Baseball",
   "Football",
-  "Hockey",
+  "Volleyball",
   "Soccer",
   "Tennis",
 ];
