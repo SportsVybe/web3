@@ -135,6 +135,7 @@ const getRewardObjects = async (schema, field, searchString) => {
     "isClaimed",
     "reward_id",
     "transaction_hash",
+    "claimConfirmed",
     "updatedAt",
     "user",
     "team_id"
@@ -150,12 +151,12 @@ const getUserAction = async (actionId) => {
   return result[0];
 };
 
-const getChallengeByActionId = async (challengeId) => {
-  if (!challengeId) return null;
+const getChallengeByActionId = async (challengerActionId) => {
+  if (!challengerActionId) return null;
   const result = await getAllObjects(
     "challenges",
     "challengerActionId",
-    challengeId
+    challengerActionId
   );
   if (result.length === 0) return null;
   return result[0];
@@ -191,6 +192,8 @@ const getChallengeObjects = async (
     "challengeSport",
     "challengeAmount",
     "actionId",
+    "submittedVotes",
+    "confirmedVotes",
     "challengerActionId",
     "challengeTeam1_chainId",
     "challengeTeam2_chainId",
@@ -198,6 +201,10 @@ const getChallengeObjects = async (
     "challengeTeam2Admin",
     "challengeTeam1Count",
     "challengeTeam2Count",
+    "challengeEvent.id",
+    "challengeEvent.status",
+    "challengeEvent.eventName",
+    "challengeEvent.eventDate",
     "challengeTeam1TeamMembers",
     "challengeTeam2TeamMembers",
     "challengeTeam1.teamChainId",
@@ -276,12 +283,12 @@ Moralis.Cloud.afterSave("tokenApprovals", async (request) => {
   try {
     if (confirmed) {
       const user = await getAllObjects("_User", "ethAddress", owner);
-      const currentAmount = user[0].attributes.approvedSTVAmount;
+      const currentAmount = user[0].get("approvedSTVAmount");
       const newAmount = Number(currentAmount) + Number(amount);
       logger.info(
         `tokenApprovals: ${owner}: ${currentAmount} + ${amount} = ${newAmount}`
       );
-      if (!user[0].attributes.hasApprovedSVT) {
+      if (!user[0].get("hasApprovedSVT")) {
         await user[0].save("hasApprovedSVT", true, { useMasterKey: true });
       }
       await user[0].save("approvedSTVAmount", String(newAmount), {
@@ -384,6 +391,11 @@ Moralis.Cloud.afterSave("contractChallengeAccepted", async (request) => {
           userAction
         );
         await challengeUpdate[0].save("isAcceptedOnChain", true);
+        const challengeAmount = await challengeUpdate[0].get("challengeAmount");
+        await challengeUpdate[0].save(
+          "challengeAmount",
+          String(Number(challengeAmount) * 2)
+        );
       }
     }
   } catch (error) {
@@ -397,9 +409,13 @@ Moralis.Cloud.afterSave("contractChallengeClosed", async (request) => {
   logger.info(`contractChallengeClosed: ${confirmed} ${challengeId}`);
   try {
     if (confirmed) {
-      const challengeUpdate = await getChallengeByActionId(challengeId);
-      const isAccepted = await challengeUpdate.isAcceptedOnChain;
-      if (!isAccepted) {
+      const challengeUpdate = await getAllObjectsData(
+        "challenges",
+        "challengeChainId",
+        challengeId
+      );
+      const isAccepted = await challengeUpdate.get("isAcceptedOnChain");
+      if (isAccepted) {
         await challengeUpdate.save("isClosed", true);
       }
     }
@@ -431,10 +447,12 @@ Moralis.Cloud.afterSave("contractVoteSubmit", async (request) => {
           challengeId
         );
         const voter = await voteUpdate[0].get("voter");
-        const confirmedVotes = await challengeUpdate[0].get("confirmedVotes");
+        const voterUsername = await voter.get("username");
+        const confirmedVotes =
+          (await challengeUpdate[0].get("confirmedVotes")) || [];
         await challengeUpdate[0].save("confirmedVotes", [
+          voterUsername,
           ...confirmedVotes,
-          await voter.get("username"),
         ]);
         logger.info(
           `contractVoteSubmit: ${confirmed} ${actionId} ${challengeId} ${voter.get(
@@ -457,9 +475,13 @@ Moralis.Cloud.afterSave("contractChallengeWins", async (request) => {
   );
   try {
     if (confirmed) {
-      const challengeUpdate = await getChallengeByActionId(challengeId);
+      const challengeUpdate = await getAllObjectsData(
+        "challenges",
+        "challengeChainId",
+        challengeId
+      );
       const isAccepted = await challengeUpdate.get("isAcceptedOnChain");
-      if (!isAccepted) {
+      if (isAccepted) {
         await challengeUpdate.save("challengeWinnerTeamId", teamId);
         await challengeUpdate.save("isCompleted", true);
       }
@@ -486,9 +508,13 @@ Moralis.Cloud.afterSave("contractChallengeLosses", async (request) => {
   );
   try {
     if (confirmed) {
-      const challengeUpdate = await getChallengeByActionId(challengeId);
+      const challengeUpdate = await getAllObjectsData(
+        "challenges",
+        "challengeChainId",
+        challengeId
+      );
       const isAccepted = await challengeUpdate.get("isAcceptedOnChain");
-      if (!isAccepted) {
+      if (isAccepted) {
         await challengeUpdate.save("challengeLoserTeamId", teamId);
         await challengeUpdate.save("isCompleted", true);
       }
@@ -560,11 +586,14 @@ Moralis.Cloud.afterSave("contractTeamMembershipAccept", async (request) => {
 Moralis.Cloud.afterSave("contractRewardClaimed", async (request) => {
   const confirmed = request.object.get("confirmed");
   const rewardId = request.object.get("reward_id");
-  logger.info(`contractRewardClaimed: ${confirmed} ${rewardId}`);
+  const claimActionId = request.object.get("claim_action_id");
+  logger.info(
+    `contractRewardClaimed: confirmed: ${confirmed} reward_id: ${rewardId} claim_id: ${claimActionId}`
+  );
 
   try {
     if (confirmed) {
-      const userAction = await getUserAction(actionId);
+      const userAction = await getUserAction(claimActionId);
       const actionStatus = await userAction.get("actionStatus");
       if (!actionStatus) {
         await userAction.save("actionStatus", true);
@@ -573,7 +602,10 @@ Moralis.Cloud.afterSave("contractRewardClaimed", async (request) => {
           "reward_id",
           rewardId
         );
-        await result[0].save("isClaimed", true);
+        await result[0].save("claimConfirmed", true);
+        logger.info(
+          `contractRewardClaimed: Processed reward_id: ${rewardId} claim_id: ${claimActionId}`
+        );
       }
     }
   } catch (error) {

@@ -4,7 +4,7 @@ import ProcessSection from "./ProcessSection";
 export const Home = () => {
   return (
     <div className="scroll-smooth">
-      <div className="flex-col md:flex-row flex md:items-center md:justify-around">
+      <div className="flex-col md:flex-row flex md:items-center md:justify-around overflow-x-hidden">
         <div className="animate-fade-in-left">
           <h1 className="text-4xl md:text-9xl mb-2 md:mb-5 ">
             <span className="text-green-500 pt-2 md:pt-10">Sports</span>
@@ -21,46 +21,56 @@ export const Home = () => {
 
         <div className="animate-fade-in-right floater md:">
           <Image
-            src="/hero_section.png"
+            src="/hero-image-2.png"
             alt="SportsVybe header"
             width={500}
             height={500}
+            className="image"
           />
         </div>
       </div>
 
       <div
-        className="md:pt-32 pt-8 md:flex-row justify-evenly flex "
+        className="md:pt-32 pt-8 md:flex-row flex flex-col md:justify-center"
         data-aos="fade-up"
         data-aos-easing="linear"
         data-aos-duration="1600"
       >
-        <img
-          className="md:h-16 md:w-auto h-10 w-24"
-          alt=""
-          src="/polygon_logo.png"
-        />
-        <img
-          className="md:h-20 md:w-auto h-12 w-24"
-          alt=""
-          src="/chainlink_logo.png"
-        />
-        <img
-          className="md:h-20 md:w-auto h-12 w-24"
-          alt=""
-          src="/moralis_logo.png"
-        />
+        <div className="flex md:mr-20 justify-around">
+          <img
+            className="md:h-16 md:w-auto h-auto w-28 md:mr-20"
+            alt=""
+            src="/polygon_logo.png"
+          />
+          <img
+            className="md:h-20 md:w-auto h-12 w-28"
+            alt=""
+            src="/chainlink_logo.png"
+          />
+        </div>
+        <div className="flex justify-around mt-8 md:mt-0">
+          <img
+            className="md:h-20 md:w-auto h-12 w-24 md:mr-20"
+            alt=""
+            src="/aws-logo.png"
+          />
+          <img
+            className="md:h-20 md:w-auto h-12 w-28"
+            alt=""
+            src="/moralis_logo.png"
+          />
+        </div>
       </div>
 
-      <div className="md:mt-36 mt-10" />
+      <div className="md:mt-36 mt-20" />
       <ProcessSection />
-      <div className="md:mx-24 mb-4 md:pt-24 text-white gradient-bg-description">
+      <div className="md:mx-24 mb-4 md:pt-24 pt-10 text-white gradient-bg-description">
         <h1 className="text-left inline pb-1 border-green-700 text-white md:text-4xl text-2xl py-2 my-4">
           What is does:
         </h1>
         <div className="md:text-[18px] text-sm">
           <p
-            className="mt-8"
+            className="mt-4"
             data-aos="fade-up"
             data-aos-easing="linear"
             data-aos-duration="1000"

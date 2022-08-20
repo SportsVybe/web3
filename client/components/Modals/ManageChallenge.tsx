@@ -103,6 +103,7 @@ export const ManageChallenge = ({
           // create new challenge to database...
           if (!isContractLoading && createChallengeOnChain) {
             await getChallengesDB.save(challengeFormData);
+            router.push("/challenges");
           } else if (!isContractLoading && !createChallengeOnChain) {
             await action.save({ actionStatus: false });
           }
@@ -113,15 +114,6 @@ export const ManageChallenge = ({
         if (challenge && !createNewChallenge) {
           challengeFormData.id = challenge.id;
           await challenge.save(challengeFormData);
-        }
-
-        // reload page after saving
-        if (
-          (!getChallengesDB.isSaving &&
-            !isContractLoading &&
-            !contractMessage) ||
-          (challenge && !challenge.isSaving)
-        ) {
           router.push("/challenges");
         }
       } catch (error) {

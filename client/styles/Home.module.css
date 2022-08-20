@@ -3,10 +3,11 @@
 }
 
 .main {
-  padding: 2rem 5rem;
+  padding: 5rem 5rem;
   flex: 1;
-  align-items: center;
+  /* align-items: center; */
   height: 100vh;
+  /* overflow-x: hidden; */
 }
 
 .nav {
@@ -18,7 +19,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 4rem;
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 999;
 }
@@ -41,5 +42,11 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    /* overflow: hidden; */
   }
+
+  .nav {
+  padding: 0.1rem 0rem;
+  top: 0;
+}
 }

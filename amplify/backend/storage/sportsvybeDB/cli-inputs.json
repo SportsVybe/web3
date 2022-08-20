@@ -1,0 +1,10 @@
+{
+  "resourceName": "sportsvybeDB",
+  "tableName": "venues",
+  "partitionKey": {
+    "fieldName": "id",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}

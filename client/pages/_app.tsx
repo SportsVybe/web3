@@ -1,15 +1,18 @@
-import { useEffect } from 'react';
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { API } from "aws-amplify";
 import type { AppProps } from "next/app";
-import "../styles/globals.css";
-
+import { useEffect } from "react";
 import { MoralisProvider } from "react-moralis";
 import Layout from "../components/Layout/Layout";
+import awsConfig from "../configs/aws-exports";
 import { moralis } from "../configs/configs";
 import { ContractProvider } from "../context/ContractProvider";
 import { CustomMoralisProvider } from "../context/CustomMoralisProvider";
 import { WalletProvider } from "../context/WalletProvider";
-import AOS from "aos";
-import "aos/dist/aos.css";
+import "../styles/globals.css";
+
+API.configure(awsConfig);
 
 function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {

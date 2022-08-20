@@ -3,25 +3,25 @@ import { Dispatch, SetStateAction, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNewMoralisObject } from "react-moralis";
-import { Team } from "../../configs/types";
+import { Challenge, Event, Team } from "../../configs/types";
 import Modal from "../Layout/Modal";
 
 type Props = {
   toggleModal: Dispatch<SetStateAction<boolean>>;
   modalView: boolean;
   createNewEvent?: boolean;
-  event?: any;
-  challenge: any;
+  event?: Event;
+  challenge: Challenge | any;
   team1: Team;
   team2: Team;
 };
 
 export const ManageEvent = ({
-  event = false,
+  event,
   toggleModal,
   modalView,
   createNewEvent = false,
-  challenge = null,
+  challenge,
   team1,
   team2,
 }: Props) => {
@@ -31,16 +31,18 @@ export const ManageEvent = ({
   const [team1Name, setTeam1Name] = useState(team1.get("teamName"));
   const [team2Name, setTeam2Name] = useState(team2.get("teamName"));
   const [eventName, setEventName] = useState(
-    event.eventName || `${team1Name} vs ${team2Name}`
+    event?.eventName || `${team1Name} vs ${team2Name}`
   );
   // console.log(team1, team2);
-  const [eventDate, setEventDate] = useState(event.eventDate || new Date());
+  const [eventDate, setEventDate] = useState(event?.eventDate || new Date());
   const [eventSport, setEventSport] = useState(
-    event.eventSport || challenge.get("challengeSport") || ""
+    event?.eventSport || challenge.get("challengeSport") || ""
   );
-  const [eventLocation, setEventLocation] = useState(event.eventLocation || "");
+  const [eventLocation, setEventLocation] = useState(
+    event?.eventLocation || ""
+  );
   const [eventPrizePool, setEventPrizePool] = useState<number>(
-    event.eventPrizePool || challenge.get("challengeAmount") * 2 || 0
+    event?.eventPrizePool || challenge.get("challengeAmount") || 0
   );
 
   const handleSubmit = async (e: any) => {
@@ -50,12 +52,19 @@ export const ManageEvent = ({
       eventPrizePool: eventPrizePool,
       eventSport: eventSport,
       eventLocation: eventLocation,
+      eventTeam1: team1,
+      eventTeam2: team2,
+      challenge: challenge,
+      status: event?.status || 0, // 0 = pending, 1 = confirmed, 2 = cancelled, 3 = complete
     };
 
     try {
       // save event to database... this will create a new event if it doesn't exist
-      if (createNewEvent) await getEventsDB.save(teamFormData);
-      if (!getEventsDB.isSaving || !challenge.isSaving) router.reload();
+      if (createNewEvent) {
+        const event = await getEventsDB.save(teamFormData);
+        await challenge.save({ challengeEvent: event });
+      }
+      // if (!getEventsDB.isSaving || !challenge.isSaving) router.reload();
     } catch (error) {
       console.error(error);
     }
