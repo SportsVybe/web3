@@ -148,59 +148,62 @@ export const ManageTeamMembers = ({
   return (
     <Modal open={modalView} onClose={async () => toggleModal(false)}>
       <div className="flex flex-col border-2 border-green-100 p-4 items-center">
-        <div>Invite Player</div>
+        <div className="py-3">Invite Player</div>
 
         {isContractLoading ? (
           <span className="my-3 px-2 py-1 ">...Minting</span>
         ) : (
-          <>
+          <div className="  ">
             <div className="flex flex-col w-full items-center">
-              <div className="h-[60px] my-1 flex flex-row justify-center items-center">
-                <span className="h-[60px] my-1 flex justify-end items-center">
+              <div className=" md:h-[60px]  md:my-1 flex md:flex-row flex-col justify-center items-center">
+                <span className="md:h-[60px] md:my-1  md:flex  md:justify-end  md:items-center">
                   Username*:
                 </span>
-                <input
-                  disabled={address.length > 0}
-                  value={username}
-                  className="m-2 px-2 py-1 rounded disabled:bg-gray-700 bg-gray-300 outline-green-400"
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-                <button
-                  className="m-1"
-                  disabled={requestUser !== undefined}
-                  onClick={() => getUser()}
-                >
-                  Search
-                </button>
-                <button
-                  className="m-1 my-3 px-2 py-1 bg-gray-300 rounded-full"
-                  onClick={() => resetTeamMember(true)}
-                >
-                  Clear
-                </button>
+                <div className="flex flex-row ">
+                  <input
+                    disabled={address.length > 0}
+                    value={username}
+                    className=" m-2 px-2  py-1 rounded disabled:bg-gray-700 bg-gray-300 outline-green-400"
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+                  <button
+                    className="m-3 px-2 py-1 bg-gray-600  rounded-full"
+                    disabled={requestUser !== undefined}
+                    onClick={() => getUser()}
+                  >
+                    Search
+                  </button>
+                  <button
+                    className="m-3 px-2 py-1 bg-gray-300 rounded-full"
+                    onClick={() => resetTeamMember(true)}
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
-              <span>OR</span>
-              <div className="h-[60px] my-1 flex flex-row justify-center items-center">
-                <span className="h-[60px] my-1 flex justify-end items-center">
+              <span className="p-3">OR</span>
+              <div className=" md:h-[60px]  md:my-1 flex md:flex-row flex-col justify-center items-center">
+                <span className="md:h-[60px] md:my-1  md:flex  md:justify-end  md:items-center">
                   Address*:
                 </span>
-                <input
-                  value={address}
-                  disabled={username.length > 0}
-                  className="m-2 px-2 py-1 rounded disabled:bg-gray-700 bg-gray-300 outline-green-400"
-                  onChange={(e) => setAddress(e.target.value)}
-                />
-                <button onClick={() => alert("Mobile Only")}>Scan</button>
-                <button
-                  className="m-1 my-3 px-2 py-1 bg-gray-300 rounded-full"
-                  onClick={() => resetTeamMember(true)}
-                >
-                  Clear
-                </button>
+                <div className="flex flex-row ">
+                  <input
+                    value={"QR Code coming soon"}
+                    disabled={true}
+                    className=" m-2 px-2  py-1 rounded disabled:bg-gray-700 bg-gray-300 outline-green-400"
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
+                  <button
+                    className="m-3 px-2 py-1 bg-gray-300 rounded-full"
+                    onClick={() => alert("Mobile Only")}
+                  >
+                    Scan
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-row justify-center ">
+            <div className="flex flex-row justify-center p-2">
               <button
                 disabled={
                   isContractLoading || !requestUser || requestUser === undefined
@@ -218,19 +221,17 @@ export const ManageTeamMembers = ({
                 Reset
               </button>
             </div>
-            <div>
+            <div className="flex justify-center">
               {loading
                 ? "Searching....."
                 : requestUser
                 ? requestUser !== undefined && (
-                    <>
-                      <TeamMember
-                        member={requestUser.attributes}
-                        isLoadingMembers={teamIsLoading}
-                        team={team}
-                        targetSelf={false}
-                      />
-                    </>
+                    <TeamMember
+                      member={requestUser.attributes}
+                      isLoadingMembers={teamIsLoading}
+                      team={team}
+                      targetSelf={false}
+                    />
                   )
                 : "No Member Found"}
             </div>
@@ -239,7 +240,7 @@ export const ManageTeamMembers = ({
                 {contractMessage.message}
               </Toast>
             )}
-          </>
+          </div>
         )}
       </div>
     </Modal>

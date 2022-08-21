@@ -4,6 +4,7 @@ import { useMoralis, useMoralisFile } from "react-moralis";
 import { contractActions, sports } from "../../configs/constants";
 import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
+import { capitalizeWord } from "../../helper/formatter";
 import { usernameRules, validateUsername } from "../../helper/validateUsername";
 import Modal from "../Layout/Modal";
 import { Toast } from "../Layout/Toast";
@@ -256,7 +257,7 @@ export const ManageProfile = ({
                             handleSportsPreferences(sport, isChecked)
                           }
                         >
-                          {sport}
+                          {capitalizeWord(sport)}
                         </button>
                       );
                     })}

@@ -75,28 +75,25 @@ export const ManageEvent = ({
       <div className="flex flex-col border-2 border-green-100 p-4 items-center">
         <div> {createNewEvent ? "Create Event" : "Manage Event"}</div>
 
-        {/* {teamError && <span className="py-2">Team Update Error:{teamError}</span>} */}
-        {/* {error && <span className="py-2">Upload Error: {error}</span>} */}
-
-        <div className="p-2">
-          <span className="pr-1 w-[130px] text-right">Event Name:</span>
+        <div className="p-2 flex flex-col md:flex-row items-center">
+          <span className="md:pr-1 w-[130px] md:text-right">Event Name:</span>
           <input
             id="eventName"
             value={eventName}
-            className="mx-3 px-2 py-1 rounded bg-gray-300"
+            className="md:mx-3 px-2 py-1 rounded bg-gray-300"
             onChange={(e) => setEventName(e.target.value)}
           />
         </div>
-        <div className="flex p-2">
-          <span className="pr-1 w-[130px] text-right">Event Date:</span>
+        <div className="p-2 flex flex-col md:flex-row items-center">
+          <span className="pr-1 w-[130px] md:text-right">Event Date:</span>
           <DatePicker
             className="mx-3 px-2 py-1 rounded bg-gray-300"
             selected={eventDate}
             onChange={(date: Date) => setEventDate(date)}
           />
         </div>
-        <div className="p-2">
-          <span className="pr-1 w-[130px] text-right">Event Location:</span>
+        <div className="p-2 flex flex-col md:flex-row items-center">
+          <span className="pr-1 w-[130px] md:text-right">Event Location:</span>
           <input
             id="eventLocation"
             className="mx-3 px-2 py-1 rounded bg-gray-300"

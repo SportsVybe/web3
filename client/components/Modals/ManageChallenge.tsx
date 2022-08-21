@@ -5,6 +5,7 @@ import { contractActions } from "../../configs/constants";
 import { Challenge, GetUserTeamsResponse, Team } from "../../configs/types";
 import { useContract } from "../../context/ContractProvider";
 import { useCustomMoralis } from "../../context/CustomMoralisProvider";
+import { capitalizeWord } from "../../helper/formatter";
 import AuthorizeButton from "../Buttons/AuthorizeButton";
 import Modal from "../Layout/Modal";
 import { Toast } from "../Layout/Toast";
@@ -174,7 +175,7 @@ export const ManageChallenge = ({
   return (
     <Modal open={modalView} onClose={async () => toggleModal(false)}>
       <div className="flex flex-col border-2 border-green-100 p-4 items-center">
-        <div>
+        <div className="p-3">
           {createNewChallenge
             ? `Create Challenge Against ${
                 challengeTeam && challengeTeam.get("teamName")
@@ -185,55 +186,47 @@ export const ManageChallenge = ({
           <span className="my-3 px-2 py-1 ">...Minting</span>
         ) : (
           <>
-            <div className="flex flex-row w-full">
-              <div className="w-1/2 p-2">
-                <span className="h-[60px] my-1 flex justify-end items-center">
+            <div className="flex flex-col w-full justify-center items-center">
+              <div className="p-2 flex flex-col md:flex-row items-center">
+                <span className="md:pr-1 w-[130px] md:text-right">
                   Choose Team*:
                 </span>
-                <span className="h-[60px] my-1 flex justify-end items-center">
-                  Amount*:
-                </span>
-                <span className="h-[120px] my-1 flex justify-end items-center">
-                  Sports*:
-                </span>
-                <span className="h-[60px] my-1 flex justify-end items-center">
-                  Message:
-                </span>
+                <select
+                  className="w-full md:w-[130px] md:pr-1"
+                  required
+                  onChange={(e) => handleSelectTeam(e.target.value)}
+                >
+                  <option value="">Select Team</option>
+                  {userTeams &&
+                    userTeams.teamOwnerActiveTeams.map(
+                      (team: any, i: number) => (
+                        <option
+                          key={i}
+                          value={team.get("teamChainId")}
+                          defaultChecked={
+                            challengeTeam1_chainId == team.get("teamChainId")
+                          }
+                        >
+                          {team.get("teamName")}
+                        </option>
+                      )
+                    )}
+                </select>
               </div>
-              <div className="w-1/2 p-2">
-                <span className="h-[60px] my-1 flex justify-start items-center">
-                  <select
-                    required
-                    onChange={(e) => handleSelectTeam(e.target.value)}
-                  >
-                    <option value="">Select Team</option>
-                    {userTeams &&
-                      userTeams.teamOwnerActiveTeams.map(
-                        (team: any, i: number) => (
-                          <option
-                            key={i}
-                            value={team.get("teamChainId")}
-                            defaultChecked={
-                              challengeTeam1_chainId == team.get("teamChainId")
-                            }
-                          >
-                            {team.get("teamName")}
-                          </option>
-                        )
-                      )}
-                  </select>
-                </span>
-                <span className="h-[60px] my-1 flex justify-start items-center">
-                  <input
-                    required
-                    value={challengeAmount}
-                    className="m-2 px-2 py-1 rounded bg-gray-300"
-                    onChange={(e) => setChallengeAmount(e.target.value)}
-                    type="number"
-                    min={0}
-                  />
-                </span>
-                <span className="h-[120px] my-1 flex justify-start items-center flex-wrap">
+              <div className="p-2 flex flex-col md:flex-row items-center">
+                <span className="pr-1 w-[130px] md:text-right">Amount*:</span>
+                <input
+                  required
+                  value={challengeAmount}
+                  className="m-2 px-2 py-1 rounded bg-gray-300"
+                  onChange={(e) => setChallengeAmount(e.target.value)}
+                  type="number"
+                  min={0}
+                />
+              </div>
+              <div className="p-2 flex flex-col md:flex-row items-center">
+                <span className="pr-1 w-[130px] md:text-right">Sports*:</span>
+                <span className="h-[60px] my-1 flex justify-start items-center flex-wrap">
                   {challengeTeam &&
                     challengeTeam.get("teamSportsPreferences") &&
                     challengeTeam
@@ -249,21 +242,22 @@ export const ManageChallenge = ({
                             }`}
                             onClick={() => handleSports(sport, isChecked)}
                           >
-                            {sport}
+                            {capitalizeWord(sport)}
                           </button>
                         );
                       })}
                 </span>
-                <span className="h-[60px] my-1 flex justify-start items-center">
-                  <textarea
-                    id="challengeMessage"
-                    className="m-2 px-2 py-1 rounded bg-gray-300"
-                    placeholder="Enter challenge description..."
-                    rows={3}
-                    value={challengeMessage}
-                    onChange={(e) => setChallengeMessage(e.target.value)}
-                  />
-                </span>
+              </div>
+              <div className="p-2 flex flex-col md:flex-row items-center">
+                <span className="pr-1 w-[130px] md:text-right">Message:</span>
+                <textarea
+                  id="challengeMessage"
+                  className="m-2 px-2 py-1 rounded bg-gray-300"
+                  placeholder="Enter challenge description..."
+                  rows={3}
+                  value={challengeMessage}
+                  onChange={(e) => setChallengeMessage(e.target.value)}
+                />
               </div>
             </div>
 

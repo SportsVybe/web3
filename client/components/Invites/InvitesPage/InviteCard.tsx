@@ -3,6 +3,7 @@ import { contractActions } from "../../../configs/constants";
 import { Invite } from "../../../configs/types";
 import { useContract } from "../../../context/ContractProvider";
 import { useCustomMoralis } from "../../../context/CustomMoralisProvider";
+import { capitalizeWord } from "../../../helper/formatter";
 import { Photo } from "../../Layout/Photo";
 import { Toast } from "../../Layout/Toast";
 
@@ -111,7 +112,7 @@ export const InviteCard = ({
             <ul>
               {sportsPreferences &&
                 sportsPreferences.map((sport: string, i: number) => {
-                  return <li key={i}>{sport.toUpperCase()}</li>;
+                  return <li key={i}>{capitalizeWord(sport)}</li>;
                 })}
             </ul>
           </div>
