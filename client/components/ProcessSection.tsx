@@ -1,5 +1,5 @@
-import { BsShieldFillCheck } from "react-icons/bs";
 import { BiSearchAlt } from "react-icons/bi";
+import { BsShieldFillCheck } from "react-icons/bs";
 import { RiHeart2Fill } from "react-icons/ri";
 
 type ProcessCardProps = {
@@ -9,7 +9,12 @@ type ProcessCardProps = {
   subtitle: string;
 };
 
-const ProcessCard: React.FC<ProcessCardProps> = ({ color, title, icon, subtitle }) => (
+const ProcessCard: React.FC<ProcessCardProps> = ({
+  color,
+  title,
+  icon,
+  subtitle,
+}) => (
   <div className="flex flex-row justify-start items-center  white-glassmorphism p-3 m-2 cursor-pointer hover:shadow-xl">
     <div
       className={`w-10 h-10 rounded-full flex justify-center items-center ${color}`}
@@ -34,7 +39,7 @@ const ProcessSection = () => {
             data-aos-duration="2400"
           >
             How <span className="text-green-500">Sports</span>
-            <span className="text-gradient">vybe</span> works.
+            <span className="text-gradient">Vybe</span> works.
           </h1>
         </div>
       </div>
@@ -42,25 +47,25 @@ const ProcessSection = () => {
         <div data-aos="zoom-in">
           <ProcessCard
             color="bg-[#2952e3]"
-            title="Connect Your Wallet and create an account"
+            title="Earn VYBES"
             icon={<BsShieldFillCheck fontSize={21} className="text-white" />}
-            subtitle="Locate people that love the sports just as much as you do. Be a part of your local community!!"
+            subtitle="Check-In to Parks, or Events, Win IRL matches, or Airdrop NFTs"
           />
         </div>
         <div data-aos="zoom-in">
           <ProcessCard
             color="bg-[#8984F8]"
-            title="Set up preferences"
+            title="Spend VYBES"
             icon={<BiSearchAlt fontSize={21} className="text-white" />}
-            subtitle="10+ Sports: Football, Basketball, Baseball, Ultimate Frisbee, Tennis, Hockey and many more!"
+            subtitle="Challenge player or teams to IRL sports match. Visit the Marketplace"
           />
         </div>
         <div data-aos="zoom-in">
           <ProcessCard
             color="bg-[#f84550]"
-            title="Get active and win Challenges!"
+            title="Positive Vybes"
             icon={<RiHeart2Fill fontSize={21} className="text-white" />}
-            subtitle="Connect & challenge with other users/teams, win and earn rewards from various challenges!"
+            subtitle=" Play IRL sports, Join an enthusiastic sports community, Get active!"
           />
         </div>
       </div>

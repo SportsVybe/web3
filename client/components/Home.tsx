@@ -11,11 +11,13 @@ export const Home = () => {
             <span className="text-white">Vybe</span>
           </h1>
           <h4 className="text-md md:text-2xl text-gray-400">
-            Connecting People to Recreational Sports
+            Play Sports To Earn
           </h4>
-          <p className="text-lg py-3 pb-4 word-gradient">
-            Our Mission is to improve the health in our community <br />
-            through fitness and sociability.
+          <p className="text-lg py-3 pb-4 text-gray-300 word-gradient">
+            The first <b>Play Sports to Earn</b> app. Earn from checking-in to
+            <br />
+            places, winning challenges against player or teams, or <br />
+            sponsored NFT airdrops!
           </p>
         </div>
 
@@ -66,7 +68,7 @@ export const Home = () => {
       <ProcessSection />
       <div className="md:mx-24 mb-4 md:pt-24 pt-10 text-white gradient-bg-description">
         <h1 className="text-left inline pb-1 border-green-700 text-white md:text-4xl text-2xl py-2 my-4">
-          What is does:
+          What it does:
         </h1>
         <div className="md:text-[18px] text-sm">
           <p
