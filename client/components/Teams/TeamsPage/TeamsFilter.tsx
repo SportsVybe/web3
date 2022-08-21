@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 
-export default function TeamsFilter({ filterTeams, isLoading }) {
-  const [teamPOS, setTeamPOS] = useState(0);
+type Props = {
+  filterTeams: any;
+  isLoading: boolean;
+};
+
+export default function TeamsFilter({ filterTeams, isLoading }: Props) {
+  const [teamPOS, setTeamPOS] = useState<string | number>(0);
   const [sport, setSport] = useState("");
   const [filterBy, setFilterBy] = useState("all");
-  const [filterValue, setFilterValue] = useState("");
+  const [filterValue, setFilterValue] = useState<string | number>("");
 
-  const handleChange = (filterSelected) => {
+  const handleChange = (filterSelected: string) => {
     switch (filterSelected) {
       case "all":
         setFilterBy("all");

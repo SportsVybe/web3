@@ -5,11 +5,11 @@ import type { AppProps } from "next/app";
 import { useEffect } from "react";
 import { MoralisProvider } from "react-moralis";
 import Layout from "../components/Layout/Layout";
-import awsConfig from "../configs/aws-exports";
 import { moralis } from "../configs/configs";
 import { ContractProvider } from "../context/ContractProvider";
 import { CustomMoralisProvider } from "../context/CustomMoralisProvider";
 import { WalletProvider } from "../context/WalletProvider";
+import awsConfig from "../src/aws-exports";
 import "../styles/globals.css";
 
 API.configure(awsConfig);
