@@ -1,36 +1,24 @@
 {
-  "main": {
-    "awscloudformation": {
-      "AuthRoleName": "amplify-awsfunctions-main-100249-authRole",
-      "UnauthRoleArn": "arn:aws:iam::992292230584:role/amplify-awsfunctions-main-100249-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::992292230584:role/amplify-awsfunctions-main-100249-authRole",
-      "Region": "us-east-1",
-      "DeploymentBucketName": "amplify-awsfunctions-main-100249-deployment",
-      "UnauthRoleName": "amplify-awsfunctions-main-100249-unauthRole",
-      "StackName": "amplify-awsfunctions-main-100249",
-      "StackId": "arn:aws:cloudformation:us-east-1:992292230584:stack/amplify-awsfunctions-main-100249/69ec6a60-2138-11ed-890d-1215d34fc75b",
-      "AmplifyAppId": "d209lm43up41iq"
-    }
-  },
   "dev": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-awsfunctions-dev-212625-authRole",
-      "UnauthRoleArn": "arn:aws:iam::992292230584:role/amplify-awsfunctions-dev-212625-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::992292230584:role/amplify-awsfunctions-dev-212625-authRole",
+      "AuthRoleName": "amplify-client-dev-131422-authRole",
+      "UnauthRoleArn": "arn:aws:iam::455939409986:role/amplify-client-dev-131422-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::455939409986:role/amplify-client-dev-131422-authRole",
       "Region": "us-east-1",
-      "DeploymentBucketName": "amplify-awsfunctions-dev-212625-deployment",
-      "UnauthRoleName": "amplify-awsfunctions-dev-212625-unauthRole",
-      "StackName": "amplify-awsfunctions-dev-212625",
-      "StackId": "arn:aws:cloudformation:us-east-1:992292230584:stack/amplify-awsfunctions-dev-212625/f40d10f0-1f5d-11ed-8c32-0ec0912b7293",
-      "AmplifyAppId": "d3qm0hduasbu8n"
+      "DeploymentBucketName": "amplify-client-dev-131422-deployment",
+      "UnauthRoleName": "amplify-client-dev-131422-unauthRole",
+      "StackName": "amplify-client-dev-131422",
+      "StackId": "arn:aws:cloudformation:us-east-1:455939409986:stack/amplify-client-dev-131422/b5ef8690-2174-11ed-8341-0aeae680c959",
+      "AmplifyAppId": "d2hn7maiky4r02"
     },
     "categories": {
       "function": {
-        "sportsvybeFunctions": {
-          "deploymentBucketName": "amplify-awsfunctions-dev-212625-deployment",
-          "s3Key": "amplify-builds/sportsvybeFunctions-41673277384c714f3964-build.zip"
+        "web3functions": {
+          "deploymentBucketName": "amplify-client-dev-131422-deployment",
+          "s3Key": "amplify-builds/web3functions-357170422b577164576f-build.zip"
         }
-      }
+      },
+      "hosting": {}
     }
   }
 }

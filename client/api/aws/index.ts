@@ -6,7 +6,7 @@ import {
 } from "../../configs/types";
 
 export const getAllVenues = async (): Promise<GetAllVenuesResponse> => {
-  const apiName = "api";
+  const apiName = "web3api";
   const path = "/venues/featured";
   const myInit = {
     response: false,
@@ -18,7 +18,7 @@ export const getAllVenues = async (): Promise<GetAllVenuesResponse> => {
 export const searchVenues = async (
   params: VenueSearchParams
 ): Promise<GetAllVenuesResponse> => {
-  const apiName = "api";
+  const apiName = "web3api";
   const path = "/venues/search";
   const myInit = {
     response: false,
@@ -29,7 +29,7 @@ export const searchVenues = async (
 };
 
 export const getVenue = async (id: string): Promise<Venue> => {
-  const apiName = "api";
+  const apiName = "web3api";
   const path = `/venues/${id}`;
   const myInit = {
     response: false,
@@ -39,7 +39,7 @@ export const getVenue = async (id: string): Promise<Venue> => {
 };
 
 export const createVenue = async (venue: Venue): Promise<Venue> => {
-  const apiName = "api";
+  const apiName = "web3api";
   const path = "/venues";
   const myInit = {
     body: venue,
@@ -50,7 +50,7 @@ export const createVenue = async (venue: Venue): Promise<Venue> => {
 };
 
 export const updateVenue = async (venue: Venue): Promise<Venue> => {
-  const apiName = "api";
+  const apiName = "web3api";
   const path = `/venues/${venue.id}`;
   const myInit = {
     body: venue,
@@ -61,7 +61,7 @@ export const updateVenue = async (venue: Venue): Promise<Venue> => {
 };
 
 export const deleteVenue = async (id: string): Promise<Venue> => {
-  const apiName = "api";
+  const apiName = "web3api";
   const path = `/venues/${id}`;
   const myInit = {
     body: { status: 3 },
@@ -74,7 +74,7 @@ export const deleteVenue = async (id: string): Promise<Venue> => {
 export const getAllVenuesByActivity = async (
   activity: string
 ): Promise<Venue[]> => {
-  const apiName = "api";
+  const apiName = "web3api";
   const path = `/venues`;
   const myInit = {
     response: true,

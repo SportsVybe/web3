@@ -1,6 +1,5 @@
 {
-  "providers": ["awscloudformation"],
-  "projectName": "web3client",
+  "projectName": "client",
   "version": "3.1",
   "frontend": "javascript",
   "javascript": {
@@ -11,5 +10,6 @@
       "BuildCommand": "npm run-script build",
       "StartCommand": "npm run-script start"
     }
-  }
+  },
+  "providers": ["awscloudformation"]
 }

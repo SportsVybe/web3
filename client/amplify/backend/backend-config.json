@@ -1,1 +1,22 @@
-{}
+{
+  "function": {
+    "web3functions": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "api": {
+    "web3api": {
+      "service": "API Gateway",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "web3functions",
+          "attributes": ["Name", "Arn"]
+        }
+      ]
+    }
+  }
+}
