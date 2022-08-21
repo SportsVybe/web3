@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Team } from "../../configs/types";
 import { useWallet } from "../../context/WalletProvider";
+import { capitalizeWord } from "../../helper/formatter";
 import { Photo } from "../Layout/Photo";
 import { ManageProfile } from "../Modals/ManageProfile";
 import { ManageTeam } from "../Modals/ManageTeam";
@@ -7,7 +9,7 @@ import { TeamCard } from "../Teams/TeamCard";
 
 type Props = {
   userData: any;
-  teams: any;
+  teams: Team[];
   isCurrentUser: boolean;
   isLoading: boolean;
   wallet: any;
@@ -52,11 +54,11 @@ export default function Profile({
                 Username: {userData.username ? userData.username : "--"}
               </span>
               <span className="py-3">
-                Display Name:{" "}
+                Display Name:
                 {userData.userDisplayName ? userData.userDisplayName : "--"}
               </span>
               <span className="py-3">
-                Member Since:{" "}
+                Member Since:
                 {userData.createdAt
                   ? userData.createdAt.toLocaleDateString("en-US", {
                       year: "numeric",
@@ -123,7 +125,7 @@ export default function Profile({
                 {userData.userSportsPreferences &&
                   userData.userSportsPreferences.map(
                     (sport: string, i: number) => {
-                      return <li key={i}>{sport.toUpperCase()}</li>;
+                      return <li key={i}>{capitalizeWord(sport)}</li>;
                     }
                   )}
               </ul>
@@ -146,9 +148,7 @@ export default function Profile({
             {teams && !isLoading ? (
               teams.length > 0 &&
               teams.map((team: any, i: number) => {
-                return (
-                  <TeamCard team={team.attributes} teamObject={team} key={i} />
-                );
+                return <TeamCard team={team} key={i} />;
               })
             ) : (
               <h1>No Teams</h1>

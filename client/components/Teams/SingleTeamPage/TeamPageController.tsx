@@ -1,44 +1,46 @@
 import { useEffect, useState } from "react";
-import { useMoralisQuery } from "react-moralis";
+import { Team } from "../../../configs/types";
+import { useCustomMoralis } from "../../../context/CustomMoralisProvider";
 import TeamPage from "./TeamPageView";
 
 type Props = {
-  username: string;
-  wallet?: boolean | string;
+  objectId: string;
 };
 
-export const TeamPageController = ({ username, wallet = false }: Props) => {
-  const [teamData, setTeamData] = useState({});
+export const TeamPageController = ({ objectId }: Props) => {
+  const [team, setTeam] = useState<Team>();
   const [isLoading, setIsLoading] = useState(true);
-  const [teamObject, setTeamObject] = useState({});
+  const [error, setError] = useState(false);
 
-  const getTeamByUsername = useMoralisQuery(
-    "teams",
-    (query) => query.equalTo("objectId", username),
-    [],
-    {
-      autoFetch: false,
+  const { cloudFunction } = useCustomMoralis();
+
+  const fetchTeamByObjectId = async () => {
+    setIsLoading(true);
+    const data = await cloudFunction("getTeamByAttribute", {
+      attribute: "objectId",
+      value: objectId,
+      activeStatus: "all",
+    });
+    if (data.success) {
+      if (!data.data.length) setError(true);
+      if (data.data.length > 0) return data.data[0];
     }
-  );
+  };
 
   useEffect(() => {
-    const getTeam = getTeamByUsername.fetch();
-    getTeam
-      .then((team: any) => {
-        setTeamData(team[0].attributes);
-        setTeamObject(team[0]);
-      })
+    fetchTeamByObjectId()
+      .then(setTeam)
       .then(() => setIsLoading(false))
-      .catch((err) => {
-        console.log("err", err);
-      });
+      .catch(setError);
   }, []);
 
-  return (
-    <TeamPage
-      team={teamData}
-      teamIsLoading={isLoading}
-      teamObject={teamObject}
-    />
+  return team && !isLoading ? (
+    <TeamPage team={team} teamIsLoading={isLoading} />
+  ) : (
+    <>
+      {!error
+        ? "Loading...."
+        : "Error! Please try another team or refresh the page"}
+    </>
   );
 };

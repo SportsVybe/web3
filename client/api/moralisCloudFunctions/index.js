@@ -111,10 +111,10 @@ const getTeamObjects = async (
     "teamMembersList.userWins",
     "teamMembersList.userLosses"
   );
-  if (field === "teamOwner") {
-    query.equalTo(field, searchString);
-  } else {
+  if (field == "teamMembers" || field == "teamSportsPreferences") {
     query.contains(field, searchString);
+  } else {
+    query.equalTo(field, searchString);
   }
   if (activeStatus !== "all") {
     query.equalTo("isTeamActive", activeStatus);
@@ -802,13 +802,6 @@ Moralis.Cloud.define(
         "all"
       );
 
-      const teamOwnerActiveObjs = await getTeamObjects(
-        "teams",
-        "teamOwner",
-        user,
-        true
-      );
-
       const teamMemberObjs = await getTeamObjects(
         "teams",
         "teamMembers",
@@ -863,41 +856,38 @@ const formatTeams = async (teams, user, format) => {
   return formattedTeams;
 };
 
-// getTeamByUsername:
-// requires user to be logged in
-// returns { team: [], teamMembers: [], success: bool, error: string }
+// getTeamByAttribute:
+// returns { data: [], success: bool, error: string }
 Moralis.Cloud.define(
-  "getTeamByUsername",
+  "getTeamByAttribute",
   async (request) => {
-    const objectId = request.params.objectId;
-    if (!objectId) {
+    const attribute = request.params.attribute;
+    const value = request.params.value;
+    const activeStatus = request.params.activeStatus || true;
+    if (!attribute || !value) {
       return {
-        team: [],
-        teamMembers: [],
+        data: [],
         success: false,
-        error: "No team id provided",
+        error: "No info provided",
       };
     }
     try {
       const teamObjs = await getTeamObjects(
         "teams",
-        "objectId",
-        objectId,
-        true
+        attribute,
+        value,
+        activeStatus
       );
-      const team = teamObjs;
-      const teamMembers = [];
+      const data = teamObjs;
       return {
-        team,
-        teamMembers,
+        data,
         success: true,
         error: null,
       };
     } catch (error) {
-      logger.info(`getTeamByUsername: Error: ${error}`);
+      logger.info(`getTeamByAttribute: Error: ${error}`);
       return {
-        team: [],
-        teamMembers: [],
+        data: [],
         success: false,
         error: error.toString(),
       };
@@ -905,9 +895,17 @@ Moralis.Cloud.define(
   },
   {
     fields: {
-      objectId: {
+      attribute: {
         type: String,
         required: true,
+      },
+      value: {
+        type: String | Boolean | Number,
+        required: true,
+      },
+      activeStatus: {
+        type: String | Boolean,
+        required: false,
       },
     },
   }

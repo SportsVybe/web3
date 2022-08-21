@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Team } from "../../../configs/types";
 import { useWallet } from "../../../context/WalletProvider";
+import { capitalizeWord } from "../../../helper/formatter";
 import { Photo } from "../../Layout/Photo";
 import { ManageChallenge } from "../../Modals/ManageChallenge";
 import { ManageTeam } from "../../Modals/ManageTeam";
@@ -7,22 +9,15 @@ import { ManageTeamMembers } from "../../Modals/ManageTeamMembers";
 import { TeamMembersController } from "../TeamMembers/TeamMembersController";
 
 type Props = {
-  team: any;
+  team: Team;
   teamIsLoading: boolean;
-  teamObject: any;
-  wallet?: string;
 };
 
-export default function TeamPage({
-  team,
-  teamIsLoading,
-  wallet,
-  teamObject,
-}: Props) {
+export default function TeamPage({ team, teamIsLoading }: Props) {
+  console.log("team", team);
   const { user, isAuthenticated, isAuthenticating, connectWallet } =
     useWallet();
   const [manageChallengeModal, toggleManageChallengeModal] = useState(false);
-
   const [manageTeamModal, toggleManageTeamModal] = useState(false);
   const [manageTeamMembersModal, toggleManageTeamMembersModal] =
     useState(false);
@@ -30,14 +25,16 @@ export default function TeamPage({
   let isTeamMember = false;
   let isAdmin = false;
 
-  if (user) {
+  if (user && team && !teamIsLoading) {
     const { username } = user.attributes ? user.attributes : "";
     isTeamMember =
-      (user &&
-        team.teamMembers &&
-        team.teamMembers.find((member: string) => member === username)) ||
+      (team &&
+        team.get("teamMembers") &&
+        team
+          .get("teamMembers")
+          .find((member: string) => member === username)) ||
       false;
-    isAdmin = team.teamAdmin === username || false;
+    isAdmin = team.get("teamAdmin") === username || false;
   }
 
   return (
@@ -51,24 +48,24 @@ export default function TeamPage({
           <div className="flex flex-row my-4 w-full justify-center items-center">
             <div className="flex flex-col w-1/2 items-center justify-center">
               <Photo
-                src={team.teamPhoto}
-                alt={team.teamName}
+                src={team.get("teamPhoto")}
+                alt={team.get("teamName")}
                 size="lg"
                 type="team"
                 isLoading={teamIsLoading}
               />
             </div>
             <div className="flex flex-col w-1/2">
-              <span>{team.teamName ? team.teamName : "--"}</span>
+              <span>{team.get("teamName") ? team.get("teamName") : "--"}</span>
               <span>
-                Member Since{" "}
-                {team.createdAt
-                  ? team.createdAt.toLocaleDateString("en-US", {
+                Member Since
+                {team.get("createdAt")
+                  ? team.get("createdAt").toLocaleDateString("en-US", {
                       year: "numeric",
                     })
                   : "--"}
               </span>
-              <span>{team.teamDescription}</span>
+              <span>{team.get("teamDescription")}</span>
             </div>
           </div>
         </div>
@@ -112,26 +109,30 @@ export default function TeamPage({
             <div className="flex flex-col justify-center items-center">
               <span className="p-2 font-bold">Record:</span>
               <span>
-                {team.teamWins} Wins - {team.teamLosses} Losses
+                {team.get("teamWins")} Wins - {team.get("teamLosses")} Losses
               </span>
             </div>
             <div className="flex flex-col justify-center items-center">
               <span className="p-2 font-bold">Winnings:</span>
-              <span>{team.teamWinnings} VYBES</span>
+              <span>{team.get("teamWinnings")} VYBES</span>
             </div>
           </div>
           <div className="flex flex-col w-1/2 items-center p-2">
             <div className="flex flex-col justify-center items-center">
               <span className="p-2 font-bold">Sportsmanship:</span>
-              <span>{team.teamPOS ? `${team.teamPOS}% ` : "100%"}</span>
+              <span>
+                {team.get("teamPOS") ? `${team.get("teamPOS")}% ` : "100%"}
+              </span>
             </div>
             <div className="flex flex-col justify-center items-center">
               <span className="p-2 font-bold">Sport Preferences:</span>
               <ul>
-                {team.teamSportsPreferences &&
-                  team.teamSportsPreferences.map((sport: string, i: number) => {
-                    return <li key={i}>{sport.toUpperCase()}</li>;
-                  })}
+                {team.get("teamSportsPreferences") &&
+                  team
+                    .get("teamSportsPreferences")
+                    .map((sport: string, i: number) => {
+                      return <li key={i}>{capitalizeWord(sport)}</li>;
+                    })}
               </ul>
             </div>
           </div>
@@ -154,7 +155,7 @@ export default function TeamPage({
             </div>
             {!teamIsLoading && (
               <TeamMembersController
-                members={team.teamMembers}
+                members={team.get("teamMembers")}
                 team={team}
                 teamIsLoading={teamIsLoading}
               />
@@ -166,8 +167,8 @@ export default function TeamPage({
       {user && !isTeamMember && !teamIsLoading && (
         <ManageChallenge
           user={user}
-          challengeTeam={teamObject}
-          challengeTeamId={team.teamChainId}
+          challengeTeam={team}
+          challengeTeamId={team.get("teamChainId")}
           toggleModal={toggleManageChallengeModal}
           modalView={manageChallengeModal}
           createNewChallenge={true}
@@ -178,16 +179,16 @@ export default function TeamPage({
           <ManageTeam
             user={user}
             team={team}
-            teamObject={teamObject}
+            teamObject={team}
             toggleModal={toggleManageTeamModal}
             modalView={manageTeamModal}
           />
           <ManageTeamMembers
             user={user}
             team={team}
-            teamObject={teamObject}
+            teamObject={team}
             teamIsLoading={teamIsLoading}
-            members={team.teamMembers}
+            members={team.get("teamMembers")}
             toggleModal={toggleManageTeamMembersModal}
             modalView={manageTeamMembersModal}
           />

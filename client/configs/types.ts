@@ -35,8 +35,8 @@ export type Team = {
   teamSportsPreferences: string[];
   teamAdmin: string;
   isTeamActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
   teamOwner: User;
   teamMembersList: User[];
   get: (key: string) => any;
@@ -160,6 +160,12 @@ export type GetAllVenuesResponse = {
   statusCode: number;
   url: string | null;
   error?: string | null;
+};
+
+export type GetTeamsByAttributeResponse = {
+  data: Team[] | Team | [] | any;
+  success: boolean;
+  error: string | null;
 };
 
 export interface Venue {

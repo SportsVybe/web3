@@ -1,7 +1,8 @@
+import { Team } from "../../../configs/types";
 import { TeamCard } from "../TeamCard";
 
 type Props = {
-  data: any;
+  data: Team[] | [];
   isLoading: boolean;
 };
 
@@ -12,7 +13,7 @@ export default function Teams({ data, isLoading }: Props) {
         !isLoading &&
         data.length > 0 &&
         data.map((team: any, i: number) => {
-          return <TeamCard team={team.attributes} teamObject={team} key={i} />;
+          return <TeamCard team={team} key={i} />;
         })}
 
       {data.length === 0 && !isLoading && (

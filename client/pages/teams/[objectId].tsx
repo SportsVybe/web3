@@ -5,11 +5,11 @@ import { TeamPageController } from "../../components/Teams/SingleTeamPage/TeamPa
 
 export default function TeamPage() {
   const router = useRouter();
-  const getUsername = router.query.username;
-  const [username, setUsername] = useState<any>(null);
+  const getObjectId = router.query.objectId;
+  const [objectId, setObjectId] = useState<any>(null);
 
   useEffect(() => {
-    setUsername(getUsername);
+    setObjectId(getObjectId);
   }, [router.isReady]);
 
   return (
@@ -18,8 +18,8 @@ export default function TeamPage() {
         <title>Team Profile</title>
         <meta name="description" content="Team Profile" />
       </Head>
-      {username ? (
-        <TeamPageController username={username} />
+      {objectId ? (
+        <TeamPageController objectId={objectId} />
       ) : (
         <div className="flex flex-col justify-center items-center">
           <p> No Team</p>

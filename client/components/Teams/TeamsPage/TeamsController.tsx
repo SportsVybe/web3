@@ -1,51 +1,67 @@
 import { useEffect, useState } from "react";
-import { useMoralisQuery } from "react-moralis";
+import { Team } from "../../../configs/types";
+import { useCustomMoralis } from "../../../context/CustomMoralisProvider";
 import TeamsFilter from "./TeamsFilter";
-import Teams from "./TeamsView";
+import TeamsView from "./TeamsView";
 
 export const TeamsController = () => {
-  const [data, setData] = useState<any>([]);
-  const [cloneData, setCloneData] = useState<any>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [teams, setTeams] = useState<Team[] | []>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const getTeams = useMoralisQuery(
-    "teams",
-    (query) => query.equalTo("isTeamActive", true),
-    [],
-    {
-      autoFetch: true,
-    }
-  );
-
-  const filterTeams = (filterBy: string, filterValue: any) => {
-    // console.log(filterBy, filterValue);
-    if (filterBy === "all") {
-      setData(getTeams.data);
-      return true;
-    }
-    const filteredTeams = data.filter((team: any) => {
-      if (filterBy === "teamPOS") {
-        return team.attributes.teamPOS > filterValue;
-      }
-      if (filterBy === "sport") {
-        return team.attributes.teamSportsPreferences.includes(filterValue);
-      }
+  const { cloudFunction } = useCustomMoralis();
+  const fetchTeams = async () => {
+    setIsLoading(true);
+    const data = await cloudFunction("getTeamByAttribute", {
+      attribute: "isTeamActive",
+      value: true,
+      activeStatus: true,
     });
-    setCloneData(filteredTeams);
-    return true;
+    if (data.success) {
+      return data.data;
+    }
+  };
+
+  const fetchSearchTeams = async (
+    attribute: string,
+    value: string | number | boolean
+  ) => {
+    setIsSearching(true);
+    const data = await cloudFunction("getTeamByAttribute", {
+      attribute: attribute,
+      value: value,
+      activeStatus: true,
+    });
+    if (!data || !data.statusCode) setTeams([]);
+    if (data.statusCode === 200) setTeams(data.data);
+    if (data.statusCode === 404) setTeams([]);
+    if (data.statusCode === 500) setError(true);
+    setTeams([]);
+    setIsSearching(false);
   };
 
   useEffect(() => {
-    getTeams.fetch();
-    setData(getTeams.data);
-    setCloneData(getTeams.data);
-    setIsLoading(getTeams.isLoading);
-  }, [getTeams.isLoading]);
+    fetchTeams()
+      .then(setTeams)
+      .then(() => setIsLoading(false))
+      .catch(setError);
+  }, []);
 
-  return (
+  return teams && !isLoading ? (
     <>
-      <TeamsFilter filterTeams={filterTeams} isLoading={isLoading} />
-      <Teams data={cloneData} isLoading={isLoading} />
+      <TeamsFilter
+        fetchSearchTeams={fetchSearchTeams}
+        isSearching={isSearching}
+        setIsSearching={setIsSearching}
+      />
+      <TeamsView data={teams} isLoading={isLoading} />
+    </>
+  ) : (
+    <>
+      {!error
+        ? "Loading...."
+        : "Error! Please try another search or      refresh the page"}
     </>
   );
 };

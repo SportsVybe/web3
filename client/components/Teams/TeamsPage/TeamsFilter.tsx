@@ -1,123 +1,63 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+
+import { sports } from "../../../configs/constants";
+import { capitalizeWord } from "../../../helper/formatter";
 
 type Props = {
-  filterTeams: any;
-  isLoading: boolean;
+  fetchSearchTeams: (
+    attribute: string,
+    value: string | number | boolean
+  ) => Promise<any>;
+  isSearching: boolean;
+  setIsSearching: (isSearching: boolean) => void;
 };
 
-export default function TeamsFilter({ filterTeams, isLoading }: Props) {
+export default function TeamsFilter({ fetchSearchTeams, isSearching }: Props) {
   const [teamPOS, setTeamPOS] = useState<string | number>(0);
-  const [sport, setSport] = useState("");
-  const [filterBy, setFilterBy] = useState("all");
-  const [filterValue, setFilterValue] = useState<string | number>("");
 
-  const handleChange = (filterSelected: string) => {
-    switch (filterSelected) {
-      case "all":
-        setFilterBy("all");
-        break;
-      case "teamPOS":
-        setFilterBy("teamPOS");
-        setFilterValue(teamPOS);
-        break;
-      case "sport":
-        setFilterBy("sport");
-        setFilterValue(sport);
-        break;
-      default:
-        setFilterBy("all");
-        break;
-    }
-    // filterTeams(filterBy, filterValue);
-  };
+  const selectMenu = ["all", ...sports];
+  const [value, setValue] = useState("");
 
-  const updateFilterValue = () => {
-    switch (filterBy) {
-      case "all":
-        setFilterBy("all");
-        setFilterValue("all");
-        break;
-      case "teamPOS":
-        setFilterBy("teamPOS");
-        setFilterValue(teamPOS);
-        break;
-      case "sport":
-        setFilterBy("sport");
-        setFilterValue(sport);
-        break;
-      default:
-        setFilterValue("all");
-        break;
+  const applySearch = (value: string) => {
+    if (value === "all") {
+      fetchSearchTeams("isTeamActive", true);
+    } else {
+      fetchSearchTeams("teamSportsPreferences", value);
     }
   };
-
-  useEffect(() => {
-    updateFilterValue();
-  }, [filterBy, teamPOS, sport]);
 
   return (
-    <div className="flex flex-row items-center justify-around j w-[480px] lg:w-[600px] text-white">
+    <div className="flex md:flex-row flex-col items-center justify-around j w-[480px] lg:w-[600px] text-white">
       <h1>Filter:</h1>
-      <div>
-        <input
-          type="radio"
-          defaultChecked
-          className="m-2"
-          name="filter"
-          value="all"
-          onChange={(e) => handleChange("all")}
-        />{" "}
-        All
-      </div>
-      <div>
-        <input
-          type="radio"
-          className="m-2"
-          name="filter"
-          value="teamPOS"
-          onChange={(e) => handleChange("teamPOS")}
-        />
-        Sportsmanship:
-        <input
-          type="number"
-          placeholder="Search"
-          onChange={(e) => setTeamPOS(e.target.value)}
-          value={teamPOS}
-          className="w-[60px] ml-2 py-1 px-2 disabled:bg-gray-300"
-          disabled={filterBy !== "teamPOS"}
-        />
-      </div>
 
-      <div>
-        <input
-          type="radio"
-          className="m-2"
-          name="filter"
-          value="sport"
-          onChange={() => handleChange("sport")}
-        />
+      <div className="py-2">
         Sports:
         <select
-          disabled={filterBy !== "sport"}
           className="w-[120px] ml-2 py-1 px-2  disabled:bg-gray-300"
-          onChange={(e) => setSport(e.target.value)}
+          onChange={(e) => setValue(e.target.value)}
         >
-          <option value="all">All</option>
-          <option value="basketball">Basketball</option>
-          <option value="football">Football</option>
-          <option value="hockey">Hockey</option>
-          <option value="soccer">Soccer</option>
-          <option value="volleyball">Volleyball</option>
+          {selectMenu.map((item, i) => (
+            <option
+              defaultChecked={item == "all"}
+              key={item}
+              value={item.toLowerCase()}
+            >
+              {capitalizeWord(item)}
+            </option>
+          ))}
         </select>
       </div>
 
-      <button
-        onClick={() => filterTeams(filterBy, filterValue)}
-        disabled={isLoading}
-        className="px-4 py-2 mx-3 my-2 bg-green-200 hover:bg-green-500 rounded-full  text-black"
-      >
-        Apply
-      </button>
+      {isSearching ? (
+        "Searching..."
+      ) : (
+        <button
+          onClick={() => applySearch(value)}
+          className="px-4 py-2 mx-3 my-2 bg-green-200 hover:bg-green-500 rounded-full  text-black"
+        >
+          Apply
+        </button>
+      )}
     </div>
   );
 }
