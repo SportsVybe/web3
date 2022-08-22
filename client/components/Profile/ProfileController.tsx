@@ -19,12 +19,18 @@ export const ProfileController = ({
   const router = useRouter();
   const { Moralis } = useMoralis();
   const createNewUser = useNewMoralisObject("users");
-  const { fetchUser, getAllObjects, getAllPossibleObjects } =
+  const { fetchUser, getAllObjects, getAllPossibleObjects, cloudFunction } =
     useCustomMoralis();
   const [userData, setUserData] = useState<any>({});
   const [teams, setTeams] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [userObject, setUserObject] = useState({});
+  const [isUserCountsLoading, setIsUserCountsLoading] = useState(false);
+  const [userCounts, setUserCounts] = useState({});
+  const [userObject, setUserObject] = useState({
+    rewards: 0,
+    invites: 0,
+    challenges: 0,
+  });
   const [username, setUsername] = useState("");
   let newUser = {};
   if (isCurrentUser) {
@@ -85,10 +91,45 @@ export const ProfileController = ({
     }
   };
 
+  const fetchUserInvites = async () => {
+    await cloudFunction("getUserInvites", {})
+      .then((invites) => {
+        setUserCounts({ ...userCounts, invites: invites.pending.length });
+      })
+      .catch((error) => {
+        console.error("Error fetching invites");
+      });
+  };
+
+  const fetchUserRewards = async () => {
+    await cloudFunction("getUserRewards", {})
+      .then((rewards) => {
+        setUserCounts({ ...userCounts, rewards: rewards.available.length });
+      })
+      .catch((error) => {
+        console.error("Error fetching rewards");
+      });
+  };
+
+  const fetchUserChallenges = async () => {
+    await cloudFunction("getUserChallenges", {})
+      .then((challenges) => {
+        setUserCounts({ ...userCounts, challenges: challenges.active.length });
+      })
+      .catch((error) => {
+        console.error("Error fetching challenges");
+      });
+  };
+
   useEffect(() => {
     if (user) {
       getUser();
       getTeams();
+    }
+    if (isCurrentUser) {
+      fetchUserInvites();
+      fetchUserRewards();
+      fetchUserChallenges();
     }
     return () => {
       setIsLoading(true);
@@ -112,6 +153,7 @@ export const ProfileController = ({
       isLoading={isLoading}
       wallet={wallet}
       userObject={userObject}
+      userCounts={userCounts}
     />
   );
 };

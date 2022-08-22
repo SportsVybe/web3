@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useState } from "react";
 import { Team } from "../../configs/types";
 import { useWallet } from "../../context/WalletProvider";
@@ -14,6 +15,7 @@ type Props = {
   isLoading: boolean;
   wallet: any;
   userObject: any;
+  userCounts?: { rewards?: number; invites?: number; challenges?: number };
 };
 
 export default function Profile({
@@ -23,9 +25,15 @@ export default function Profile({
   isLoading,
   wallet,
   userObject,
+  userCounts,
 }: Props) {
-  const { user, isAuthenticated, connectWallet, isAuthenticating } =
-    useWallet();
+  const {
+    user,
+    isAuthenticated,
+    connectWallet,
+    isAuthenticating,
+    userTokenBalance,
+  } = useWallet();
   const [editProfileModal, toggleEditProfileModal] = useState(false);
   const [manageTeamModal, toggleManageTeamModal] = useState(false);
 
@@ -106,6 +114,37 @@ export default function Profile({
             </>
           )}
         </div>
+        {isCurrentUser && (
+          <div className="flex my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out p-2">
+            <div className="flex flex-col w-1/4 items-center p-2">
+              <div className="flex flex-col justify-center items-center">
+                <span className="p-2 font-bold">Balance:</span>
+                <span>{userTokenBalance} VYBES</span>
+              </div>
+            </div>
+            <div className="flex flex-row w-3/4 items-center justify-around p-2">
+              <Link href="/rewards" className=" cursor-pointer ">
+                <div className="flex flex-col justify-center items-center">
+                  <span className="p-2 font-bold">Rewards:</span>
+                  <span>{userCounts?.rewards || 0}</span>
+                </div>
+              </Link>
+              <Link href="/challenges" className=" cursor-pointer ">
+                <div className="flex flex-col justify-center items-center">
+                  <span className="p-2 font-bold">Challenges:</span>
+                  <span>{userCounts?.challenges || 0}</span>
+                </div>
+              </Link>
+              <Link href="/invites" className=" cursor-pointer ">
+                <div className="flex flex-col justify-center items-center">
+                  <span className="p-2 font-bold">Invites:</span>
+                  <span>{userCounts?.invites || 0}</span>
+                </div>
+              </Link>
+            </div>
+          </div>
+        )}
+
         <div className="flex my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out p-2">
           <div className="flex flex-col w-1/2 items-center p-2">
             <div className="flex flex-col justify-center items-center">

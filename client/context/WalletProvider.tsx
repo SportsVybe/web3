@@ -1,9 +1,12 @@
+import axios from "axios";
 import { useRouter } from "next/router";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useChain, useMoralis } from "react-moralis";
+import { moralis, tokenContractAddress } from "../configs/configs";
 
 const defaultState = {
   wallet: "",
+  userTokenBalance: 0,
   user: {} as any,
   isAuthenticated: false,
   isAuthenticating: false,
@@ -28,6 +31,7 @@ const WalletProvider = (props: any) => {
   const router = useRouter();
   const { switchNetwork, chain } = useChain();
   const [wallet, setWallet] = useState("");
+  const [userTokenBalance, setUserTokenBalance] = useState(0);
 
   const connectWallet = async (routeToProfile = true) => {
     try {
@@ -72,6 +76,29 @@ const WalletProvider = (props: any) => {
     setWallet("");
     logout();
     return router.push("/");
+  };
+
+  const getUserBalance = async () => {
+    if (wallet) {
+      const options = {
+        url: `https://deep-index.moralis.io/api/v2/${wallet}/erc20?chain=mumbai&token_addresses=${tokenContractAddress}`,
+        headers: {
+          Accept: "application/json",
+          "X-API-Key": moralis.MORALIS_API_KEY,
+        },
+      };
+
+      await axios
+        .request(options)
+        .then(function (response) {
+          const ethConverted = (response.data[0].balance || 0) / 1e18;
+          // console.log(response.data[0].balance);
+          setUserTokenBalance(ethConverted);
+        })
+        .catch(function (error) {
+          console.error(error);
+        });
+    }
   };
 
   const monitorNetwork = async (chainId: any) => {
@@ -145,6 +172,14 @@ const WalletProvider = (props: any) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    if (wallet) {
+      getUserBalance();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }),
+    [wallet, isAuthenticated];
+
   return (
     <WalletContext.Provider
       value={{
@@ -154,6 +189,7 @@ const WalletProvider = (props: any) => {
         isAuthenticated,
         signOutWallet,
         connectWallet,
+        userTokenBalance,
       }}
     >
       {children}
