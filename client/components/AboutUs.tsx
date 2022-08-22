@@ -56,7 +56,7 @@ export default function AboutUs() {
             <Image
               width={265}
               height={300}
-              src="/images/about/avrahm.png"
+              src="https://main.d2hn7maiky4r02.amplifyapp.com/images/about/avrahm.png"
               alt="Avrahm-image"
               className="rounded-full object-contain border-2"
             />
@@ -88,7 +88,7 @@ export default function AboutUs() {
             <Image
               width={265}
               height={300}
-              src="/images/about/david.png"
+              src="https://main.d2hn7maiky4r02.amplifyapp.com/images/about/david.png"
               alt="David-image"
               className="rounded-full object-contain border-2"
             />
@@ -110,7 +110,7 @@ export default function AboutUs() {
             <Image
               width={265}
               height={300}
-              src="/images/about/jaymes.png"
+              src="https://main.d2hn7maiky4r02.amplifyapp.com/images/about/jaymes.png"
               alt="Jaymes-image"
               className="rounded-full object-contain"
             />

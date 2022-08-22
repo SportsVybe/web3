@@ -4,9 +4,9 @@ import ProcessSection from "./ProcessSection";
 export const Home = () => {
   return (
     <div className="scroll-smooth">
-      <div className="flex-col md:flex-row flex md:items-center md:justify-around overflow-x-hidden">
-        <div className="animate-fade-in-left">
-          <h1 className="text-4xl md:text-9xl mb-2 md:mb-5 ">
+      <div className="flex-col md:flex-row flex md:items-center md:justify-around overflow-x-hidden mb-12 md:mb-0">
+        <div className="animate-fade-in-left mb-12 md:mb-0">
+          <h1 className="text-5xl md:text-9xl mb-2 md:mb-5 mt-8 md:mt-0">
             <span className="text-green-500 pt-2 md:pt-10">Sports</span>
             <span className="text-white">Vybe</span>
           </h1>
@@ -23,7 +23,7 @@ export const Home = () => {
 
         <div className="animate-fade-in-right floater md:">
           <Image
-            src="/hero-image-2.png"
+            src="https://main.d2hn7maiky4r02.amplifyapp.com/hero-image-2.png"
             alt="SportsVybe header"
             width={500}
             height={500}

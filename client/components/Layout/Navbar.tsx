@@ -20,14 +20,14 @@ export default function Navbar() {
         <div className="p-2 cursor-pointer">
           <ImageRef href="/">
             <Image
-              src="/header_logo.png"
+              src="https://main.d2hn7maiky4r02.amplifyapp.com//header_logo.png"
               alt="SportsVybe Logo"
               width={135}
               height={35}
             />
           </ImageRef>
         </div>
-        <div className="md:hidden p-2">
+        <div className="md:hidden p-2 mt-1">
           <button
             onClick={() => setIsOpen(!isOpen)}
             type="button"
