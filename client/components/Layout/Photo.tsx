@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 type Props = {
   src: string;
   alt: string;
@@ -35,12 +33,9 @@ export const Photo = ({
       {!isLoading && src !== undefined && src !== "" ? (
         <img src={src} alt={alt} className="rounded-full" />
       ) : (
-        <Image
+        <img
           src={placeholderImg}
           alt={`${type} placeholder`}
-          layout="fill"
-          objectFit="cover"
-          priority
           className={`rounded-full ${type == "venue" && "bg-slate-50"}`}
         />
       )}

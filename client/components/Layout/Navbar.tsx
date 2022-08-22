@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { forwardRef, useState } from "react";
 import { useWallet } from "../../context/WalletProvider";
@@ -19,12 +18,10 @@ export default function Navbar() {
       <div className="flex justify-between px-4">
         <div className="p-2 cursor-pointer">
           <ImageRef href="/">
-            <Image
+            <img
               src="https://main.d2hn7maiky4r02.amplifyapp.com/header_logo.png"
               alt="SportsVybe Logo"
               className="logo-image"
-              width={110}
-              height={30}
             />
           </ImageRef>
         </div>
