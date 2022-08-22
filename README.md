@@ -31,7 +31,7 @@ Also, we are exploring Keeper to add automation in the smart contract to enable 
 
 [Contract Address: 0xeCABfa32f5A51007c47E2d1330ac904977CB4B6B](https://mumbai.polygonscan.com/address/0xeCABfa32f5A51007c47E2d1330ac904977CB4B6B)
 
-[Token Address: 0x1E5FFB24f8b906cEd4c9c9139728e838A494bB00](https://mumbai.polygonscan.com/address/0xeCABfa32f5A51007c47E2d1330ac904977CB4B6B)
+[Token Address: 0x1E5FFB24f8b906cEd4c9c9139728e838A494bB00](https://mumbai.polygonscan.com/address/0x1E5FFB24f8b906cEd4c9c9139728e838A494bB00)
 
 ## Challenges we ran into
 With this project we have embarked on many new challenges:
@@ -52,4 +52,5 @@ Exciting roadmap items include:
 - Sponsored NFT Airdrops to challenges or events
 - Allow teams to create NFTs for team members
 
+Follow our Journey on DevPost [SportsVybe: Play Sports to Earn](https://devpost.com/software/sportsvybe-play-sports-to-earn)
 Follow us on Twitter [@sportsvybe](https://www.twitter.com/SportsVybe) 
