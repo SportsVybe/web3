@@ -19,10 +19,12 @@ export default function Navbar() {
       <div className="flex justify-between px-4">
         <div className="p-2 cursor-pointer">
           <ImageRef href="/">
-            <img
-              src="/header_logo.png"
+            <Image
+              src="https://main.d2hn7maiky4r02.amplifyapp.com/header_logo.png"
               alt="SportsVybe Logo"
               className="logo-image"
+              width={110}
+              height={30}
             />
           </ImageRef>
         </div>
