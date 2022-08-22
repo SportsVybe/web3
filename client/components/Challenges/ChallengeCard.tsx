@@ -144,7 +144,7 @@ export const ChallengeCard = ({
     [challenge];
 
   return (
-    <div className="flex flex-col my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out">
+    <div className="flex flex-col my-4 w-full text-white md:w-[650px] md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out">
       <div className="flex flex-row w-full">
         <div className="flex flex-row w-full items-center">
           <div className="w-1/2 items-center justify-center p-2">
@@ -248,7 +248,10 @@ export const ChallengeCard = ({
         )}
       </div>
       {contractMessage && !isContractLoading && (
-        <Toast open type={contractMessage.status}>
+        <Toast
+          open={contractMessage !== "" && contractMessage.message !== ""}
+          type={contractMessage.status}
+        >
           {contractMessage.message}
         </Toast>
       )}
@@ -309,7 +312,7 @@ const ChallengeButtons = ({
         (isChallengeTeam1Admin || isChallengeTeam2Admin) &&
         !event && (
           <button
-            className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
+            className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full text-black hover:bg-green-400"
             onClick={() => toggleManageEventModal(!manageEventModal)}
           >
             Create Event
@@ -329,7 +332,7 @@ const ChallengeButtons = ({
         isChallengeTeamMember &&
         !hasUserVote && (
           <button
-            className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
+            className="px-2 py-1 w-[120px] mx-4 bg-green-200 rounded-full text-black hover:bg-green-400"
             onClick={() => toggleManageVoteModal(!manageVoteModal)}
           >
             Vote
@@ -342,11 +345,11 @@ const ChallengeButtons = ({
           <>
             <button
               onClick={handleAccept}
-              className="px-2 py-1 w-[120px] m-4 bg-green-200 rounded-full hover:bg-green-400 "
+              className="px-2 py-1 w-[120px] m-4 bg-green-200 rounded-full text-black hover:bg-green-400 "
             >
               Accept
             </button>
-            <button className="px-2 py-1 w-[120px] m-4 bg-red-200 rounded-full">
+            <button className="px-2 py-1 w-[120px] m-4 bg-red-200 text-black rounded-full">
               Deny (pending)
             </button>
           </>
@@ -357,7 +360,7 @@ const ChallengeButtons = ({
       {(type === "active" || type === "created") &&
         status === "Pending Challenger" &&
         isChallengeTeam1Admin && (
-          <button className="px-2 py-1 w-[120px] m-4 bg-red-200 rounded-full">
+          <button className="px-2 py-1 w-[120px] m-4 bg-red-200 text-black rounded-full">
             Cancel (pending)
           </button>
         )}

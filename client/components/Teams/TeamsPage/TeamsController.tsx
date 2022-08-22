@@ -58,10 +58,10 @@ export const TeamsController = () => {
       <TeamsView data={teams} isLoading={isLoading} />
     </>
   ) : (
-    <>
+    <div>
       {!error
         ? "Loading...."
         : "Error! Please try another search or      refresh the page"}
-    </>
+    </div>
   );
 };

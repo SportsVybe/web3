@@ -15,24 +15,27 @@ export default function ChallengesPage(props: Props) {
     <div>
       <div className="flex flex-row justify-center items-center mb-5 pb-4 border-b-2 border-gray-600 text-white">
         <div
-          className={`flex cursor-pointer flex-col md:w-[240px] w-[80px] items-center justify-center hover:bg-green-300 rounded-lg p-2 ${
-            activeTab == "active" && "bg-green-500 hover:bg-green-700"
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[80px] items-center justify-center hover:bg-green-300 hover:text-black rounded-lg p-2 ${
+            activeTab == "active" &&
+            "bg-green-500 text-black hover:bg-green-700"
           }`}
           onClick={() => setActiveTab("active")}
         >
           {active && active.length} Active
         </div>
         <div
-          className={`flex cursor-pointer flex-col md:w-[240px] w-[100px] items-center justify-center hover:bg-green-300 rounded-lg p-2 mx-4 ${
-            activeTab == "complete" && "bg-green-500 hover:bg-green-700"
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[100px] items-center justify-center hover:bg-green-300 hover:text-black rounded-lg p-2 mx-4 ${
+            activeTab == "complete" &&
+            "bg-green-500 text-black hover:bg-green-700"
           }`}
           onClick={() => setActiveTab("complete")}
         >
           {complete && complete.length} Complete
         </div>
         <div
-          className={`flex cursor-pointer flex-col md:w-[240px] w-[100px] items-center justify-center hover:bg-green-300 rounded-lg p-2 ${
-            activeTab == "created" && "bg-green-500 hover:bg-green-700"
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[100px] items-center justify-center hover:bg-green-300 hover:text-black rounded-lg p-2 ${
+            activeTab == "created" &&
+            "bg-green-500 text-black hover:bg-green-700"
           }`}
           onClick={() => setActiveTab("created")}
         >

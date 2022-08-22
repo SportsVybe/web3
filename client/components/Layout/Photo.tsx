@@ -1,5 +1,4 @@
 import Image from "next/image";
-import styles from "../../styles/Home.module.css";
 
 type Props = {
   src: string;
@@ -21,7 +20,9 @@ export const Photo = ({
   isLoading = true,
 }: Props) => {
   const styleSize =
-    size == "sm" ? styles.imageContainerSmall : styles.imageContainerLarge;
+    size == "sm"
+      ? "md:w-[100px] md:h-[100px] w-[60px] h-[60px] relative"
+      : "md:w-[200px] md:h-[200px] w-[120px] h-[120px] relative";
 
   const setPlaceholder = (type: string) => {
     return `/images/${type}_placeholder.png`;

@@ -27,11 +27,11 @@ export default function VenuesFilter({
   };
 
   return (
-    <div className="flex md:flex-row flex-col items-center justify-around j w-full lg:w-[600px] text-white">
+    <div className="flex md:flex-row flex-col items-center justify-around w-full md:w-[600px] text-white">
       <div className="p-2">
         <span>Sports:</span>
         <select
-          className="w-[120px] ml-2 py-1 px-2  disabled:bg-gray-300"
+          className="w-[120px] ml-2 py-1 px-2 bg-black disabled:bg-gray-300"
           onChange={(e) => setValue(e.target.value)}
         >
           {selectMenu.map((item, i) => (

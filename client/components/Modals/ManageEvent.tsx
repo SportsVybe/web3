@@ -80,14 +80,14 @@ export const ManageEvent = ({
           <input
             id="eventName"
             value={eventName}
-            className="md:mx-3 px-2 py-1 rounded bg-gray-300"
+            className="md:mx-3 px-2 py-1 rounded bg-gray-300 text-black"
             onChange={(e) => setEventName(e.target.value)}
           />
         </div>
         <div className="p-2 flex flex-col md:flex-row items-center">
           <span className="pr-1 w-[130px] md:text-right">Event Date:</span>
           <DatePicker
-            className="mx-3 px-2 py-1 rounded bg-gray-300"
+            className="mx-3 px-2 py-1 rounded bg-gray-300 text-black"
             selected={eventDate}
             onChange={(date: Date) => setEventDate(date)}
           />
@@ -96,7 +96,7 @@ export const ManageEvent = ({
           <span className="pr-1 w-[130px] md:text-right">Event Location:</span>
           <input
             id="eventLocation"
-            className="mx-3 px-2 py-1 rounded bg-gray-300"
+            className="mx-3 px-2 py-1 rounded bg-gray-300 text-black"
             placeholder="Enter Event Location..."
             value={eventLocation}
             onChange={(e) => setEventLocation(e.target.value)}
@@ -114,7 +114,7 @@ export const ManageEvent = ({
         </div>
 
         <button
-          className="my-3 px-2 py-1 bg-green-300 rounded-full"
+          className="my-3 px-2 py-1 bg-green-300 text-black rounded-full"
           onClick={(e) => handleSubmit(e)}
         >
           {createNewEvent ? "Create Event" : "Update Event"}

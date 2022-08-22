@@ -36,7 +36,7 @@ export const Toast = ({
     if (isOpen) {
       setTimeout(() => {
         setIsOpen(false);
-        setContractMessage({});
+        setContractMessage({ status: "", message: "" });
       }, duration);
     }
   }, [isOpen]);

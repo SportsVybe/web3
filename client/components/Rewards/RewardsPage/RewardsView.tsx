@@ -16,16 +16,18 @@ export const RewardsView = (props: Props) => {
     <div>
       <div className="flex flex-row justify-center items-center mb-5 pb-4 border-b-2 border-gray-600">
         <div
-          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 rounded-lg p-2 ${
-            activeTab == "available" && "bg-green-500 hover:bg-green-700"
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 hover:text-black rounded-lg p-2 ${
+            activeTab == "available" &&
+            "bg-green-500 text-black hover:bg-green-700"
           }`}
           onClick={() => setActiveTab("available")}
         >
           {available && available.length} Available
         </div>
         <div
-          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 rounded-lg p-2 mx-4 ${
-            activeTab == "claimed" && "bg-green-500 hover:bg-green-700"
+          className={`flex cursor-pointer flex-col md:w-[240px] w-[130px] items-center justify-center hover:bg-green-300 hover:text-black rounded-lg p-2 mx-4 ${
+            activeTab == "claimed" &&
+            "bg-green-500 text-black hover:bg-green-700"
           }`}
           onClick={() => setActiveTab("claimed")}
         >

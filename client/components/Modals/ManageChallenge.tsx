@@ -188,11 +188,11 @@ export const ManageChallenge = ({
           <>
             <div className="flex flex-col w-full justify-center items-center">
               <div className="p-2 flex flex-col md:flex-row items-center">
-                <span className="md:pr-1 w-[130px] md:text-right">
+                <span className="md:pr-1 w-[130px] md:text-right pb=1">
                   Choose Team*:
                 </span>
                 <select
-                  className="w-full md:w-[130px] md:pr-1"
+                  className="w-full md:w-[130px] mt-1 md:pr-1 active:border-green-300 bg-slate-800 py-2 px-3 rounded"
                   required
                   onChange={(e) => handleSelectTeam(e.target.value)}
                 >
@@ -214,11 +214,11 @@ export const ManageChallenge = ({
                 </select>
               </div>
               <div className="p-2 flex flex-col md:flex-row items-center">
-                <span className="pr-1 w-[130px] md:text-right">Amount*:</span>
+                <span className="pr-1 w-[130px]  md:text-right">Amount*:</span>
                 <input
                   required
                   value={challengeAmount}
-                  className="m-2 px-2 py-1 rounded bg-gray-300"
+                  className="m-2 px-2 py-1 rounded  active:border-green-300 bg-green-800"
                   onChange={(e) => setChallengeAmount(e.target.value)}
                   type="number"
                   min={0}
@@ -237,7 +237,7 @@ export const ManageChallenge = ({
                         return (
                           <button
                             key={i}
-                            className={`m-2 px-2 py-1 rounded text-sm  ${
+                            className={`m-2 px-2 py-1 rounded text-sm text-black  ${
                               isChecked ? "bg-green-100" : "bg-gray-300"
                             }`}
                             onClick={() => handleSports(sport, isChecked)}
@@ -252,7 +252,7 @@ export const ManageChallenge = ({
                 <span className="pr-1 w-[130px] md:text-right">Message:</span>
                 <textarea
                   id="challengeMessage"
-                  className="m-2 px-2 py-1 rounded bg-gray-300"
+                  className="m-2 px-2 py-1 rounded  active:border-green-300 bg-green-800"
                   placeholder="Enter challenge description..."
                   rows={3}
                   value={challengeMessage}
@@ -265,14 +265,14 @@ export const ManageChallenge = ({
 
             <button
               disabled={isContractLoading || challengeAmount == "0"}
-              className="my-3 px-2 py-1 bg-green-300 rounded-full disabled:bg-slate-300"
+              className="my-3 px-2 py-1 bg-green-300 rounded-full text-black disabled:bg-slate-300"
               onClick={() => handleSubmit()}
             >
               {createNewChallenge ? "Create Challenge" : "Update Challenge"}
             </button>
             {contractMessage && !isContractLoading && (
               <Toast
-                open={contractMessage && !isContractLoading}
+                open={contractMessage !== "" && contractMessage.message !== ""}
                 type={contractMessage.status}
               >
                 {contractMessage.message}

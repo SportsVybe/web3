@@ -24,7 +24,7 @@
   z-index: 999;
 }
 
-.imageContainerSmall {
+/* .imageContainerSmall {
   width: 60px;
   height: 60px;
   position: relative;
@@ -34,7 +34,7 @@
   width: 200px;
   height: 200px;
   position: relative;
-}
+} */
 
 @media screen and (max-width: 568px) {
   .main {
@@ -46,7 +46,7 @@
   }
 
   .nav {
-  padding: 0.1rem 0rem;
-  top: 0;
-}
+    padding: 0.1rem 0rem;
+    top: 0;
+  }
 }

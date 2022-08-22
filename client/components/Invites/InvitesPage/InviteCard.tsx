@@ -89,7 +89,7 @@ export const InviteCard = ({
   };
 
   return (
-    <div className="flex flex-col m-4 w-full md:w-96 md:ml-0 justify-center items-start border-2 border-gray-200 p-2 rounded-lg shadow-lg bg-white hover:shadow-2xl transition ease-in-out delay-100  hover:ease-in-out">
+    <div className="flex flex-col m-4 w-full md:w-96 md:ml-0 justify-center items-start border-2 border-gray-200 p-2 rounded-lg shadow-lg bg-black hover:shadow-2xl transition ease-in-out delay-100  hover:ease-in-out">
       <div className="flex flex-row w-full">
         <div className="flex flex-col w-1/2 items-center justify-center p-2">
           <Photo
@@ -123,13 +123,13 @@ export const InviteCard = ({
           <>
             <button
               disabled={isContractLoading}
-              className="px-2 py-1 my-2 bg-green-200 rounded-full hover:bg-green-400 "
+              className="px-2 py-1 my-2 bg-green-200 text-black rounded-full hover:bg-green-400 "
               onClick={(e) => handleSubmit(e)}
             >
               Accept
             </button>
             <button
-              className="px-2 py-1 my-2 bg-red-200 rounded-full hover:bg-red-400 "
+              className="px-2 py-1 my-2 bg-red-200 text-black rounded-full hover:bg-red-400 "
               onClick={() => alert("Reject Invite")}
             >
               Reject
@@ -149,13 +149,16 @@ export const InviteCard = ({
           ))}
         <a
           href={`/teams/${team.id}`}
-          className="px-2 py-1 my-2 text-white bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100  hover:ease-in-out"
+          className="px-2 py-1 my-2  bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100  hover:ease-in-out"
         >
           View Team
         </a>
       </div>
       {contractMessage && !isContractLoading && (
-        <Toast open type={contractMessage.status}>
+        <Toast
+          open={contractMessage !== "" && contractMessage.message !== ""}
+          type={contractMessage.status}
+        >
           {contractMessage.message}
         </Toast>
       )}

@@ -163,7 +163,7 @@ export const ManageTeamMembers = ({
                   <input
                     disabled={address.length > 0}
                     value={username}
-                    className=" m-2 px-2  py-1 rounded disabled:bg-gray-700 bg-gray-300 outline-green-400"
+                    className=" m-2 px-2 py-1 text-black rounded disabled:bg-gray-700 bg-gray-300 outline-green-400"
                     onChange={(e) => setUsername(e.target.value)}
                   />
                   <button
@@ -174,7 +174,7 @@ export const ManageTeamMembers = ({
                     Search
                   </button>
                   <button
-                    className="m-3 px-2 py-1 bg-gray-300 rounded-full"
+                    className="m-3 px-2 py-1 bg-gray-300 text-black rounded-full"
                     onClick={() => resetTeamMember(true)}
                   >
                     Clear
@@ -194,8 +194,8 @@ export const ManageTeamMembers = ({
                     onChange={(e) => setAddress(e.target.value)}
                   />
                   <button
-                    className="m-3 px-2 py-1 bg-gray-300 rounded-full"
-                    onClick={() => alert("Mobile Only")}
+                    className="m-3 px-2 py-1 text-black bg-gray-300 rounded-full"
+                    onClick={() => alert("Mobile Only. Coming Soon")}
                   >
                     Scan
                   </button>
@@ -208,14 +208,14 @@ export const ManageTeamMembers = ({
                 disabled={
                   isContractLoading || !requestUser || requestUser === undefined
                 }
-                className="m-3 px-2 py-1 bg-green-300 rounded-full disabled:bg-slate-300"
+                className="m-3 px-2 py-1 bg-green-300 text-black rounded-full disabled:bg-slate-300"
                 onClick={(e) => handleSubmit(e)}
               >
                 Send Request
               </button>
 
               <button
-                className="m-3 px-2 py-1 bg-gray-300 rounded-full"
+                className="m-3 px-2 py-1 bg-gray-300 text-black rounded-full"
                 onClick={() => resetTeamMember(true)}
               >
                 Reset
@@ -236,7 +236,10 @@ export const ManageTeamMembers = ({
                 : "No Member Found"}
             </div>
             {contractMessage && !isContractLoading && (
-              <Toast open type={contractMessage.status}>
+              <Toast
+                open={contractMessage !== "" && contractMessage.message !== ""}
+                type={contractMessage.status}
+              >
                 {contractMessage.message}
               </Toast>
             )}

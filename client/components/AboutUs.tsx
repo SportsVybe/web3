@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import Image from "next/image";
 
 export default function AboutUs() {
@@ -7,26 +8,41 @@ export default function AboutUs() {
         <h1 className="text-left text-2xl border-b-2 inline pb-1 border-green-700">
           Project Inspiration:
         </h1>
-        <p className="mt-5">
-          The inspiration came from when we wanted to find a way to connect
-          people to recreational sports. Playing sports in a universal language
-          and our platform will give enthusiasts a unique way to challenge each
-          other. Our goal with this project is to allow an easy entry into web3.
-          We believe the best innovations with the new technology will
-          incorporate web3 elements without saying web3 or blockchain.
-        </p>
+        <span className="mt-5">
+          The inspiration came from wanted to find a way to connect people to
+          recreational sports. Playing sports in a universal language and our
+          platform will give enthusiasts a unique way to earn while being
+          active. StepN - (https://www.stepn.com) brought to the community a
+          "Run to Earn" concept that exploded in popularity. Our goal is to be
+          the first "Play Sports to Earn" and allow an easy entry into web3. We
+          believe the best innovations with the new technology will incorporate
+          web3 elements without saying web3 or blockchain.
+        </span>
       </div>
 
       <div className="md:mx-32 mb-4 mt-10">
         <h1 className="text-left text-2xl border-b-2 inline pb-1 border-green-700">
           Future Plans after the Hackathon:
         </h1>
-        <p className="mt-5">
-          The submission into Polygon Hackathon is only the beginning for the
-          project. We plan to build the concept into a mobile application using
-          react native. We are looking to partner with various local communities
-          in the Miami, Florida area to bring sports leagues to the platform.
-        </p>
+        <span className="mt-5">
+          We plan to build the concept into a mobile application using react
+          native. We are looking to partner with various local communities in
+          the Miami, Florida area to bring sports leagues to the platform.
+          <h3> Exciting road-map items include: </h3>
+          <ul>
+            <li>A marketplace to spend VYBES</li>
+            <li>Sponsored NFT Airdrops to challenges or events</li>
+            <li>Allow teams to create NFTs for team members</li>
+          </ul>
+          <a
+            href="https://www.twitter.com/SportsVybe"
+            target="_blank"
+            rel="noreferrer"
+            className="py-3 underline text-blue-400"
+          >
+            Follow us on Twitter @sportsvybe
+          </a>
+        </span>
       </div>
 
       <div className="my-5 md:my-20 flex justify-center">

@@ -164,14 +164,14 @@ export const ManageVote = ({
 
             <button
               disabled={isContractLoading}
-              className="my-3 px-2 py-1 bg-green-300 rounded-full disabled:bg-slate-300"
+              className="my-3 px-2 py-1 bg-green-300 text-black rounded-full disabled:bg-slate-300"
               onClick={() => handleSubmit()}
             >
               Submit Vote
             </button>
             {contractMessage && !isContractLoading && (
               <Toast
-                open={contractMessage && !isContractLoading}
+                open={contractMessage !== "" && contractMessage.message !== ""}
                 type={contractMessage.status}
               >
                 {contractMessage.message}

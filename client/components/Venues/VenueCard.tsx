@@ -8,7 +8,7 @@ type Props = {
 
 export const VenueCard = ({ venue }: Props) => {
   return (
-    <div className="flex flex-col my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out">
+    <div className="flex flex-col my-4 w-full md:w-[650px] text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out">
       <div className="flex flex-row w-full">
         <div className="flex flex-col w-1/2 items-center justify-center p-2">
           {venue.status === 4 ? (

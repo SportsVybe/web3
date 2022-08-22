@@ -43,8 +43,8 @@ export default function TeamPage({ team, teamIsLoading }: Props) {
         <h1>Team Profiles</h1>
       </div>
 
-      <div className="flex flex-col w-[480px] lg:w-[600px]">
-        <div className="flex flex-col w-full justify-center items-center border-2 border-gray-200 rounded-lg shadow-lg bg-white hover:shadow-2xl transition ease-in-out delay-100  hover:ease-in-out p-5">
+      <div className="flex flex-col w-full lg:w-[650px]">
+        <div className="flex my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out p-2">
           <div className="flex flex-row my-4 w-full justify-center items-center">
             <div className="flex flex-col w-1/2 items-center justify-center">
               <Photo
@@ -56,31 +56,35 @@ export default function TeamPage({ team, teamIsLoading }: Props) {
               />
             </div>
             <div className="flex flex-col w-1/2">
-              <span>{team.get("teamName") ? team.get("teamName") : "--"}</span>
               <span>
-                Member Since
+                Team name: {team.get("teamName") ? team.get("teamName") : "--"}
+              </span>
+              <span>
+                Member Since:{" "}
                 {team.get("createdAt")
                   ? team.get("createdAt").toLocaleDateString("en-US", {
                       year: "numeric",
                     })
                   : "--"}
               </span>
-              <span>{team.get("teamDescription")}</span>
+              <span className=" break-words">
+                Description: {team.get("teamDescription")}
+              </span>
             </div>
           </div>
         </div>
-        <div className="w-full">
+        <div className="w-96 md:w-full flex md:self-center items-center ml-16 md:ml-0 justify-center">
           {user && !isTeamMember && (
             <button
               onClick={() => toggleManageChallengeModal(!manageChallengeModal)}
-              className="px-4 py-3 my-4  w-full bg-green-200 rounded-full hover:bg-green-400"
+              className="px-4 py-3 my-4 w-96 md:w-full bg-green-200 rounded-full text-black hover:bg-green-400"
             >
               Challenge Team
             </button>
           )}
           {user && isTeamMember && !isAdmin && (
             <button
-              className="px-4 py-3 my-4  w-full bg-red-200 rounded-full hover:bg-red-400"
+              className="px-4 py-3 my-4 w-96 md:w-full bg-red-200 rounded-full text-black hover:bg-red-400"
               onClick={() => alert("Leave")}
             >
               Leave Team
@@ -88,7 +92,7 @@ export default function TeamPage({ team, teamIsLoading }: Props) {
           )}
           {user && isTeamMember && isAdmin && (
             <button
-              className="px-4 py-3 my-4  w-full bg-yellow-200 rounded-full hover:bg-yellow-400"
+              className="px-4 py-3 my-4 w-96 md:w-full bg-yellow-200 rounded-full text-black hover:bg-yellow-400"
               onClick={() => toggleManageTeamModal(!manageTeamModal)}
             >
               Manage Team
@@ -97,14 +101,14 @@ export default function TeamPage({ team, teamIsLoading }: Props) {
           {!user && (
             <button
               disabled={isAuthenticating}
-              className="rounded-full bg-green-200 px-4 py-3 my-4  w-full disabled:bg-gray-400 hover:bg-green-400 "
+              className="rounded-full bg-green-200 px-4 py-3 text-black my-4 w-96 md:w-full disabled:bg-gray-400 hover:bg-green-400 "
               onClick={() => connectWallet(false)}
             >
               Connect Wallet to Challenge
             </button>
           )}
         </div>
-        <div className="flex flex-row my-4 justify-center items-start border-2 border-gray-200 rounded-lg shadow-lg bg-white hover:shadow-2xl transition ease-in-out delay-100  hover:ease-in-out p-2">
+        <div className="flex my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out p-2">
           <div className="flex flex-col w-1/2 items-center p-2">
             <div className="flex flex-col justify-center items-center">
               <span className="p-2 font-bold">Record:</span>
@@ -138,13 +142,13 @@ export default function TeamPage({ team, teamIsLoading }: Props) {
           </div>
         </div>
 
-        <div className="flex flex-col my-4 w-full justify-around items-center border-2 border-gray-200 rounded-lg shadow-lg bg-white hover:shadow-2xl transition ease-in-out delay-100  hover:ease-in-out p-2">
+        <div className="flex my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out p-2">
           <div className="flex flex-col w-full justify-center py-3 items-center">
             <div className="flex flex-row w-full justify-center py-3 items-center">
               <h1>Member(s) </h1>
               {isAuthenticated && isAdmin && (
                 <button
-                  className="px-2 py-1 w-[240px] mx-4 bg-green-200 rounded-full hover:bg-green-400"
+                  className="px-2 py-1 w-[240px] mx-4 bg-green-200 text-black rounded-full hover:bg-green-400"
                   onClick={() =>
                     toggleManageTeamMembersModal(!manageTeamMembersModal)
                   }

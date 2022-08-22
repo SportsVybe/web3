@@ -308,7 +308,10 @@ export const ManageProfile = ({
           </>
         )}
         {contractMessage && !isContractLoading && (
-          <Toast open type={contractMessage.status}>
+          <Toast
+            open={contractMessage !== "" && contractMessage.message !== ""}
+            type={contractMessage.status}
+          >
             {contractMessage.message}
           </Toast>
         )}

@@ -27,7 +27,7 @@ export const TeamCard = ({ team }: Props) => {
   }
 
   return (
-    <div className="flex flex-col my-4 md:w-full text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out">
+    <div className="flex flex-col my-4 w-full md:w-[650px] text-white w-96 ml-16 md:ml-0 justify-center card items-start p-2 rounded-lg shadow-lg bg-black transition ease-in-out delay-100  hover:ease-in-out">
       <div className="flex flex-row w-full">
         <div className="flex flex-col w-1/2 items-center justify-center p-2">
           <Photo
@@ -63,7 +63,7 @@ export const TeamCard = ({ team }: Props) => {
       <div className="flex flex-row w-full items-center justify-around p-2">
         {user && !isTeamMember && (
           <button
-            className="px-3 py-2 my-2 rounded-full bg-green-300 hover:bg-green-600 text-black"
+            className="px-2 py-1 my-2 rounded-full bg-green-300 hover:bg-green-600 text-black"
             onClick={() => toggleManageChallengeModal(!manageChallengeModal)}
           >
             Challenge Team
@@ -71,7 +71,7 @@ export const TeamCard = ({ team }: Props) => {
         )}
         {user && isTeamMember && !isAdmin && (
           <button
-            className="px-2 py-1 my-2 bg-red-200 rounded-full"
+            className="px-2 py-1 my-2 bg-red-200 text-black rounded-full"
             onClick={() => alert("Leave Team")}
           >
             Leave Team
@@ -79,7 +79,7 @@ export const TeamCard = ({ team }: Props) => {
         )}
         {user && isAdmin && (
           <button
-            className="px-2 py-1 my-2 bg-yellow-200 rounded-full"
+            className="px-2 py-1 my-2 bg-yellow-200 text-black rounded-full"
             onClick={() => toggleManageTeamModal(!manageTeamModal)}
           >
             Manage Team
@@ -87,7 +87,7 @@ export const TeamCard = ({ team }: Props) => {
         )}
         <a
           href={`/teams/${team.id}`}
-          className="px-3 py-2 my-2 text-white bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100  hover:ease-in-out"
+          className="px-2 py-1 my-2 text-white bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100  hover:ease-in-out"
         >
           View Team
         </a>

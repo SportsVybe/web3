@@ -50,11 +50,11 @@ export const RewardCard = ({ reward }: RewardCardProps) => {
             Status:
             {reward.get("confirmed")
               ? !reward.get("isClaimed")
-                ? "Ready to Claim"
+                ? " Ready to Claim"
                 : reward.get("isClaimed") && reward.get("claimConfirmed")
-                ? "Claimed"
-                : "Processing Claim..."
-              : "Processing..."}
+                ? " Claimed"
+                : " Processing Claim..."
+              : " Processing..."}
           </span>
         </div>
       </div>
@@ -66,7 +66,7 @@ export const RewardCard = ({ reward }: RewardCardProps) => {
               !reward.get("confirmed") ||
               reward.get("isClaimed")
             }
-            className="px-2 py-1 bg-green-300 rounded-full m-1"
+            className="px-2 py-1 bg-green-300 text-black rounded-full m-1"
             onClick={() => claimRewardHandler()}
           >
             Claim
@@ -79,7 +79,10 @@ export const RewardCard = ({ reward }: RewardCardProps) => {
       </div>
 
       {contractMessage && !isContractLoading && (
-        <Toast open type={contractMessage.status}>
+        <Toast
+          open={contractMessage !== "" && contractMessage.message !== ""}
+          type={contractMessage.status}
+        >
           {contractMessage.message}
         </Toast>
       )}
