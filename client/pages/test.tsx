@@ -58,6 +58,7 @@ const Test = () => {
           zip: attributes.ZIPCODE || null,
           country: "USA",
         },
+        photo: "",
         phone: attributes.PHONE || null,
         website: attributes.PARKURL || null,
         availableActivities: activities,
@@ -72,7 +73,7 @@ const Test = () => {
   };
 
   async function getAllDataFromAWS() {
-    const apiName = "api";
+    const apiName = "web3api";
     const path = "/venues";
     const myInit = {
       response: false,
@@ -83,7 +84,7 @@ const Test = () => {
   }
 
   function getDataById(id: string) {
-    const apiName = "api";
+    const apiName = "web3api";
     const path = `/venues/${id}`;
     const myInit = {
       response: false,
@@ -93,7 +94,7 @@ const Test = () => {
   }
 
   function postData(venue: Venue) {
-    const apiName = "api";
+    const apiName = "web3api";
     const path = "/venues";
     const myInit = {
       response: false,
@@ -150,7 +151,7 @@ const Test = () => {
 
   const compareArrays = (a: Venue[], b: Venue[]) => {
     const compared = a.filter((item) => {
-      return b.find((item2) => item2.name === item.name);
+      return !b.find((item2) => item2.name === item.name);
     });
 
     console.log(compared);
@@ -204,10 +205,12 @@ const Test = () => {
         </button>
         <button
           className="px-2 py-1 mx-2 bg-green-200 rounded"
-          onClick={() => addToAWS(comparedParks)}
+          onClick={() => addToAWS(formattedParks)}
         >
           Add to AWS
         </button>
+
+        <button onClick={() => getUserBalance()}>Balance</button>
       </div>
     </>
   );
