@@ -43,12 +43,14 @@ export const VenueCard = ({ venue }: Props) => {
         </div>
       </div>
       <div className="flex flex-row w-full items-center justify-around p-2">
-        <a
-          href={`/teams/${venue.id}`}
+        <button
           className="px-3 py-2 my-2 text-white bg-blue-600 rounded-full hover:bg-blue-800 transition ease-in-out delay-100  hover:ease-in-out"
+          onClick={() => {
+            alert("Coming Soon");
+          }}
         >
-          View Venue
-        </a>
+          Check In
+        </button>
       </div>
     </div>
   );

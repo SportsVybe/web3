@@ -322,9 +322,7 @@ const ChallengeButtons = ({
         status === "Accepted" &&
         (isChallengeTeam1Admin || isChallengeTeam2Admin) &&
         event && (
-          <a href={`/events/${event.id}`} className="px-2 py-1">
-            View Event
-          </a>
+          <button className="px-2 py-1">View Event (Coming soon)</button>
         )}
       {/* Allow vote if a challenge team member and challenge accepted */}
       {type === "active" &&

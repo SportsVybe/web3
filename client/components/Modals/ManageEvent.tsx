@@ -112,9 +112,10 @@ export const ManageEvent = ({
           <span className="pr-1 w-[130px] text-right">Prize Pool: </span>
           <span className="mx-3 px-2 py-1">{eventPrizePool} SVT</span>
         </div>
-
+        <div className="p-2 text-red">Coming Soon!</div>
         <button
-          className="my-3 px-2 py-1 bg-green-300 text-black rounded-full"
+          className="my-3 px-2 py-1 bg-green-300 text-black rounded-full disabled:bg-gray-400"
+          disabled={true}
           onClick={(e) => handleSubmit(e)}
         >
           {createNewEvent ? "Create Event" : "Update Event"}
