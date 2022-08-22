@@ -1,5 +1,5 @@
 ## Inspiration
-The inspiration came from wanting to find a way to connect people to recreational sports. Playing sports is a universal language and our platform will give enthusiasts a unique way to earn while being active. StepN - [link](https://www.stepn.com) brought to the community a "Run to Earn" concept that exploded in popularity. Our goal is to be the first "Play Sports to Earn" and allow an easy entry into web3. We believe the best innovations with the new technology will incorporate web3 elements without saying web3 or blockchain.
+The inspiration came from wanting to find a way to connect people to recreational sports. Playing sports is a universal language and our platform will give enthusiasts a unique way to earn while being active. [StepN](https://www.stepn.com) brought to the community a "Run to Earn" concept that exploded in popularity. Our goal is to be the first "Play Sports to Earn" and allow an easy entry into web3. We believe the best innovations with the new technology will incorporate web3 elements without saying web3 or blockchain.
 
 ## What it does
 **Earn VYBES**
