@@ -22,11 +22,9 @@ export const Home = () => {
         </div>
 
         <div className="animate-fade-in-right floater md:">
-          <Image
-            src="https://main.d2hn7maiky4r02.amplifyapp.com/hero-image-2.png"
+          <img
+            src="/hero-image-2.png"
             alt="SportsVybe header"
-            width={500}
-            height={500}
             className="image"
           />
         </div>

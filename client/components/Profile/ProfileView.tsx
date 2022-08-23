@@ -69,7 +69,7 @@ export default function Profile({
           </div>
           <div className="md:ml-14">
             {wallet && (
-              <p className="py-3 font-bold overflow-ellipsis">
+              <p className="py-3 font-bold overflow-ellipsis  md:mt-5 mt-0">
                 {" "}
                 Wallet: {wallet}
               </p>

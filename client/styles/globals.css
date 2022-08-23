@@ -13,6 +13,15 @@ body {
   /* overflow-x: scroll; */
 }
 
+.logo-image {
+  height: 35px;
+}
+
+.image{
+  height: 500px;
+  width: 500px;
+}
+
 .button {
   box-shadow: 0 5px 0 #12b42a;
 }
@@ -156,3 +165,11 @@ a {
 * {
   box-sizing: border-box;
 }
+
+@media screen and (max-width: 568px) {
+.logo-image {
+  height: 28px;
+}
+}
+
+

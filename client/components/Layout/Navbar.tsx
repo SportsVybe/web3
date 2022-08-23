@@ -19,11 +19,10 @@ export default function Navbar() {
       <div className="flex justify-between px-4">
         <div className="p-2 cursor-pointer">
           <ImageRef href="/">
-            <Image
-              src="https://main.d2hn7maiky4r02.amplifyapp.com//header_logo.png"
+            <img
+              src="/header_logo.png"
               alt="SportsVybe Logo"
-              width={135}
-              height={35}
+              className="logo-image"
             />
           </ImageRef>
         </div>
@@ -56,7 +55,7 @@ export default function Navbar() {
         <div className="md:flex list-none flex-row justify-between items-center flex-initial">
           {!wallet && (
             <>
-              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-md nav-item">
                 <Link href="/" className="px-2">
                   Home
                 </Link>
@@ -64,22 +63,22 @@ export default function Navbar() {
             </>
           )}
 
-          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
+          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-md nav-item">
             <Link href="/aboutus" className="px-2">
               About
             </Link>
           </div>
-          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
+          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-md nav-item">
             <Link href="/venues" className="px-2">
               Venues
             </Link>
           </div>
-          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
+          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-md nav-item">
             <Link href="/teams" className="px-2">
               Teams
             </Link>
           </div>
-          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
+          <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-md nav-item">
             <Link href="/events" className="px-2">
               Events
             </Link>
@@ -87,22 +86,22 @@ export default function Navbar() {
           {isAuthenticated && (
             <>
               <hr className="md:w-[20px] w-full" />
-              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-md nav-item">
                 <Link href="/profile" className="px-2">
                   My Profile
                 </Link>
               </div>
-              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-md nav-item">
                 <Link href="/invites" className="px-2">
                   My Invites
                 </Link>
               </div>
-              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-md nav-item">
                 <Link href="/rewards" className="px-2">
                   My Rewards
                 </Link>
               </div>
-              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-xl nav-item">
+              <div className="block rounded px-2 py-1 mx-4 mb-3 md:mb-0 cursor-pointer hover:text-green-600 text-white md:text-md nav-item">
                 <Link href="/challenges" className="px-2">
                   My Challenges
                 </Link>
