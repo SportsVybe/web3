@@ -25,7 +25,7 @@ export const Photo = ({
       : "md:w-[200px] md:h-[200px] w-[120px] h-[120px] relative";
 
   const setPlaceholder = (type: string) => {
-    return `https://main.d2hn7maiky4r02.amplifyapp.com/images/${type}_placeholder.png`;
+    return `/images/${type}_placeholder.png`;
   };
 
   const placeholderImg = setPlaceholder(type);

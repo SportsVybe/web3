@@ -8,7 +8,7 @@ export default function AboutUs() {
         <h1 className="text-left text-2xl border-b-2 inline pb-1 border-green-700">
           Project Inspiration:
         </h1>
-        <span className="mt-5">
+        <p className="mt-5 ">
           The inspiration came from wanted to find a way to connect people to
           recreational sports. Playing sports in a universal language and our
           platform will give enthusiasts a unique way to earn while being
@@ -17,14 +17,14 @@ export default function AboutUs() {
           the first "Play Sports to Earn" and allow an easy entry into web3. We
           believe the best innovations with the new technology will incorporate
           web3 elements without saying web3 or blockchain.
-        </span>
+        </p>
       </div>
 
       <div className="md:mx-32 mb-4 mt-10">
         <h1 className="text-left text-2xl border-b-2 inline pb-1 border-green-700">
           Future Plans after the Hackathon:
         </h1>
-        <span className="mt-5">
+        <p className="mt-5">
           We plan to build the concept into a mobile application using react
           native. We are looking to partner with various local communities in
           the Miami, Florida area to bring sports leagues to the platform.
@@ -38,11 +38,11 @@ export default function AboutUs() {
             href="https://www.twitter.com/SportsVybe"
             target="_blank"
             rel="noreferrer"
-            className="py-3 underline text-blue-400"
+            className="py-3 underline text-blue-400 mt-5"
           >
             Follow us on Twitter @sportsvybe
           </a>
-        </span>
+        </p>
       </div>
 
       <div className="my-5 md:my-20 flex justify-center">
@@ -53,12 +53,10 @@ export default function AboutUs() {
       <div className="flex md:flex-row flex-col justify-around items-center md:mb-48 mb-10">
         <div className="mb-4">
           <div className="card rounded-full mb-8" data-aos="zoom-in">
-            <Image
-              width={265}
-              height={300}
-              src="https://main.d2hn7maiky4r02.amplifyapp.com/images/about/avrahm.png"
+            <img
+              src="/images/about/avrahm.png"
               alt="Avrahm-image"
-              className="rounded-full object-contain border-2"
+              className="rounded-full object-contain border-2 profile-image"
             />
           </div>
           <p className="text-center italic text-xl">
@@ -85,12 +83,10 @@ export default function AboutUs() {
         </div>
         <div className="mb-4">
           <div className=" card rounded-full mb-8" data-aos="zoom-in">
-            <Image
-              width={265}
-              height={300}
-              src="https://main.d2hn7maiky4r02.amplifyapp.com/images/about/david.png"
+            <img
+              src="/images/about/david.png"
               alt="David-image"
-              className="rounded-full object-contain border-2"
+              className="rounded-full object-contain border-2 profile-image"
             />
           </div>
           <p className="text-center italic text-xl">
@@ -107,12 +103,10 @@ export default function AboutUs() {
         </div>
         <div className="mb-4">
           <div className="card rounded-full mb-8" data-aos="zoom-in">
-            <Image
-              width={265}
-              height={300}
-              src="https://main.d2hn7maiky4r02.amplifyapp.com/images/about/jaymes.png"
+            <img
+              src="/images/about/jaymes.png"
               alt="Jaymes-image"
-              className="rounded-full object-contain"
+              className="rounded-full object-contain profile-image"
             />
           </div>
           <p className="text-center italic text-xl">

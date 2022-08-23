@@ -10,11 +10,15 @@ body {
   margin: 0;
   font-family: "Open Sans", sans-serif;
   background-color: #000000;
-  /* overflow-x: scroll; */
 }
 
 .logo-image {
   height: 35px;
+}
+
+.profile-image {
+  width: 265px;
+  height:300px;
 }
 
 .image{
